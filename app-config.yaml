@@ -87,6 +87,18 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  providers:
+    github:
+      # GitHub organization discovery
+      organization:
+        organization: ${GITHUB_ORG} # GitHub organization name
+        catalogPath: '/catalog-info.yaml' # path to catalog-info.yaml files
+        filters:
+          branch: 'main' # default branch to scan
+          repository: '.*' # regex to match repository names
+        schedule: # optional, adhoc discovery is also supported
+          frequency: { minutes: 30 }
+          timeout: { minutes: 3 }
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file

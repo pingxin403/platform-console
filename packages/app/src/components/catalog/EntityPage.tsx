@@ -58,6 +58,10 @@ import {
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
 
+// Import our custom components
+import { ServiceOverviewCard } from './ServiceOverviewCard';
+import { EnhancedDependencyCard } from './EnhancedDependencyCard';
+
 const techdocsContent = (
   <EntityTechdocsContent>
     <TechDocsAddons>
@@ -128,10 +132,10 @@ const overviewContent = (
   <Grid container spacing={3} alignItems="stretch">
     {entityWarningContent}
     <Grid item md={6}>
-      <EntityAboutCard variant="gridItem" />
+      <ServiceOverviewCard variant="gridItem" />
     </Grid>
     <Grid item md={6} xs={12}>
-      <EntityCatalogGraphCard variant="gridItem" height={400} />
+      <EnhancedDependencyCard variant="gridItem" />
     </Grid>
 
     <Grid item md={4} xs={12}>
@@ -174,6 +178,9 @@ const serviceEntityPage = (
 
     <EntityLayout.Route path="/dependencies" title="Dependencies">
       <Grid container spacing={3} alignItems="stretch">
+        <Grid item xs={12}>
+          <EnhancedDependencyCard />
+        </Grid>
         <Grid item md={6}>
           <EntityDependsOnComponentsCard variant="gridItem" />
         </Grid>
