@@ -1,0 +1,68 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: user-service
+  description: User management service for the platform
+  annotations:
+    github.com/project-slug: your-org/user-service
+    backstage.io/source-location: url:https://github.com/your-org/user-service
+    backstage.io/view-url: https://github.com/your-org/user-service
+    backstage.io/edit-url: https://github.com/your-org/user-service/edit/main/catalog-info.yaml
+  tags:
+    - java
+    - spring-boot
+    - microservice
+  links:
+    - url: https://github.com/your-org/user-service
+      title: Repository
+      icon: github
+    - url: https://your-org.github.io/user-service
+      title: Documentation
+      icon: docs
+spec:
+  type: service
+  lifecycle: production
+  owner: team-backend
+  system: user-management
+  dependsOn:
+    - resource:user-database
+    - component:auth-service
+  providesApis:
+    - user-api
+  consumesApis:
+    - auth-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: user-api
+  description: User management REST API
+  annotations:
+    github.com/project-slug: your-org/user-service
+spec:
+  type: openapi
+  lifecycle: production
+  owner: team-backend
+  system: user-management
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: User API
+      version: 1.0.0
+    paths:
+      /users:
+        get:
+          summary: List users
+          responses:
+            '200':
+              description: List of users
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: user-database
+  description: PostgreSQL database for user data
+spec:
+  type: database
+  owner: team-backend
+  system: user-management

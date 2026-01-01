@@ -13,26 +13,26 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
   - Configure GitHub OAuth authentication
   - _Requirements: 8.1_
 
-- [ ] 2. Implement Service Catalog with GitHub integration
-  - [ ] 2.1 Configure GitHub discovery provider for catalog-info.yaml files
+- [x] 2. Implement Service Catalog with GitHub integration
+  - [x] 2.1 Configure GitHub discovery provider for catalog-info.yaml files
     - Set up GitHub API integration with organization access
     - Implement automated repository scanning and entity registration
     - _Requirements: 1.2, 1.5_
 
-  - [ ]* 2.2 Write property test for service discovery automation
+  - [x] 2.2 Write property test for service discovery automation
     - **Property 2: Service discovery automation**
     - **Validates: Requirements 1.2, 1.5**
 
-  - [ ] 2.3 Implement service catalog display with metadata
+  - [x] 2.3 Implement service catalog display with metadata
     - Create service overview components showing owner, repository, and dependencies
     - Implement dependency graph visualization using React components
     - _Requirements: 1.1, 1.3, 1.4_
 
-  - [ ]* 2.4 Write property test for service catalog completeness
+  - [x] 2.4 Write property test for service catalog completeness
     - **Property 1: Service catalog completeness**
     - **Validates: Requirements 1.1**
 
-  - [ ]* 2.5 Write property test for service information display
+  - [x] 2.5 Write property test for service information display
     - **Property 3: Service information display**
     - **Validates: Requirements 1.3, 1.4**
 
@@ -43,11 +43,11 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Configure integration points for Argo CD, Datadog, and Sentry
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
-  - [ ]* 3.2 Write property test for template availability
+  - [ ] 3.2 Write property test for template availability
     - **Property 4: Template availability**
     - **Validates: Requirements 2.1, 2.2**
 
-  - [ ]* 3.3 Write property test for generated project completeness
+  - [ ] 3.3 Write property test for generated project completeness
     - **Property 5: Generated project completeness**
     - **Validates: Requirements 2.3, 2.5**
 
@@ -56,7 +56,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Implement automatic catalog registration workflow
     - _Requirements: 2.4_
 
-  - [ ]* 3.5 Write property test for project registration automation
+  - [ ] 3.5 Write property test for project registration automation
     - **Property 6: Project registration automation**
     - **Validates: Requirements 2.4**
 
