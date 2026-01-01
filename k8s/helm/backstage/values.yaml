@@ -1,0 +1,178 @@
+# Default values for backstage.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: backstage
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 7007
+
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
+  hosts:
+    - host: backstage.${DOMAIN_NAME}
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Backstage configuration
+backstage:
+  config:
+    app:
+      title: Internal Developer Platform
+      baseUrl: https://backstage.${DOMAIN_NAME}
+    
+    organization:
+      name: ${ORGANIZATION_NAME}
+    
+    backend:
+      baseUrl: https://backstage.${DOMAIN_NAME}
+      cors:
+        origin: https://backstage.${DOMAIN_NAME}
+      auth:
+        keys:
+          - secret: ${BACKEND_SECRET}
+    
+    auth:
+      providers:
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+    
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ${POSTGRES_PASSWORD}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    database: ${POSTGRES_DB}
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: gp3
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# External PostgreSQL (when postgresql.enabled is false)
+externalPostgresql:
+  host: ${POSTGRES_HOST}
+  port: ${POSTGRES_PORT}
+  username: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+  database: ${POSTGRES_DB}
+  ssl: ${POSTGRES_SSL}
+
+# Environment variables
+env:
+  - name: NODE_ENV
+    value: production
+  - name: POSTGRES_HOST
+    value: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.fullname\" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
+  - name: POSTGRES_PORT
+    value: "{{ if .Values.postgresql.enabled }}5432{{ else }}{{ .Values.externalPostgresql.port }}{{ end }}"
+  - name: POSTGRES_USER
+    value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.username }}{{ else }}{{ .Values.externalPostgresql.username }}{{ end }}"
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.secretName\" . }}{{ else }}backstage-postgres{{ end }}"
+        key: "{{ if .Values.postgresql.enabled }}password{{ else }}password{{ end }}"
+  - name: POSTGRES_DB
+    value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.database }}{{ else }}{{ .Values.externalPostgresql.database }}{{ end }}"
+  - name: POSTGRES_SSL
+    value: "{{ if .Values.postgresql.enabled }}false{{ else }}{{ .Values.externalPostgresql.ssl }}{{ end }}"
+  - name: BACKEND_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: backend-secret
+  - name: AUTH_GITHUB_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: github-client-id
+  - name: AUTH_GITHUB_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: github-client-secret
+  - name: GITHUB_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: github-token
