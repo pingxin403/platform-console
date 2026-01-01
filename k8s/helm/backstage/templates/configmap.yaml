@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "backstage.fullname" . }}-config
+  labels:
+    {{- include "backstage.labels" . | nindent 4 }}
+data:
+  app-config.production.yaml: |
+    app:
+      title: {{ .Values.backstage.config.app.title }}
+      baseUrl: {{ .Values.backstage.config.app.baseUrl }}
+
+    organization:
+      name: {{ .Values.backstage.config.organization.name }}
+
+    backend:
+      baseUrl: {{ .Values.backstage.config.backend.baseUrl }}
+      listen:
+        port: 7007
+        host: 0.0.0.0
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+      cors:
+        origin: {{ .Values.backstage.config.backend.cors.origin }}
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      auth:
+        keys:
+          - secret: ${BACKEND_SECRET}
+      database:
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+          database: ${POSTGRES_DB}
+          ssl: ${POSTGRES_SSL}
+
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+    auth:
+      providers:
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'docker'
+      publisher:
+        type: 'awsS3'
+        awsS3:
+          bucketName: ${TECHDOCS_S3_BUCKET_NAME}
+          region: ${AWS_REGION}
+
+    scaffolder:
+      defaultAuthor:
+        name: Platform Team
+        email: platform@company.com
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+      locations:
+        - type: url
+          target: https://github.com/${GITHUB_ORG}/backstage-catalog/blob/main/catalog-info.yaml
+
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: ${KUBERNETES_API_URL}
+              name: production
+              authProvider: 'serviceAccount'
+              skipTLSVerify: false
+              skipMetricsLookup: false
+
+    permission:
+      enabled: true
