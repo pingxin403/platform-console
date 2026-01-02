@@ -36,31 +36,31 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - **Property 3: Service information display**
     - **Validates: Requirements 1.3, 1.4**
 
-- [ ] 3. Develop Golden Path templates and scaffolder
-  - [ ] 3.1 Create project templates for Java, Go, React, and React Native
+- [x] 3. Develop Golden Path templates and scaffolder
+  - [x] 3.1 Create project templates for Java, Go, React, and React Native
     - Implement Scaffolder templates with complete project structure
     - Include Dockerfile, GitHub Actions workflows, Helm charts, and catalog-info.yaml
     - Configure integration points for Argo CD, Datadog, and Sentry
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
-  - [ ] 3.2 Write property test for template availability
+  - [x] 3.2 Write property test for template availability
     - **Property 4: Template availability**
     - **Validates: Requirements 2.1, 2.2**
 
-  - [ ] 3.3 Write property test for generated project completeness
+  - [x] 3.3 Write property test for generated project completeness
     - **Property 5: Generated project completeness**
     - **Validates: Requirements 2.3, 2.5**
 
-  - [ ] 3.4 Implement automatic service registration after project creation
+  - [x] 3.4 Implement automatic service registration after project creation
     - Create custom Scaffolder actions for GitHub repository creation
     - Implement automatic catalog registration workflow
     - _Requirements: 2.4_
 
-  - [ ] 3.5 Write property test for project registration automation
+  - [x] 3.5 Write property test for project registration automation
     - **Property 6: Project registration automation**
     - **Validates: Requirements 2.4**
 
-- [ ] 4. Checkpoint - Ensure core catalog and scaffolder functionality works
+- [x] 4. Checkpoint - Ensure core catalog and scaffolder functionality works
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Integrate Argo CD for deployment status

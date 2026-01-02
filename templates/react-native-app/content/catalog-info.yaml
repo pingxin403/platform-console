@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  description: ${{ values.description }}
+  annotations:
+    github.com/project-slug: ${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}
+    sentry/project-slug: company/${{ values.name }}
+    mobile.ios.bundle-id: ${{ values.bundleId }}
+    mobile.android.package-name: ${{ values.packageName }}
+spec:
+  type: mobile-app
+  lifecycle: experimental
+  owner: ${{ values.owner }}
+  system: platform
+  consumesApis:
+    - backend-api

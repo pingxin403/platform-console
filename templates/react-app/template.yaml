@@ -1,0 +1,128 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: react-app-template
+  title: React Application Template
+  description: Golden Path template for creating a React application with complete DevOps integration
+  tags:
+    - react
+    - frontend
+    - web-app
+    - golden-path
+spec:
+  owner: group:platform-team
+  type: website
+
+  parameters:
+    - title: Application Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Application Name
+          type: string
+          description: Name of the application (kebab-case)
+          pattern: '^[a-z][a-z0-9-]*[a-z0-9]$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Brief description of the application
+        owner:
+          title: Owner
+          type: string
+          description: Team or individual responsible for this application
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+
+    - title: Repository Configuration
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+    - title: Application Configuration
+      properties:
+        port:
+          title: Development Port
+          type: integer
+          default: 3000
+          description: Port for local development
+        nodeVersion:
+          title: Node.js Version
+          type: string
+          default: '18'
+          enum:
+            - '16'
+            - '18'
+            - '20'
+        packageManager:
+          title: Package Manager
+          type: string
+          default: 'npm'
+          enum:
+            - 'npm'
+            - 'yarn'
+            - 'pnpm'
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          port: ${{ parameters.port }}
+          nodeVersion: ${{ parameters.nodeVersion }}
+          packageManager: ${{ parameters.packageManager }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        gitCommitMessage: 'Initial commit: React app ${{ parameters.name }}'
+        gitAuthorName: 'Backstage Scaffolder'
+        gitAuthorEmail: 'scaffolder@company.com'
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+    - id: create-argocd-app
+      name: Create Argo CD Application
+      action: argocd:create-app
+      input:
+        appName: ${{ parameters.name }}
+        repoUrl: ${{ steps['publish'].output.cloneUrl }}
+        path: k8s/
+        namespace: ${{ parameters.name }}
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
+      - title: Argo CD Application
+        url: https://argocd.company.com/applications/${{ parameters.name }}

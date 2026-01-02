@@ -1,0 +1,118 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: go-service-template
+  title: Go Service Template
+  description: Golden Path template for creating a Go service with complete DevOps integration
+  tags:
+    - go
+    - microservice
+    - golden-path
+spec:
+  owner: group:platform-team
+  type: service
+
+  parameters:
+    - title: Service Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Service Name
+          type: string
+          description: Name of the service (kebab-case)
+          pattern: '^[a-z][a-z0-9-]*[a-z0-9]$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Brief description of the service
+        owner:
+          title: Owner
+          type: string
+          description: Team or individual responsible for this service
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+
+    - title: Repository Configuration
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+    - title: Service Configuration
+      properties:
+        port:
+          title: Service Port
+          type: integer
+          default: 8080
+          description: Port the service will run on
+        goVersion:
+          title: Go Version
+          type: string
+          default: '1.21'
+          enum:
+            - '1.20'
+            - '1.21'
+            - '1.22'
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          port: ${{ parameters.port }}
+          goVersion: ${{ parameters.goVersion }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        gitCommitMessage: 'Initial commit: Go service ${{ parameters.name }}'
+        gitAuthorName: 'Backstage Scaffolder'
+        gitAuthorEmail: 'scaffolder@company.com'
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+    - id: create-argocd-app
+      name: Create Argo CD Application
+      action: argocd:create-app
+      input:
+        appName: ${{ parameters.name }}
+        repoUrl: ${{ steps['publish'].output.cloneUrl }}
+        path: k8s/
+        namespace: ${{ parameters.name }}
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
+      - title: Argo CD Application
+        url: https://argocd.company.com/applications/${{ parameters.name }}
