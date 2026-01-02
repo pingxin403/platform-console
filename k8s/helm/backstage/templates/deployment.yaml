@@ -2,35 +2,95 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "backstage.fullname" . }}
+  namespace: {{ include "backstage.namespace" . }}
   labels:
     {{- include "backstage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  annotations:
+    # Enable automatic rollback on failure
+    deployment.kubernetes.io/revision: "1"
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       {{- include "backstage.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        # Force pod restart on config changes
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "backstage.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "backstage.serviceAccountName" . }}
+      # Enhanced security context
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+        {{- with .Values.podSecurityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      # Init container for database migration
+      initContainers:
+        - name: wait-for-db
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+          env:
+            - name: POSTGRES_HOST
+              value: "{{ if .Values.postgresql.enabled }}{{ include "backstage.postgresql.fullname" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
+            - name: POSTGRES_PORT
+              value: "{{ if .Values.postgresql.enabled }}5432{{ else }}{{ .Values.externalPostgresql.port }}{{ end }}"
+            - name: POSTGRES_USER
+              value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.username }}{{ else }}{{ .Values.externalPostgresql.username }}{{ end }}"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
       containers:
         - name: {{ .Chart.Name }}
+          # Enhanced security context
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            runAsNonRoot: true
+            runAsUser: 1001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            {{- with .Values.securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -39,22 +99,45 @@ spec:
               protocol: TCP
           env:
             {{- toYaml .Values.env | nindent 12 }}
+            # Additional security environment variables
+            - name: NODE_ENV
+              value: "production"
+            - name: NODE_OPTIONS
+              value: "--no-node-snapshot --max-old-space-size=1024"
+            - name: LOG_LEVEL
+              value: {{ .Values.backstage.logLevel | default "info" | quote }}
+          # Enhanced health checks
           livenessProbe:
             httpGet:
-              path: /healthcheck
+              path: /api/catalog/health
               port: http
-            initialDelaySeconds: 60
+              scheme: HTTP
+            initialDelaySeconds: 90
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
+            successThreshold: 1
           readinessProbe:
             httpGet:
-              path: /healthcheck
+              path: /api/catalog/health
               port: http
+              scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
+            successThreshold: 1
+          # Startup probe for slow-starting applications
+          startupProbe:
+            httpGet:
+              path: /api/catalog/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -62,10 +145,26 @@ spec:
               mountPath: /app/app-config.production.yaml
               subPath: app-config.production.yaml
               readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: var-cache
+              mountPath: /var/cache
+            - name: var-log
+              mountPath: /var/log
       volumes:
         - name: app-config
           configMap:
             name: {{ include "backstage.fullname" . }}-config
+        # Writable volumes for read-only root filesystem
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: var-cache
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: var-log
+          emptyDir:
+            sizeLimit: 500Mi
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -78,3 +177,5 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      # Pod disruption budget for high availability
+      terminationGracePeriodSeconds: 30

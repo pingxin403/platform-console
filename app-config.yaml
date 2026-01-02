@@ -25,7 +25,7 @@ backend:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
-  # PostgreSQL database configuration
+  # PostgreSQL database configuration with connection pooling
   database:
     client: pg
     connection:
@@ -35,7 +35,25 @@ backend:
       password: ${POSTGRES_PASSWORD}
       database: ${POSTGRES_DB}
       ssl: ${POSTGRES_SSL}
-  # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+    # Connection pool configuration for production
+    pool:
+      min: 2
+      max: 10
+      acquireTimeoutMillis: 30000
+      createTimeoutMillis: 30000
+      destroyTimeoutMillis: 5000
+      idleTimeoutMillis: 30000
+      reapIntervalMillis: 1000
+      createRetryIntervalMillis: 200
+  # Health check configuration
+  healthcheck:
+    enabled: true
+    path: /api/catalog/health
+  # Logging configuration
+  logging:
+    level: ${LOG_LEVEL:-info}
+    format: json
+    redactSecrets: true
 
 integrations:
   github:
@@ -87,18 +105,25 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  # Optimized catalog processing with deferred stitching
+  processing:
+    cache:
+      ttl: 300 # 5 minutes cache for better performance
+    stitching:
+      strategy: deferred # Defer stitching for better performance
   providers:
     github:
-      # GitHub organization discovery
+      # GitHub organization discovery with optimized settings
       organization:
         organization: ${GITHUB_ORG} # GitHub organization name
         catalogPath: '/catalog-info.yaml' # path to catalog-info.yaml files
         filters:
           branch: 'main' # default branch to scan
           repository: '.*' # regex to match repository names
-        schedule: # optional, adhoc discovery is also supported
+        schedule: # optimized discovery schedule
           frequency: { minutes: 30 }
           timeout: { minutes: 3 }
+          initialDelay: { seconds: 15 }
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file

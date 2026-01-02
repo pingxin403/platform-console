@@ -6,7 +6,19 @@ metadata:
   region: us-west-2
   version: "1.28"
 
-# IAM settings
+# Enhanced VPC configuration with security
+vpc:
+  enableDnsHostnames: true
+  enableDnsSupport: true
+  cidr: "10.0.0.0/16"
+  nat:
+    gateway: HighlyAvailable
+  clusterEndpoints:
+    privateAccess: true
+    publicAccess: true
+    publicAccessCIDRs: ["0.0.0.0/0"]
+
+# IAM configuration with service accounts
 iam:
   withOIDC: true
   serviceAccounts:
@@ -16,43 +28,70 @@ iam:
       wellKnownPolicies:
         awsLoadBalancerController: true
     - metadata:
-        name: backstage-service-account
+        name: backstage
         namespace: backstage
       attachPolicyARNs:
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
         - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      roleName: backstage-service-account-role
 
-# Node groups
-nodeGroups:
-  - name: backstage-workers
+# Managed node groups with security hardening
+managedNodeGroups:
+  - name: backstage-nodes
     instanceType: t3.medium
-    desiredCapacity: 2
-    minSize: 1
-    maxSize: 4
+    minSize: 2
+    maxSize: 6
+    desiredCapacity: 3
     volumeSize: 50
     volumeType: gp3
+    volumeEncrypted: true
+    
+    # Security configuration
+    securityGroups:
+      withShared: true
+      withLocal: true
+    
+    # Instance metadata service configuration
+    instanceMetadataOptions:
+      httpTokens: required
+      httpPutResponseHopLimit: 2
+    
+    # SSH access (disabled for security)
     ssh:
       allow: false
+    
+    # Labels and taints
+    labels:
+      role: backstage-worker
+      environment: production
+    
+    tags:
+      Environment: production
+      Application: backstage
+      ManagedBy: eksctl
+    
+    # IAM configuration
     iam:
       attachPolicyARNs:
         - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
         - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
-    labels:
-      role: worker
-      environment: production
-    tags:
-      Environment: production
-      Application: backstage
-      ManagedBy: eksctl
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        certManager: true
+        efs: true
+        ebs: true
+        fsx: true
+        cloudWatch: true
 
-# Add-ons
+# Add-ons with latest versions and enhanced configuration
 addons:
   - name: vpc-cni
     version: latest
+    configurationValues: |-
+      enableNetworkPolicy: "true"
   - name: coredns
     version: latest
   - name: kube-proxy
@@ -62,8 +101,27 @@ addons:
     wellKnownPolicies:
       ebsCSIController: true
 
-# CloudWatch logging
+# CloudWatch logging with retention
 cloudWatch:
   clusterLogging:
-    enable: ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+    enableTypes: ["*"]
     logRetentionInDays: 30
+
+# Security enhancements
+secretsEncryption:
+  # Uncomment and provide KMS key ARN for secrets encryption
+  # keyARN: ${KMS_KEY_ARN}
+
+# Fargate profiles for system workloads (optional)
+fargateProfiles:
+  - name: fp-system
+    selectors:
+      - namespace: kube-system
+        labels:
+          k8s-app: aws-load-balancer-controller
+      - namespace: cert-manager
+  - name: fp-backstage
+    selectors:
+      - namespace: backstage
+        labels:
+          app.kubernetes.io/name: backstage

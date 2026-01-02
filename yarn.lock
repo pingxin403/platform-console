@@ -15018,6 +15018,7 @@ __metadata:
     fast-check: "npm:^4.5.3"
     node-gyp: "npm:^10.0.0"
     pg: "npm:^8.11.3"
+    winston: "npm:^3.11.0"
   languageName: unknown
   linkType: soft
 
@@ -32432,7 +32433,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"winston@npm:^3.2.1":
+"winston@npm:^3.11.0, winston@npm:^3.2.1":
   version: 3.19.0
   resolution: "winston@npm:3.19.0"
   dependencies:

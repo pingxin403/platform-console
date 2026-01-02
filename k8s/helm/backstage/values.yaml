@@ -17,23 +17,36 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: {}
+  annotations:
+    # AWS IAM role for service account (IRSA)
+    eks.amazonaws.com/role-arn: ${BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-podAnnotations: {}
+podAnnotations:
+  # Prometheus monitoring
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "7007"
+  prometheus.io/path: "/metrics"
 
-podSecurityContext: {}
-  # fsGroup: 2000
+# Enhanced security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
 
 service:
   type: ClusterIP
@@ -49,13 +62,26 @@ ingress:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
+    # Security headers
+    alb.ingress.kubernetes.io/actions.ssl-redirect: |
+      {
+        "Type": "redirect",
+        "RedirectConfig": {
+          "Protocol": "HTTPS",
+          "Port": "443",
+          "StatusCode": "HTTP_301"
+        }
+      }
   hosts:
     - host: backstage.${DOMAIN_NAME}
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
 
+# Production resource limits
 resources:
   limits:
     cpu: 1000m
@@ -71,6 +97,12 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1
+
 nodeSelector: {}
 
 tolerations: []
@@ -79,6 +111,7 @@ affinity: {}
 
 # Backstage configuration
 backstage:
+  logLevel: info
   config:
     app:
       title: Internal Developer Platform
@@ -107,6 +140,16 @@ backstage:
         - host: github.com
           token: ${GITHUB_TOKEN}
 
+  # Secrets configuration
+  secrets:
+    backendSecret: ${BACKEND_SECRET}
+    githubClientId: ${AUTH_GITHUB_CLIENT_ID}
+    githubClientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+    githubToken: ${GITHUB_TOKEN}
+    argoCdToken: ${ARGOCD_TOKEN}
+    datadogApiKey: ${DATADOG_API_KEY}
+    datadogAppKey: ${DATADOG_APP_KEY}
+
 # PostgreSQL configuration
 postgresql:
   enabled: true
@@ -127,6 +170,21 @@ postgresql:
       requests:
         cpu: 250m
         memory: 256Mi
+    # Enhanced PostgreSQL security
+    securityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 999
+      fsGroup: 999
+    containerSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 999
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
 
 # External PostgreSQL (when postgresql.enabled is false)
 externalPostgresql:
@@ -137,10 +195,14 @@ externalPostgresql:
   database: ${POSTGRES_DB}
   ssl: ${POSTGRES_SSL}
 
-# Environment variables
+# Environment variables with enhanced configuration
 env:
   - name: NODE_ENV
     value: production
+  - name: NODE_OPTIONS
+    value: "--no-node-snapshot --max-old-space-size=1024"
+  - name: LOG_LEVEL
+    value: info
   - name: POSTGRES_HOST
     value: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.fullname\" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
   - name: POSTGRES_PORT
@@ -176,3 +238,33 @@ env:
       secretKeyRef:
         name: backstage-secrets
         key: github-token
+  - name: GITHUB_ORG
+    value: ${GITHUB_ORG}
+  - name: AWS_REGION
+    value: ${AWS_REGION}
+  - name: TECHDOCS_S3_BUCKET_NAME
+    value: ${TECHDOCS_S3_BUCKET_NAME}
+  - name: TECHDOCS_S3_ROLE_ARN
+    value: ${TECHDOCS_S3_ROLE_ARN}
+  - name: KUBERNETES_API_URL
+    value: ${KUBERNETES_API_URL}
+  - name: ARGOCD_API_URL
+    value: ${ARGOCD_API_URL}
+  - name: ARGOCD_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: argocd-token
+        optional: true
+  - name: DATADOG_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: datadog-api-key
+        optional: true
+  - name: DATADOG_APP_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: datadog-app-key
+        optional: true

@@ -31,6 +31,13 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Create the namespace name
+*/}}
+{{- define "backstage.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "backstage.labels" -}}
@@ -40,6 +47,7 @@ helm.sh/chart: {{ include "backstage.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: backstage
 {{- end }}
 
 {{/*

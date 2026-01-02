@@ -1,19 +1,29 @@
+# Production configuration for Internal Developer Platform
+# This file contains production-specific overrides for app-config.yaml
+
 app:
-  # Should be the same as backend.baseUrl when using the `app-backend` plugin.
-  baseUrl: http://localhost:7007
+  # Production URL - should match your domain
+  baseUrl: https://backstage.${DOMAIN_NAME}
 
 backend:
-  # Note that the baseUrl should be the URL that the browser and other clients
-  # should use when communicating with the backend, i.e. it needs to be
-  # reachable not just from within the backend host, but from all of your
-  # callers. When its value is "http://localhost:7007", it's strictly private
-  # and can't be reached by others.
-  baseUrl: http://localhost:7007
-  # The listener can also be expressed as a single <host>:<port> string. In this case we bind to
-  # all interfaces, the most permissive setting. The right value depends on your specific deployment.
+  # Production backend URL
+  baseUrl: https://backstage.${DOMAIN_NAME}
+  # Listen on all interfaces in production
   listen: ':7007'
+  
+  # Enhanced security headers for production
+  csp:
+    connect-src: ["'self'", 'https:', 'wss:']
+    img-src: ["'self'", 'data:', 'https:']
+    script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    style-src: ["'self'", "'unsafe-inline'", 'https:']
+  
+  cors:
+    origin: https://backstage.${DOMAIN_NAME}
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
 
-  # config options: https://node-postgres.com/apis/client
+  # Production database configuration with SSL
   database:
     client: pg
     connection:
@@ -22,40 +32,116 @@ backend:
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
       database: ${POSTGRES_DB}
-      # https://node-postgres.com/features/ssl
-      # you can set the sslmode configuration option via the `PGSSLMODE` environment variable
-      # see https://www.postgresql.org/docs/current/libpq-ssl.html Table 33.1. SSL Mode Descriptions (e.g. require)
-      ssl: ${POSTGRES_SSL}
-      #   ca: # if you have a CA file and want to verify it you can uncomment this section
-      #     $file: <file-path>/ca/server.crt
+      ssl: 
+        require: true
+        rejectUnauthorized: false
+    # Production connection pool settings
+    pool:
+      min: 5
+      max: 20
+      acquireTimeoutMillis: 60000
+      createTimeoutMillis: 30000
+      destroyTimeoutMillis: 5000
+      idleTimeoutMillis: 30000
+      reapIntervalMillis: 1000
+      createRetryIntervalMillis: 200
+
+  # Production logging configuration
+  logging:
+    level: info
+    format: json
+    redactSecrets: true
 
 auth:
   providers:
-    # GitHub OAuth provider
+    # Production GitHub OAuth provider
     github:
       production:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-    guest: {}
+        # Production callback URL
+        callbackUrl: https://backstage.${DOMAIN_NAME}/api/auth/github/handler/frame
+    # Disable guest auth in production
+    # guest: {}
 
+# Production TechDocs configuration with S3
+techdocs:
+  builder: 'external' # Use external builder for production
+  generator:
+    runIn: 'docker'
+  publisher:
+    type: 'awsS3'
+    awsS3:
+      bucketName: ${TECHDOCS_S3_BUCKET_NAME}
+      region: ${AWS_REGION}
+      # Use IAM roles instead of access keys in production
+      credentials:
+        roleArn: ${TECHDOCS_S3_ROLE_ARN}
+
+# Production catalog configuration
 catalog:
-  # Overrides the default list locations from app-config.yaml as these contain example data.
-  # See https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog for more details
-  # on how to get entities into the catalog.
-  locations:
-    # Local example data, replace this with your production config, these are intended for demo use only.
-    # File locations are relative to the backend process, typically in a deployed context, such as in a Docker container, this will be the root
-    - type: file
-      target: ./examples/entities.yaml
+  # Remove example data in production
+  locations: []
+  
+  # Production catalog processing settings
+  processing:
+    cache:
+      ttl: 600 # 10 minutes cache for production
+    stitching:
+      strategy: deferred
+  
+  providers:
+    github:
+      organization:
+        organization: ${GITHUB_ORG}
+        catalogPath: '/catalog-info.yaml'
+        filters:
+          branch: 'main'
+          repository: '.*'
+        schedule:
+          frequency: { minutes: 15 } # More frequent updates in production
+          timeout: { minutes: 5 }
+          initialDelay: { seconds: 30 }
 
-    # Local example template
-    - type: file
-      target: ./examples/template/template.yaml
-      rules:
-        - allow: [Template]
+# Production integrations
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+      # Enhanced GitHub integration settings
+      apiBaseUrl: https://api.github.com
+      rawBaseUrl: https://raw.githubusercontent.com
 
-    # Local example organizational data
-    - type: file
-      target: ./examples/org.yaml
-      rules:
-        - allow: [User, Group]
+# Production Kubernetes configuration
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: ${KUBERNETES_API_URL}
+          name: production
+          authProvider: 'aws'
+          skipTLSVerify: false
+          skipMetricsLookup: false
+
+# Production permission configuration
+permission:
+  enabled: true
+  # TODO: Replace with proper RBAC policy in production
+  # policy: 'allow-all' # This should be replaced with a proper policy
+
+# Production proxy configuration for external services
+proxy:
+  endpoints:
+    '/argocd/api':
+      target: ${ARGOCD_API_URL}
+      changeOrigin: true
+      headers:
+        Authorization: Bearer ${ARGOCD_TOKEN}
+    '/datadog/api':
+      target: https://api.datadoghq.com
+      changeOrigin: true
+      headers:
+        DD-API-KEY: ${DATADOG_API_KEY}
+        DD-APPLICATION-KEY: ${DATADOG_APP_KEY}
