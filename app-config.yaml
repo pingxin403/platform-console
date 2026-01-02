@@ -73,6 +73,47 @@ proxy:
   #   '/test':
   #     target: 'https://example.com'
   #     changeOrigin: true
+  
+  # Datadog API proxy for secure API calls
+  endpoints:
+    '/datadog/api':
+      target: 'https://api.datadoghq.com'
+      changeOrigin: true
+      headers:
+        DD-API-KEY: ${DATADOG_API_KEY}
+        DD-APPLICATION-KEY: ${DATADOG_APP_KEY}
+    
+    # Sentry API proxy for secure API calls
+    '/sentry/api':
+      target: 'https://sentry.io/api/0'
+      changeOrigin: true
+      headers:
+        Authorization: 'Bearer ${SENTRY_TOKEN}'
+
+# Datadog configuration for dashboard embedding
+datadog:
+  # Datadog API configuration
+  api:
+    baseUrl: 'https://api.datadoghq.com'
+    apiKey: ${DATADOG_API_KEY}
+    appKey: ${DATADOG_APP_KEY}
+  # Dashboard configuration
+  dashboard:
+    # Base URL for dashboard embedding
+    baseUrl: 'https://app.datadoghq.com'
+    # Default time range for dashboards
+    timeRange: '1h'
+    # Enable secure iframe embedding
+    secureEmbedding: true
+
+# Sentry configuration for error tracking
+sentry:
+  # Sentry organization configuration
+  organization: ${SENTRY_ORG}
+  # Sentry API configuration
+  api:
+    baseUrl: 'https://sentry.io/api/0'
+    token: ${SENTRY_TOKEN}
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

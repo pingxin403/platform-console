@@ -58,6 +58,27 @@ import {
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
 
+// Datadog plugin imports
+import {
+  EntityDatadogContent,
+  EntityDatadogGraphCard,
+  isDatadogAvailable,
+} from '@roadiehq/backstage-plugin-datadog';
+
+// Sentry plugin imports
+import {
+  EntitySentryCard,
+  EntitySentryContent,
+  isSentryAvailable,
+} from '@backstage/plugin-sentry';
+
+// Prometheus plugin imports
+import {
+  EntityPrometheusContent,
+  EntityPrometheusGraphCard,
+  isPrometheusAvailable,
+} from '@roadiehq/backstage-plugin-prometheus';
+
 // Import our custom components
 import { ServiceOverviewCard } from './ServiceOverviewCard';
 import { EnhancedDependencyCard } from './EnhancedDependencyCard';
@@ -145,6 +166,31 @@ const overviewContent = (
     <Grid item md={6} xs={12}>
       <EntityLinksCard />
     </Grid>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isDatadogAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityDatadogGraphCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isSentryAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntitySentryCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isPrometheusAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityPrometheusGraphCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
     <Grid item md={12} xs={12}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
@@ -162,6 +208,37 @@ const serviceEntityPage = (
         <Grid item xs={12}>
           <ArgocdDeploymentCard />
         </Grid>
+      </Grid>
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/monitoring" 
+      title="Monitoring"
+    >
+      <Grid container spacing={3} alignItems="stretch">
+        <EntitySwitch>
+          <EntitySwitch.Case if={isDatadogAvailable}>
+            <Grid item xs={12}>
+              <EntityDatadogContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
+        
+        <EntitySwitch>
+          <EntitySwitch.Case if={isSentryAvailable}>
+            <Grid item xs={12}>
+              <EntitySentryContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
+        
+        <EntitySwitch>
+          <EntitySwitch.Case if={isPrometheusAvailable}>
+            <Grid item xs={12}>
+              <EntityPrometheusContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
       </Grid>
     </EntityLayout.Route>
 
