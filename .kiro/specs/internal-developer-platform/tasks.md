@@ -22,7 +22,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
 
 ## Tasks
 
-- [-] 1. Initialize Backstage application and core infrastructure
+- [x] 1. Initialize Backstage application and core infrastructure
   - Create new Backstage app using official TypeScript template
   - Configure PostgreSQL database connection and entity providers
   - Set up AWS EKS deployment configuration with Helm charts
@@ -80,7 +80,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - **Property 6: Project registration automation**
     - **Validates: Requirements 2.4**
 
-- [ ] 4. Checkpoint - Ensure core catalog and scaffolder functionality works
+- [x] 4. Checkpoint - Ensure core catalog and scaffolder functionality works
   - Ensure all tests pass, ask the user if questions arise.
   - **Checkpoint commit**: `git add . && git commit -m "checkpoint: core catalog and scaffolder functionality complete" && git tag -a "checkpoint-1" -m "Checkpoint 1: Core catalog and scaffolder" && git push origin main --tags`
 
@@ -101,7 +101,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Support multi-environment status display
     - _Requirements: 3.3, 3.4, 3.5_
 
-  - [x] 5.4 Write property test for multi-environment support
+  - [ ] 5.4 Write property test for multi-environment support
     - **Property 8: Multi-environment support**
     - **Validates: Requirements 3.4, 3.5**
 
