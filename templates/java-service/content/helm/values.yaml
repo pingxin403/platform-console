@@ -1,0 +1,59 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: ${{ values.port }}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: ${{ values.name }}.company.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    path: /actuator/prometheus
+    port: http
+
+datadog:
+  enabled: true
+  service: ${{ values.name }}
+  env: production
+
+sentry:
+  enabled: true
+  dsn: ""

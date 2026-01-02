@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: ${{ values.name | title }} API
+  description: ${{ values.description }}
+  version: 1.0.0
+  contact:
+    name: ${{ values.owner }}
+    email: ${{ values.owner }}@company.com
+
+servers:
+  - url: https://${{ values.name }}.company.com
+    description: Production server
+  - url: http://localhost:${{ values.port }}
+    description: Local development server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/v1/${{ values.name }}:
+    get:
+      summary: Get ${{ values.name }} resources
+      operationId: get${{ values.name | title }}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/${{ values.name | title }}'
+
+    post:
+      summary: Create a new ${{ values.name }} resource
+      operationId: create${{ values.name | title }}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Create${{ values.name | title }}Request'
+      responses:
+        '201':
+          description: Resource created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/${{ values.name | title }}'
+
+components:
+  schemas:
+    ${{ values.name | title }}:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Create${{ values.name | title }}Request:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255

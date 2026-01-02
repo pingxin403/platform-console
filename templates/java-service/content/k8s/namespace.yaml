@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${{ values.name }}
+  labels:
+    name: ${{ values.name }}
+    managed-by: argocd
+    cost-center: engineering
+    team: ${{ values.owner }}

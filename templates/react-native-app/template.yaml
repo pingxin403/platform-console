@@ -1,0 +1,125 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: react-native-app-template
+  title: React Native Application Template
+  description: Golden Path template for creating a React Native application with complete DevOps integration
+  tags:
+    - react-native
+    - mobile
+    - ios
+    - android
+    - golden-path
+spec:
+  owner: group:platform-team
+  type: mobile-app
+
+  parameters:
+    - title: Application Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Application Name
+          type: string
+          description: Name of the application (kebab-case)
+          pattern: '^[a-z][a-z0-9-]*[a-z0-9]$'
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Brief description of the application
+        owner:
+          title: Owner
+          type: string
+          description: Team or individual responsible for this application
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+
+    - title: Repository Configuration
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+    - title: Application Configuration
+      properties:
+        bundleId:
+          title: Bundle ID (iOS)
+          type: string
+          default: com.company.${{ parameters.name | replace('-', '') }}
+          description: iOS bundle identifier
+        packageName:
+          title: Package Name (Android)
+          type: string
+          default: com.company.${{ parameters.name | replace('-', '') }}
+          description: Android package name
+        nodeVersion:
+          title: Node.js Version
+          type: string
+          default: '18'
+          enum:
+            - '16'
+            - '18'
+            - '20'
+        reactNativeVersion:
+          title: React Native Version
+          type: string
+          default: '0.72'
+          enum:
+            - '0.70'
+            - '0.71'
+            - '0.72'
+            - '0.73'
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          bundleId: ${{ parameters.bundleId }}
+          packageName: ${{ parameters.packageName }}
+          nodeVersion: ${{ parameters.nodeVersion }}
+          reactNativeVersion: ${{ parameters.reactNativeVersion }}
+          repoUrl: ${{ parameters.repoUrl }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        gitCommitMessage: 'Initial commit: React Native app ${{ parameters.name }}'
+        gitAuthorName: 'Backstage Scaffolder'
+        gitAuthorEmail: 'scaffolder@company.com'
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
