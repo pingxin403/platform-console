@@ -61,6 +61,7 @@ import {
 // Import our custom components
 import { ServiceOverviewCard } from './ServiceOverviewCard';
 import { EnhancedDependencyCard } from './EnhancedDependencyCard';
+import { ArgocdDeploymentCard } from './ArgocdDeploymentCard';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -138,10 +139,13 @@ const overviewContent = (
       <EnhancedDependencyCard variant="gridItem" />
     </Grid>
 
-    <Grid item md={4} xs={12}>
+    <Grid item md={6} xs={12}>
+      <ArgocdDeploymentCard variant="gridItem" />
+    </Grid>
+    <Grid item md={6} xs={12}>
       <EntityLinksCard />
     </Grid>
-    <Grid item md={8} xs={12}>
+    <Grid item md={12} xs={12}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
   </Grid>
@@ -151,6 +155,14 @@ const serviceEntityPage = (
   <EntityLayout>
     <EntityLayout.Route path="/" title="Overview">
       {overviewContent}
+    </EntityLayout.Route>
+
+    <EntityLayout.Route path="/deployments" title="Deployments">
+      <Grid container spacing={3} alignItems="stretch">
+        <Grid item xs={12}>
+          <ArgocdDeploymentCard />
+        </Grid>
+      </Grid>
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/ci-cd" title="CI/CD">
