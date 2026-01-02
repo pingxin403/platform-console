@@ -72,12 +72,53 @@ import {
   isSentryAvailable,
 } from '@backstage/plugin-sentry';
 
+// Sentry plugin imports
+import {
+  EntitySentryCard,
+  EntitySentryContent,
+  isSentryAvailable,
+} from '@backstage/plugin-sentry';
+
 // Prometheus plugin imports
 import {
   EntityPrometheusContent,
   EntityPrometheusGraphCard,
   isPrometheusAvailable,
 } from '@roadiehq/backstage-plugin-prometheus';
+
+// Grafana plugin imports
+import {
+  EntityGrafanaContent,
+  EntityGrafanaDashboardsCard,
+  isGrafanaAvailable,
+} from '@k-phoen/backstage-plugin-grafana';
+
+// Security Insights plugin imports
+import {
+  EntitySecurityInsightsContent,
+  EntitySecurityInsightsCard,
+  isSecurityInsightsAvailable,
+} from '@roadiehq/backstage-plugin-security-insights';
+
+// Lighthouse plugin imports
+import {
+  EntityLighthouseContent,
+  EntityLastLighthouseAuditCard,
+  isLighthouseAvailable,
+} from '@backstage/plugin-lighthouse';
+
+// Security Insights plugin imports
+import {
+  EntitySecurityInsightsContent,
+  EntitySecurityInsightsCard,
+  isSecurityInsightsAvailable,
+} from '@roadiehq/backstage-plugin-security-insights';
+
+// Lighthouse plugin imports
+import {
+  EntityLighthouseContent,
+  isLighthouseAvailable,
+} from '@backstage/plugin-lighthouse';
 
 // Import our custom components
 import { ServiceOverviewCard } from './ServiceOverviewCard';
@@ -191,6 +232,38 @@ const overviewContent = (
       </EntitySwitch.Case>
     </EntitySwitch>
     
+    <EntitySwitch>
+      <EntitySwitch.Case if={isGrafanaAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityGrafanaDashboardsCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isSecurityInsightsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntitySecurityInsightsCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isLighthouseAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityLastLighthouseAuditCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isSecurityInsightsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntitySecurityInsightsCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
     <Grid item md={12} xs={12}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
@@ -239,7 +312,47 @@ const serviceEntityPage = (
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
+        
+        <EntitySwitch>
+          <EntitySwitch.Case if={isGrafanaAvailable}>
+            <Grid item xs={12}>
+              <EntityGrafanaContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
+        
+        <EntitySwitch>
+          <EntitySwitch.Case if={isSecurityInsightsAvailable}>
+            <Grid item xs={12}>
+              <EntitySecurityInsightsContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
+        
+        <EntitySwitch>
+          <EntitySwitch.Case if={isLighthouseAvailable}>
+            <Grid item xs={12}>
+              <EntityLighthouseContent />
+            </Grid>
+          </EntitySwitch.Case>
+        </EntitySwitch>
       </Grid>
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/security" 
+      title="Security"
+      if={isSecurityInsightsAvailable}
+    >
+      <EntitySecurityInsightsContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/performance" 
+      title="Performance"
+      if={isLighthouseAvailable}
+    >
+      <EntityLighthouseContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/ci-cd" title="CI/CD">

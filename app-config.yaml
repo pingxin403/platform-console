@@ -89,6 +89,20 @@ proxy:
       changeOrigin: true
       headers:
         Authorization: 'Bearer ${SENTRY_TOKEN}'
+    
+    # Prometheus API proxy for secure API calls
+    '/prometheus/api':
+      target: ${PROMETHEUS_URL}
+      changeOrigin: true
+      # headers:
+      #   Authorization: 'Basic ${PROMETHEUS_AUTH_TOKEN}'
+    
+    # Grafana API proxy for secure API calls
+    '/grafana/api':
+      target: ${GRAFANA_URL}
+      changeOrigin: true
+      headers:
+        Authorization: 'Bearer ${GRAFANA_TOKEN}'
 
 # Datadog configuration for dashboard embedding
 datadog:
@@ -108,12 +122,58 @@ datadog:
 
 # Sentry configuration for error tracking
 sentry:
-  # Sentry organization configuration
   organization: ${SENTRY_ORG}
   # Sentry API configuration
   api:
     baseUrl: 'https://sentry.io/api/0'
     token: ${SENTRY_TOKEN}
+
+# Security Insights configuration
+securityInsights:
+  # GitHub integration for vulnerability scanning
+  github:
+    token: ${GITHUB_TOKEN}
+  # Dependabot configuration
+  dependabot:
+    enabled: true
+    # Alert filtering
+    severityLevels: ['critical', 'high', 'medium']
+
+# Prometheus configuration for metrics
+prometheus:
+  # Prometheus server configuration
+  api:
+    baseUrl: ${PROMETHEUS_URL}
+    # Optional authentication
+    # username: ${PROMETHEUS_USERNAME}
+    # password: ${PROMETHEUS_PASSWORD}
+  # Default query configuration
+  queries:
+    # Default time range for queries
+    defaultTimeRange: '1h'
+    # Default step for range queries
+    defaultStep: '15s'
+
+# Grafana configuration for dashboards
+grafana:
+  # Grafana server configuration
+  api:
+    baseUrl: ${GRAFANA_URL}
+    # Authentication token
+    token: ${GRAFANA_TOKEN}
+  # Dashboard configuration
+  dashboard:
+    # Default time range for dashboards
+    defaultTimeRange: '1h'
+    # Enable dashboard embedding
+    enableEmbedding: true
+
+# Lighthouse configuration for performance monitoring
+lighthouse:
+  # Lighthouse audit service configuration
+  baseUrl: ${LIGHTHOUSE_AUDIT_SERVICE_URL:-http://localhost:3003}
+  # Optional authentication
+  # token: ${LIGHTHOUSE_TOKEN}
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

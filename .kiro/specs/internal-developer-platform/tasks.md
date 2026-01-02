@@ -105,7 +105,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - **Property 8: Multi-environment support**
     - **Validates: Requirements 3.4, 3.5**
 
-- [-] 6. Install and configure observability and monitoring plugins (existing community plugins)
+- [x] 6. Install and configure observability and monitoring plugins (existing community plugins)
   - [x] 6.1 Install @roadie/backstage-plugin-datadog for dashboard embedding
     - Install the community Datadog plugin from Roadie
     - Configure secure iframe embedding for service-specific dashboards
@@ -120,25 +120,25 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Ensure RBAC permissions are respected from external systems
     - _Requirements: 4.2, 4.4, 4.5_
 
-  - [-] 6.3 Install @roadie/backstage-plugin-prometheus for metrics
+  - [x] 6.3 Install @roadie/backstage-plugin-prometheus for metrics
     - Install Prometheus plugin for additional metrics and alerting
     - Configure service-level metrics display and alert integration
     - Set up custom metrics queries for service health monitoring
     - _Requirements: 4.1, 4.4_
 
-  - [ ] 6.4 Install @k-phoen/backstage-plugin-grafana for dashboards
+  - [x] 6.4 Install @k-phoen/backstage-plugin-grafana for dashboards
     - Install Grafana plugin for additional dashboard embedding
     - Configure Grafana dashboard and alert integration
     - Set up multi-dashboard support for different service types
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 6.5 Install @roadie/backstage-plugin-security-insights for vulnerability management
+  - [x] 6.5 Install @roadie/backstage-plugin-security-insights for vulnerability management
     - Install Security Insights plugin for GitHub vulnerabilities and Dependabot alerts
     - Configure vulnerability filtering, search, and overview widgets
     - Set up integration with existing security scanning workflows
     - _Requirements: 4.2, 4.4_
 
-  - [ ] 6.6 Install @spotify/backstage-plugin-lighthouse for performance monitoring
+  - [x] 6.6 Install @spotify/backstage-plugin-lighthouse for performance monitoring
     - Install Lighthouse plugin for on-demand performance audits
     - Configure accessibility, performance, SEO, and best-practices tracking
     - Set up integration with lighthouse-audit-service
