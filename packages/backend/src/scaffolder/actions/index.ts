@@ -10,6 +10,7 @@ import { Config } from '@backstage/config';
 import { Logger } from 'winston';
 import { createGitHubRepoCreateAction } from './github-repo-create';
 import { createCatalogRegisterAction, AutomaticServiceRegistration } from './catalog-register';
+import { createArgocdCreateAppAction } from './argocd-create-app';
 
 export interface CustomScaffolderActionsOptions {
   catalogApi: CatalogApi;
@@ -40,6 +41,12 @@ export function createCustomScaffolderActions(options: CustomScaffolderActionsOp
       catalogApi,
       logger,
       catalogBaseUrl,
+    }),
+
+    // Argo CD application creation action
+    createArgocdCreateAppAction({
+      config,
+      logger,
     }),
   ];
 }
@@ -280,4 +287,4 @@ export class ServiceRegistrationWorkflow {
 
 // Export types for use in other modules
 export type { AutomaticServiceRegistration };
-export { createGitHubRepoCreateAction, createCatalogRegisterAction };
+export { createGitHubRepoCreateAction, createCatalogRegisterAction, createArgocdCreateAppAction };
