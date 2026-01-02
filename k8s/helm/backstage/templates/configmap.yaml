@@ -2,8 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "backstage.fullname" . }}-config
+  namespace: {{ include "backstage.namespace" . }}
   labels:
     {{- include "backstage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
 data:
   app-config.production.yaml: |
     app:
@@ -18,8 +20,12 @@ data:
       listen:
         port: 7007
         host: 0.0.0.0
+      # Enhanced security headers
       csp:
-        connect-src: ["'self'", 'http:', 'https:']
+        connect-src: ["'self'", 'https:', 'wss:']
+        img-src: ["'self'", 'data:', 'https:']
+        script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+        style-src: ["'self'", "'unsafe-inline'", 'https:']
       cors:
         origin: {{ .Values.backstage.config.backend.cors.origin }}
         methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
@@ -27,6 +33,7 @@ data:
       auth:
         keys:
           - secret: ${BACKEND_SECRET}
+      # Production database configuration with connection pooling
       database:
         client: pg
         connection:
@@ -35,12 +42,34 @@ data:
           user: ${POSTGRES_USER}
           password: ${POSTGRES_PASSWORD}
           database: ${POSTGRES_DB}
-          ssl: ${POSTGRES_SSL}
+          ssl: 
+            require: true
+            rejectUnauthorized: false
+        pool:
+          min: 5
+          max: 20
+          acquireTimeoutMillis: 60000
+          createTimeoutMillis: 30000
+          destroyTimeoutMillis: 5000
+          idleTimeoutMillis: 30000
+          reapIntervalMillis: 1000
+          createRetryIntervalMillis: 200
+      # Health check configuration
+      healthcheck:
+        enabled: true
+        path: /api/catalog/health
+      # Production logging
+      logging:
+        level: info
+        format: json
+        redactSecrets: true
 
     integrations:
       github:
         - host: github.com
           token: ${GITHUB_TOKEN}
+          apiBaseUrl: https://api.github.com
+          rawBaseUrl: https://raw.githubusercontent.com
 
     auth:
       providers:
@@ -48,9 +77,11 @@ data:
           production:
             clientId: ${AUTH_GITHUB_CLIENT_ID}
             clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+            callbackUrl: {{ .Values.backstage.config.app.baseUrl }}/api/auth/github/handler/frame
 
+    # Production TechDocs with S3
     techdocs:
-      builder: 'local'
+      builder: 'external'
       generator:
         runIn: 'docker'
       publisher:
@@ -58,22 +89,41 @@ data:
         awsS3:
           bucketName: ${TECHDOCS_S3_BUCKET_NAME}
           region: ${AWS_REGION}
+          credentials:
+            roleArn: ${TECHDOCS_S3_ROLE_ARN}
 
     scaffolder:
       defaultAuthor:
         name: Platform Team
         email: platform@company.com
 
+    # Optimized catalog configuration
     catalog:
       import:
         entityFilename: catalog-info.yaml
         pullRequestBranchName: backstage-integration
       rules:
         - allow: [Component, System, API, Resource, Location]
-      locations:
-        - type: url
-          target: https://github.com/${GITHUB_ORG}/backstage-catalog/blob/main/catalog-info.yaml
+      processing:
+        cache:
+          ttl: 600 # 10 minutes cache for production
+        stitching:
+          strategy: deferred
+      providers:
+        github:
+          organization:
+            organization: ${GITHUB_ORG}
+            catalogPath: '/catalog-info.yaml'
+            filters:
+              branch: 'main'
+              repository: '.*'
+            schedule:
+              frequency: { minutes: 15 }
+              timeout: { minutes: 5 }
+              initialDelay: { seconds: 30 }
+      locations: []
 
+    # Production Kubernetes configuration
     kubernetes:
       serviceLocatorMethod:
         type: 'multiTenant'
@@ -82,9 +132,25 @@ data:
           clusters:
             - url: ${KUBERNETES_API_URL}
               name: production
-              authProvider: 'serviceAccount'
+              authProvider: 'aws'
               skipTLSVerify: false
               skipMetricsLookup: false
 
+    # RBAC configuration
     permission:
       enabled: true
+
+    # Production proxy configuration
+    proxy:
+      endpoints:
+        '/argocd/api':
+          target: ${ARGOCD_API_URL}
+          changeOrigin: true
+          headers:
+            Authorization: Bearer ${ARGOCD_TOKEN}
+        '/datadog/api':
+          target: https://api.datadoghq.com
+          changeOrigin: true
+          headers:
+            DD-API-KEY: ${DATADOG_API_KEY}
+            DD-APPLICATION-KEY: ${DATADOG_APP_KEY}

@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "backstage.namespace" . }}
+  labels:
+    {{- include "backstage.labels" . | nindent 4 }}
+    app.kubernetes.io/component: namespace
+  annotations:
+    # Enable network policies for security
+    networking.kubernetes.io/network-policy: enabled
+    # Enable pod security standards
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# Network policy to restrict traffic to backstage namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "backstage.fullname" . }}-network-policy
+  namespace: {{ include "backstage.namespace" . }}
+  labels:
+    {{- include "backstage.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "backstage.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          name: aws-load-balancer-controller
+    ports:
+    - protocol: TCP
+      port: 7007
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS traffic for external integrations
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow PostgreSQL connection
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ include "backstage.namespace" . }}
+    ports:
+    - protocol: TCP
+      port: 5432
