@@ -101,26 +101,26 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Support multi-environment status display
     - _Requirements: 3.3, 3.4, 3.5_
 
-  - [ ] 5.4 Write property test for multi-environment support
+  - [x] 5.4 Write property test for multi-environment support
     - **Property 8: Multi-environment support**
     - **Validates: Requirements 3.4, 3.5**
 
-- [ ] 6. Install and configure observability and monitoring plugins (existing community plugins)
-  - [ ] 6.1 Install @roadie/backstage-plugin-datadog for dashboard embedding
+- [-] 6. Install and configure observability and monitoring plugins (existing community plugins)
+  - [x] 6.1 Install @roadie/backstage-plugin-datadog for dashboard embedding
     - Install the community Datadog plugin from Roadie
     - Configure secure iframe embedding for service-specific dashboards
     - Set up dashboard filtering by service tags and direct links to logs
     - **Commit**: `git add . && git commit -m "feat: integrate Datadog plugin for dashboard embedding"`
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 6.2 Install @spotify/backstage-plugin-sentry for error tracking
+  - [x] 6.2 Install @spotify/backstage-plugin-sentry for error tracking
     - Install the community Sentry plugin from Spotify
     - Configure recent error display with resolution status
     - Set up alert status and escalation information display
     - Ensure RBAC permissions are respected from external systems
     - _Requirements: 4.2, 4.4, 4.5_
 
-  - [ ] 6.3 Install @roadie/backstage-plugin-prometheus for metrics
+  - [-] 6.3 Install @roadie/backstage-plugin-prometheus for metrics
     - Install Prometheus plugin for additional metrics and alerting
     - Configure service-level metrics display and alert integration
     - Set up custom metrics queries for service health monitoring

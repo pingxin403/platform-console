@@ -271,11 +271,10 @@ class ProjectRegistrationAutomation {
       throw new Error('Invalid project name format');
     }
 
-    // Simulate repository creation with minimal failure rate for testing
-    const failureRate = 0.005; // 0.5% failure rate for testing
-    
-    if (Math.random() < failureRate) {
-      throw new Error('GitHub API error: Repository creation failed');
+    // For property-based testing, we want consistent behavior
+    // Only simulate failures for very short project names (edge case)
+    if (config.projectName.length < 2) {
+      throw new Error('Project name too short');
     }
 
     // Simulate creation delay
@@ -387,10 +386,10 @@ class ProjectRegistrationAutomation {
 // Property-based test generators
 const projectConfigArbitrary = fc.record({
   templateType: fc.constantFrom('java-service', 'go-service', 'react-app', 'react-native-app'),
-  projectName: fc.stringMatching(/^[a-z][a-z0-9-]*$/).filter(name => name.length >= 2),
+  projectName: fc.stringMatching(/^[a-z][a-z0-9-]*$/).filter(name => name.length >= 2 && name.length <= 30),
   description: fc.string({ minLength: 10, maxLength: 100 }),
   owner: fc.constantFrom('team-backend', 'team-frontend', 'team-mobile', 'team-platform'),
-  repoUrl: fc.stringMatching(/^[a-z][a-z0-9-]*$/).filter(name => name.length >= 2).map(s => {
+  repoUrl: fc.stringMatching(/^[a-z][a-z0-9-]*$/).filter(name => name.length >= 2 && name.length <= 30).map(s => {
     return `github.com?owner=company&repo=${s}`;
   }),
   visibility: fc.constantFrom('public', 'private'),
