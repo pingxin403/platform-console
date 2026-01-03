@@ -1845,3 +1845,2589 @@ kubernetesGptAnalyzer:
     enableSharing: true
     # Analysis refresh interval (seconds)
     refreshInterval: 300
+
+# Jira configuration for issue tracking integration
+jira:
+  # Jira server configuration
+  api:
+    # Jira server URL (Jira Cloud or Server)
+    baseUrl: ${JIRA_SERVER_URL:-https://your-domain.atlassian.net}
+    # Jira authentication
+    username: ${JIRA_USERNAME}
+    # For Jira Cloud, use API token; for Jira Server, use password
+    apiToken: ${JIRA_API_TOKEN}
+    # Alternative: Use OAuth for authentication
+    # oauth:
+    #   consumerKey: ${JIRA_OAUTH_CONSUMER_KEY}
+    #   privateKey: ${JIRA_OAUTH_PRIVATE_KEY}
+    #   accessToken: ${JIRA_OAUTH_ACCESS_TOKEN}
+    #   tokenSecret: ${JIRA_OAUTH_TOKEN_SECRET}
+  
+  # Issue tracking configuration
+  issues:
+    # Enable issue display and project progress tracking on entity pages
+    entityPageIntegration: true
+    # Default JQL filter for issues
+    defaultJql: 'assignee = currentUser() AND resolution = Unresolved ORDER BY priority DESC'
+    # Issue types to display
+    issueTypes: ['Bug', 'Task', 'Story', 'Epic', 'Improvement']
+    # Issue statuses to track
+    statuses: ['To Do', 'In Progress', 'In Review', 'Done']
+    # Maximum number of issues to display
+    maxResults: 50
+  
+  # Project tracking configuration
+  projects:
+    # Enable project progress tracking
+    progressTracking: true
+    # Project keys to track (leave empty to track all accessible projects)
+    projectKeys: [${JIRA_PROJECT_KEYS}]
+    # Show project statistics
+    showStatistics: true
+    # Show sprint information
+    showSprints: true
+    # Show version information
+    showVersions: true
+  
+  # Team workload visibility configuration
+  team:
+    # Enable team workload visibility
+    workloadVisibility: true
+    # Team members to track (leave empty to track all team members)
+    members: []
+    # Workload calculation method (story_points, issue_count, time_estimate)
+    calculationMethod: 'story_points'
+    # Time period for workload calculation
+    timePeriod: 'current_sprint'
+  
+  # Sprint planning integration configuration
+  sprints:
+    # Enable sprint planning integration
+    enabled: true
+    # Show active sprints
+    showActiveSprints: true
+    # Show sprint burndown charts
+    showBurndownCharts: true
+    # Show sprint velocity
+    showVelocity: true
+    # Sprint board configuration
+    boards:
+      # Default board ID (leave empty to use project default)
+      defaultBoardId: ${JIRA_DEFAULT_BOARD_ID}
+      # Show board configuration
+      showConfiguration: true
+  
+  # Service mapping configuration
+  services:
+    # Enable service mapping to Jira projects
+    mapping: true
+    # Service annotation for Jira project mapping
+    annotation: 'jira.com/project-key'
+    # Default project mapping strategy
+    defaultMapping: 'backstage-entity-name'
+    # Component mapping to Jira components
+    componentMapping: true
+  
+  # UI configuration
+  ui:
+    # Show Jira issues in catalog
+    showIssuesInCatalog: true
+    # Enable deep linking to Jira
+    enableDeepLinking: true
+    # Default view for Jira page
+    defaultView: 'issues'
+    # Show issue priorities
+    showPriorities: true
+    # Show issue assignees
+    showAssignees: true
+    # Show issue labels
+    showLabels: true
+    # Enable issue creation from Backstage
+    enableIssueCreation: true
+    # Issue creation templates
+    issueTemplates:
+      - name: 'Bug Report'
+        issueType: 'Bug'
+        template: |
+          h3. Description
+          Brief description of the bug
+          
+          h3. Steps to Reproduce
+          1. Step 1
+          2. Step 2
+          3. Step 3
+          
+          h3. Expected Result
+          What should happen
+          
+          h3. Actual Result
+          What actually happens
+          
+          h3. Environment
+          - Service: {{service}}
+          - Environment: {{environment}}
+      - name: 'Feature Request'
+        issueType: 'Story'
+        template: |
+          h3. User Story
+          As a {{user_type}}, I want {{functionality}} so that {{benefit}}.
+          
+          h3. Acceptance Criteria
+          - [ ] Criterion 1
+          - [ ] Criterion 2
+          - [ ] Criterion 3
+          
+          h3. Additional Context
+          Any additional context or requirements
+
+  # Jira Dashboard configuration for enhanced project visibility
+  dashboard:
+    # Enable Jira Dashboard plugin for advanced project tracking
+    enabled: true
+    # Sprint dashboards configuration
+    sprints:
+      # Enable sprint dashboards
+      enabled: true
+      # Show sprint progress
+      showProgress: true
+      # Show sprint goals
+      showGoals: true
+      # Show sprint capacity
+      showCapacity: true
+      # Sprint dashboard refresh interval (seconds)
+      refreshInterval: 300
+    
+    # Burndown charts configuration
+    burndown:
+      # Enable burndown charts
+      enabled: true
+      # Chart types
+      chartTypes: ['sprint_burndown', 'epic_burndown', 'version_burndown']
+      # Default chart type
+      defaultChartType: 'sprint_burndown'
+      # Show ideal line
+      showIdealLine: true
+      # Show scope changes
+      showScopeChanges: true
+    
+    # Team velocity metrics configuration
+    velocity:
+      # Enable team velocity tracking
+      enabled: true
+      # Velocity calculation method (story_points, issue_count)
+      calculationMethod: 'story_points'
+      # Number of sprints to include in velocity calculation
+      sprintCount: 6
+      # Show velocity trends
+      showTrends: true
+      # Show velocity predictions
+      showPredictions: true
+    
+    # Advanced project tracking features
+    tracking:
+      # Enable advanced project tracking
+      enabled: true
+      # Project health indicators
+      healthIndicators:
+        - 'sprint_progress'
+        - 'velocity_trend'
+        - 'scope_creep'
+        - 'bug_ratio'
+        - 'blocked_issues'
+      # Risk assessment
+      riskAssessment: true
+      # Milestone tracking
+      milestones: true
+      # Dependency tracking
+      dependencies: true
+    
+    # Dashboard widgets configuration
+    widgets:
+      # Available dashboard widgets
+      available:
+        - name: 'sprint_overview'
+          title: 'Sprint Overview'
+          description: 'Current sprint progress and statistics'
+          size: 'medium'
+        - name: 'burndown_chart'
+          title: 'Burndown Chart'
+          description: 'Sprint burndown visualization'
+          size: 'large'
+        - name: 'velocity_chart'
+          title: 'Velocity Chart'
+          description: 'Team velocity over time'
+          size: 'large'
+        - name: 'issue_breakdown'
+          title: 'Issue Breakdown'
+          description: 'Issues by type, status, and priority'
+          size: 'medium'
+        - name: 'team_workload'
+          title: 'Team Workload'
+          description: 'Current team member workloads'
+          size: 'medium'
+        - name: 'blocked_issues'
+          title: 'Blocked Issues'
+          description: 'Currently blocked issues'
+          size: 'small'
+        - name: 'recent_activity'
+          title: 'Recent Activity'
+          description: 'Recent project activity'
+          size: 'medium'
+      # Default dashboard layout
+      defaultLayout:
+        - widget: 'sprint_overview'
+          position: { x: 0, y: 0, w: 6, h: 4 }
+        - widget: 'burndown_chart'
+          position: { x: 6, y: 0, w: 6, h: 6 }
+        - widget: 'velocity_chart'
+          position: { x: 0, y: 4, w: 6, h: 6 }
+        - widget: 'issue_breakdown'
+          position: { x: 0, y: 10, w: 4, h: 4 }
+        - widget: 'team_workload'
+          position: { x: 4, y: 10, w: 4, h: 4 }
+        - widget: 'blocked_issues'
+          position: { x: 8, y: 10, w: 4, h: 4 }
+    
+    # Integration with existing Jira workflows and reporting
+    integration:
+      # Enable integration with existing workflows
+      workflows: true
+      # Custom field mapping
+      customFields:
+        # Map custom fields to dashboard metrics
+        story_points: 'customfield_10016'
+        epic_link: 'customfield_10014'
+        sprint: 'customfield_10020'
+        team: 'customfield_10030'
+      # Report integration
+      reports:
+        # Enable integration with Jira reports
+        enabled: true
+        # Available report types
+        types: ['velocity', 'burndown', 'cumulative_flow', 'control_chart']
+        # Report export formats
+        exportFormats: ['pdf', 'csv', 'png']
+      # Automation integration
+      automation:
+        # Enable integration with Jira automation
+        enabled: true
+        # Trigger dashboard updates on automation events
+        triggerUpdates: true
+
+# Shortcut configuration for agile project management (alternative to Jira)
+shortcut:
+  # Shortcut API configuration
+  api:
+    # Shortcut API base URL
+    baseUrl: 'https://api.app.shortcut.com'
+    # Shortcut API token
+    token: ${SHORTCUT_API_TOKEN}
+  
+  # Story and epic tracking configuration
+  stories:
+    # Enable story and epic tracking
+    enabled: true
+    # Story states to track
+    states: ['Unstarted', 'Started', 'Finished', 'Delivered', 'Accepted', 'Rejected']
+    # Story types to display
+    types: ['feature', 'bug', 'chore']
+    # Maximum number of stories to display
+    maxResults: 100
+    # Default story filter
+    defaultFilter: 'owner:me state:!Accepted state:!Rejected'
+  
+  # Team workflow visibility configuration
+  workflow:
+    # Enable team workflow visibility
+    enabled: true
+    # Workflow states configuration
+    states:
+      # Unstarted stories
+      unstarted:
+        name: 'Unstarted'
+        color: '#e3e4e6'
+        description: 'Stories that have not been started'
+      # Started stories
+      started:
+        name: 'Started'
+        color: '#f2c94c'
+        description: 'Stories currently in progress'
+      # Finished stories
+      finished:
+        name: 'Finished'
+        color: '#27ae60'
+        description: 'Stories that are complete but not delivered'
+      # Delivered stories
+      delivered:
+        name: 'Delivered'
+        color: '#2f80ed'
+        description: 'Stories that have been delivered'
+      # Accepted stories
+      accepted:
+        name: 'Accepted'
+        color: '#219653'
+        description: 'Stories that have been accepted'
+    # Team members to track
+    members: []
+    # Team workflow metrics
+    metrics:
+      # Enable workflow metrics
+      enabled: true
+      # Metrics to track
+      trackingMetrics: ['cycle_time', 'lead_time', 'throughput', 'work_in_progress']
+      # Time periods for metrics
+      periods: ['7d', '30d', '90d']
+  
+  # Project progress tracking configuration
+  projects:
+    # Enable project progress tracking
+    enabled: true
+    # Project states to track
+    states: ['planned', 'started', 'paused', 'completed', 'archived']
+    # Show project statistics
+    showStatistics: true
+    # Show project milestones
+    showMilestones: true
+    # Show project objectives
+    showObjectives: true
+    # Project progress calculation method
+    progressCalculation: 'story_points'
+  
+  # Integration with development workflows and releases
+  integration:
+    # Enable integration with development workflows
+    workflows: true
+    # GitHub integration
+    github:
+      # Enable GitHub integration
+      enabled: true
+      # GitHub token for integration
+      token: ${GITHUB_TOKEN}
+      # Link stories to pull requests
+      linkToPullRequests: true
+      # Link stories to commits
+      linkToCommits: true
+      # Auto-update story status based on PR status
+      autoUpdateStatus: true
+    # Release integration
+    releases:
+      # Enable release integration
+      enabled: true
+      # Release tracking
+      tracking: true
+      # Release notes generation
+      generateNotes: true
+      # Release deployment tracking
+      deploymentTracking: true
+  
+  # Service mapping configuration
+  services:
+    # Enable service mapping to Shortcut projects
+    mapping: true
+    # Service annotation for Shortcut project mapping
+    annotation: 'shortcut.com/project-id'
+    # Default project mapping strategy
+    defaultMapping: 'backstage-entity-name'
+    # Component mapping to Shortcut labels
+    labelMapping: true
+  
+  # Iterations and milestones configuration
+  iterations:
+    # Enable iteration tracking
+    enabled: true
+    # Iteration length (weeks)
+    length: 2
+    # Show iteration progress
+    showProgress: true
+    # Show iteration velocity
+    showVelocity: true
+    # Show iteration burndown
+    showBurndown: true
+    # Iteration planning features
+    planning:
+      # Enable iteration planning
+      enabled: true
+      # Capacity planning
+      capacityPlanning: true
+      # Story estimation
+      storyEstimation: true
+      # Commitment tracking
+      commitmentTracking: true
+  
+  # Labels and categories configuration
+  labels:
+    # Enable label management
+    enabled: true
+    # Label categories
+    categories:
+      - name: 'Team'
+        color: '#2f80ed'
+        labels: ['frontend', 'backend', 'platform', 'qa']
+      - name: 'Priority'
+        color: '#eb5757'
+        labels: ['critical', 'high', 'medium', 'low']
+      - name: 'Type'
+        color: '#f2c94c'
+        labels: ['feature', 'bug', 'improvement', 'technical-debt']
+      - name: 'Component'
+        color: '#9b59b6'
+        labels: ['api', 'ui', 'database', 'infrastructure']
+    # Auto-labeling rules
+    autoLabeling:
+      # Enable automatic labeling
+      enabled: true
+      # Labeling rules
+      rules:
+        - pattern: 'service:frontend-*'
+          label: 'frontend'
+        - pattern: 'service:backend-*'
+          label: 'backend'
+        - pattern: 'type:bug'
+          label: 'bug'
+        - pattern: 'priority:critical'
+          label: 'critical'
+  
+  # Notifications configuration
+  notifications:
+    # Enable Shortcut notifications
+    enabled: true
+    # Notification channels
+    channels: ['slack', 'email']
+    # Notification triggers
+    triggers:
+      - 'story_created'
+      - 'story_started'
+      - 'story_completed'
+      - 'story_delivered'
+      - 'story_accepted'
+      - 'epic_created'
+      - 'epic_completed'
+      - 'milestone_reached'
+    # Slack configuration
+    slack:
+      # Slack webhook URL
+      webhookUrl: ${SLACK_SHORTCUT_WEBHOOK_URL}
+      # Default channel for notifications
+      defaultChannel: '#project-updates'
+      # Notification templates
+      templates:
+        story_completed: |
+          :white_check_mark: *Story Completed*
+          
+          *Story:* {{story_name}}
+          *Type:* {{story_type}}
+          *Owner:* {{owner}}
+          *Project:* {{project}}
+          
+          <{{story_url}}|View Story>
+        epic_completed: |
+          :trophy: *Epic Completed*
+          
+          *Epic:* {{epic_name}}
+          *Project:* {{project}}
+          *Stories Completed:* {{completed_stories}}/{{total_stories}}
+          
+          <{{epic_url}}|View Epic>
+  
+  # UI configuration
+  ui:
+    # Enable Shortcut integration on entity pages
+    entityPageIntegration: true
+    # Show stories in catalog
+    showStoriesInCatalog: true
+    # Default view for Shortcut page
+    defaultView: 'stories'
+    # Available views
+    views: ['stories', 'epics', 'projects', 'iterations', 'metrics']
+    # Show story estimates
+    showEstimates: true
+    # Show story owners
+    showOwners: true
+    # Show story labels
+    showLabels: true
+    # Show story deadlines
+    showDeadlines: true
+    # Enable story creation from Backstage
+    enableStoryCreation: true
+    # Story creation templates
+    storyTemplates:
+      - name: 'Bug Report'
+        type: 'bug'
+        template: |
+          ## Description
+          Brief description of the bug
+          
+          ## Steps to Reproduce
+          1. Step 1
+          2. Step 2
+          3. Step 3
+          
+          ## Expected Behavior
+          What should happen
+          
+          ## Actual Behavior
+          What actually happens
+          
+          ## Environment
+          - Service: {{service}}
+          - Environment: {{environment}}
+      - name: 'Feature Request'
+        type: 'feature'
+        template: |
+          ## User Story
+          As a {{user_type}}, I want {{functionality}} so that {{benefit}}.
+          
+          ## Acceptance Criteria
+          - [ ] Criterion 1
+          - [ ] Criterion 2
+          - [ ] Criterion 3
+          
+          ## Additional Context
+          Any additional context or requirements
+    # Dashboard configuration
+    dashboard:
+      # Enable dashboard widgets
+      enabled: true
+      # Available widgets
+      widgets: ['story_progress', 'epic_progress', 'team_velocity', 'iteration_burndown']
+      # Default dashboard layout
+      defaultLayout: 'grid'
+      # Refresh interval (seconds)
+      refreshInterval: 300
+
+# Buildkite configuration for CI/CD integration (if using Buildkite)
+buildkite:
+  # Buildkite API configuration
+  api:
+    # Buildkite API base URL
+    baseUrl: 'https://api.buildkite.com/v2'
+    # Buildkite API token (requires read_builds, read_build_logs, write_builds scopes)
+    token: ${BUILDKITE_API_TOKEN}
+  
+  # Build pipeline visibility and control configuration
+  pipelines:
+    # Enable build pipeline visibility
+    enabled: true
+    # Organizations to track
+    organizations: [${BUILDKITE_ORG}]
+    # Pipelines to track (leave empty to track all accessible pipelines)
+    pipelineNames: []
+    # Build states to display
+    buildStates: ['running', 'scheduled', 'passed', 'failed', 'blocked', 'canceled', 'skipped', 'not_run']
+    # Maximum number of builds to display per pipeline
+    maxBuildsPerPipeline: 25
+    # Default build filter
+    defaultFilter: 'state[]=running&state[]=scheduled&state[]=passed&state[]=failed'
+  
+  # Build status display configuration
+  status:
+    # Enable build status display
+    enabled: true
+    # Show build duration
+    showDuration: true
+    # Show build commit information
+    showCommit: true
+    # Show build branch information
+    showBranch: true
+    # Show build author
+    showAuthor: true
+    # Show build message
+    showMessage: true
+    # Status refresh interval (seconds)
+    refreshInterval: 30
+  
+  # Build retriggering capabilities
+  retriggering:
+    # Enable build retriggering
+    enabled: true
+    # Allow rebuild of failed builds
+    allowRebuild: true
+    # Allow rebuild of passed builds
+    allowRebuildPassed: false
+    # Require confirmation for retriggering
+    requireConfirmation: true
+    # Users allowed to retrigger builds (leave empty for all users)
+    allowedUsers: []
+    # Teams allowed to retrigger builds
+    allowedTeams: []
+  
+  # Real-time step inspection configuration
+  steps:
+    # Enable real-time step inspection
+    enabled: true
+    # Show step logs
+    showLogs: true
+    # Show step artifacts
+    showArtifacts: true
+    # Show step timing
+    showTiming: true
+    # Show step environment variables (filtered for security)
+    showEnvironment: false
+    # Log streaming
+    logStreaming: true
+    # Maximum log lines to display
+    maxLogLines: 1000
+  
+  # Integration with existing Buildkite infrastructure
+  integration:
+    # Enable integration with existing infrastructure
+    enabled: true
+    # Webhook configuration for real-time updates
+    webhooks:
+      # Enable webhook integration
+      enabled: true
+      # Webhook endpoint URL (Backstage will create this endpoint)
+      endpoint: '/api/buildkite/webhooks'
+      # Webhook secret for verification
+      secret: ${BUILDKITE_WEBHOOK_SECRET}
+      # Events to subscribe to
+      events: ['build.scheduled', 'build.running', 'build.finished', 'job.scheduled', 'job.started', 'job.finished']
+    
+    # Agent integration
+    agents:
+      # Show agent information
+      showAgents: true
+      # Show agent queues
+      showQueues: true
+      # Show agent utilization
+      showUtilization: true
+    
+    # Artifact management
+    artifacts:
+      # Enable artifact management
+      enabled: true
+      # Show build artifacts
+      showArtifacts: true
+      # Enable artifact download
+      enableDownload: true
+      # Artifact retention policy display
+      showRetentionPolicy: true
+  
+  # Service mapping configuration
+  services:
+    # Enable service mapping to Buildkite pipelines
+    mapping: true
+    # Service annotation for Buildkite pipeline mapping
+    annotation: 'buildkite.com/pipeline-slug'
+    # Default pipeline mapping strategy
+    defaultMapping: 'backstage-entity-name'
+    # Organization mapping
+    organizationMapping: 'backstage-entity-namespace'
+  
+  # Build metrics and analytics
+  metrics:
+    # Enable build metrics tracking
+    enabled: true
+    # Metrics to track
+    trackingMetrics:
+      - 'build_duration'
+      - 'build_success_rate'
+      - 'queue_time'
+      - 'agent_utilization'
+      - 'pipeline_frequency'
+    # Time periods for metrics
+    periods: ['1d', '7d', '30d', '90d']
+    # Default period
+    defaultPeriod: '7d'
+    # Build performance analytics
+    performance:
+      # Enable performance analytics
+      enabled: true
+      # Show build trends
+      showTrends: true
+      # Show performance comparisons
+      showComparisons: true
+      # Performance thresholds
+      thresholds:
+        build_duration: 600  # 10 minutes
+        queue_time: 300      # 5 minutes
+        success_rate: 0.95   # 95%
+  
+  # Notifications configuration
+  notifications:
+    # Enable Buildkite notifications
+    enabled: true
+    # Notification channels
+    channels: ['slack', 'email']
+    # Notification triggers
+    triggers:
+      - 'build_failed'
+      - 'build_passed_after_failure'
+      - 'build_blocked'
+      - 'build_unblocked'
+      - 'pipeline_paused'
+      - 'pipeline_unpaused'
+    # Slack configuration
+    slack:
+      # Slack webhook URL
+      webhookUrl: ${SLACK_BUILDKITE_WEBHOOK_URL}
+      # Default channel for notifications
+      defaultChannel: '#ci-cd'
+      # Notification templates
+      templates:
+        build_failed: |
+          :x: *Build Failed*
+          
+          *Pipeline:* {{pipeline}}
+          *Branch:* {{branch}}
+          *Commit:* {{commit}}
+          *Author:* {{author}}
+          *Duration:* {{duration}}
+          
+          <{{build_url}}|View Build> | <{{logs_url}}|View Logs>
+        build_passed_after_failure: |
+          :white_check_mark: *Build Fixed*
+          
+          *Pipeline:* {{pipeline}}
+          *Branch:* {{branch}}
+          *Commit:* {{commit}}
+          *Author:* {{author}}
+          *Duration:* {{duration}}
+          
+          <{{build_url}}|View Build>
+  
+  # Security configuration
+  security:
+    # Enable security features
+    enabled: true
+    # Hide sensitive environment variables
+    hideSensitiveEnvVars: true
+    # Sensitive environment variable patterns
+    sensitiveEnvPatterns:
+      - '*_TOKEN'
+      - '*_SECRET'
+      - '*_KEY'
+      - '*_PASSWORD'
+      - 'AWS_*'
+    # Enable audit logging
+    auditLogging: true
+    # Access control
+    accessControl:
+      # Require authentication for build actions
+      requireAuth: true
+      # Role-based access control
+      rbac: true
+  
+  # UI configuration
+  ui:
+    # Enable Buildkite integration on entity pages
+    entityPageIntegration: true
+    # Show build status in catalog
+    showBuildStatusInCatalog: true
+    # Default view for Buildkite page
+    defaultView: 'pipelines'
+    # Available views
+    views: ['pipelines', 'builds', 'agents', 'metrics']
+    # Show build numbers
+    showBuildNumbers: true
+    # Show build tags
+    showBuildTags: true
+    # Show pipeline descriptions
+    showPipelineDescriptions: true
+    # Enable build comparison
+    enableBuildComparison: true
+    # Build list configuration
+    buildList:
+      # Default sort order
+      defaultSort: 'created_at'
+      # Sort direction
+      sortDirection: 'desc'
+      # Items per page
+      itemsPerPage: 25
+      # Enable infinite scroll
+      infiniteScroll: true
+    # Pipeline configuration
+    pipeline:
+      # Show pipeline steps
+      showSteps: true
+      # Show pipeline environment
+      showEnvironment: false
+      # Show pipeline schedules
+      showSchedules: true
+      # Enable pipeline editing (if permissions allow)
+      enableEditing: false
+
+# Cost Insights configuration for cloud cost management
+costInsights:
+  # Cost Insights API configuration
+  api:
+    # Cost Insights backend URL
+    baseUrl: ${COST_INSIGHTS_API_URL:-http://localhost:7007/api/cost-insights}
+    # Optional authentication
+    # token: ${COST_INSIGHTS_API_TOKEN}
+  
+  # Daily cost trends and optimization configuration
+  trends:
+    # Enable daily cost trends
+    enabled: true
+    # Time periods for trend analysis
+    periods: ['7d', '30d', '90d', '365d']
+    # Default period
+    defaultPeriod: '30d'
+    # Trend calculation method
+    calculationMethod: 'daily_average'
+    # Show cost forecasting
+    showForecasting: true
+    # Forecasting period (days)
+    forecastingPeriod: 30
+  
+  # Cost tracking by team and catalog entity configuration
+  tracking:
+    # Enable cost tracking by team
+    teamTracking: true
+    # Enable cost tracking by catalog entity
+    entityTracking: true
+    # Cost allocation methods
+    allocationMethods:
+      # Team allocation
+      team:
+        # Allocation strategy (tags, labels, annotations)
+        strategy: 'tags'
+        # Tag key for team identification
+        tagKey: 'team'
+        # Default team for untagged resources
+        defaultTeam: 'unassigned'
+      # Entity allocation
+      entity:
+        # Allocation strategy
+        strategy: 'annotations'
+        # Annotation key for entity identification
+        annotationKey: 'backstage.io/managed-by-location'
+        # Default entity for untagged resources
+        defaultEntity: 'unassigned'
+    # Cost attribution rules
+    attribution:
+      # Enable cost attribution
+      enabled: true
+      # Attribution rules
+      rules:
+        - pattern: 'service:*'
+          attribute: 'service'
+          method: 'direct'
+        - pattern: 'team:*'
+          attribute: 'team'
+          method: 'proportional'
+        - pattern: 'environment:*'
+          attribute: 'environment'
+          method: 'direct'
+  
+  # Business metrics comparison configuration
+  metrics:
+    # Enable business metrics comparison
+    enabled: true
+    # Business metrics to track
+    businessMetrics:
+      - name: 'revenue'
+        unit: 'USD'
+        source: 'external_api'
+        endpoint: ${REVENUE_API_ENDPOINT}
+      - name: 'active_users'
+        unit: 'count'
+        source: 'analytics'
+        endpoint: ${ANALYTICS_API_ENDPOINT}
+      - name: 'transactions'
+        unit: 'count'
+        source: 'database'
+        query: 'SELECT COUNT(*) FROM transactions WHERE date >= ?'
+    # Cost efficiency metrics
+    efficiency:
+      # Enable cost efficiency tracking
+      enabled: true
+      # Efficiency metrics
+      metrics:
+        - name: 'cost_per_user'
+          calculation: 'total_cost / active_users'
+          unit: 'USD/user'
+        - name: 'cost_per_transaction'
+          calculation: 'total_cost / transactions'
+          unit: 'USD/transaction'
+        - name: 'revenue_to_cost_ratio'
+          calculation: 'revenue / total_cost'
+          unit: 'ratio'
+      # Efficiency thresholds
+      thresholds:
+        cost_per_user: 5.0
+        cost_per_transaction: 0.10
+        revenue_to_cost_ratio: 3.0
+  
+  # Actionable cost alerts configuration
+  alerts:
+    # Enable cost alerts
+    enabled: true
+    # Alert types
+    types:
+      # Budget alerts
+      budget:
+        enabled: true
+        # Budget thresholds (percentage of budget)
+        thresholds: [50, 75, 90, 100]
+        # Alert frequency
+        frequency: 'daily'
+      # Anomaly alerts
+      anomaly:
+        enabled: true
+        # Anomaly detection sensitivity
+        sensitivity: 'medium'
+        # Minimum cost change to trigger alert (percentage)
+        minChangePercent: 20
+        # Alert frequency
+        frequency: 'immediate'
+      # Optimization alerts
+      optimization:
+        enabled: true
+        # Optimization opportunity threshold (USD)
+        threshold: 100
+        # Alert frequency
+        frequency: 'weekly'
+    # Alert routing
+    routing:
+      # Default alert channel
+      defaultChannel: '#cost-alerts'
+      # Team-specific routing
+      teamRouting:
+        frontend: '#frontend-team'
+        backend: '#backend-team'
+        platform: '#platform-team'
+    # Alert templates
+    templates:
+      budget_exceeded: |
+        :warning: *Budget Alert*
+        
+        *Team:* {{team}}
+        *Budget:* ${{budget}}
+        *Current Spend:* ${{current_spend}} ({{percentage}}%)
+        *Period:* {{period}}
+        
+        <{{dashboard_url}}|View Cost Dashboard>
+      anomaly_detected: |
+        :rotating_light: *Cost Anomaly Detected*
+        
+        *Service:* {{service}}
+        *Current Cost:* ${{current_cost}}
+        *Expected Cost:* ${{expected_cost}}
+        *Increase:* {{increase_percent}}%
+        *Date:* {{date}}
+        
+        <{{dashboard_url}}|Investigate>
+  
+  # Cloud provider integrations
+  providers:
+    # AWS integration
+    aws:
+      enabled: ${AWS_COST_INSIGHTS_ENABLED:-true}
+      # AWS Cost Explorer configuration
+      costExplorer:
+        # AWS region for Cost Explorer API
+        region: ${AWS_REGION:-us-east-1}
+        # Cost Explorer query configuration
+        queries:
+          # Default granularity
+          granularity: 'DAILY'
+          # Default metrics
+          metrics: ['BlendedCost', 'UnblendedCost', 'UsageQuantity']
+          # Default group by dimensions
+          groupBy: ['SERVICE', 'LINKED_ACCOUNT']
+      # AWS billing data configuration
+      billing:
+        # S3 bucket for detailed billing reports
+        s3Bucket: ${AWS_BILLING_S3_BUCKET}
+        # S3 prefix for billing reports
+        s3Prefix: 'billing-reports/'
+        # Report format
+        reportFormat: 'csv'
+    
+    # Google Cloud integration
+    gcp:
+      enabled: ${GCP_COST_INSIGHTS_ENABLED:-false}
+      # Google Cloud Billing API configuration
+      billing:
+        # Project ID for billing data
+        projectId: ${GCP_PROJECT_ID}
+        # Billing account ID
+        billingAccountId: ${GCP_BILLING_ACCOUNT_ID}
+        # BigQuery dataset for billing export
+        bigQueryDataset: ${GCP_BILLING_DATASET}
+    
+    # Azure integration
+    azure:
+      enabled: ${AZURE_COST_INSIGHTS_ENABLED:-false}
+      # Azure Cost Management API configuration
+      costManagement:
+        # Subscription ID
+        subscriptionId: ${AZURE_SUBSCRIPTION_ID}
+        # Resource group (optional)
+        resourceGroup: ${AZURE_RESOURCE_GROUP}
+        # Management group (optional)
+        managementGroup: ${AZURE_MANAGEMENT_GROUP}
+  
+  # Data sources configuration
+  dataSources:
+    # Primary data source
+    primary: 'aws'
+    # Secondary data sources for comparison
+    secondary: ['opencost']
+    # Data refresh configuration
+    refresh:
+      # Refresh interval (hours)
+      interval: 6
+      # Enable automatic refresh
+      automatic: true
+      # Refresh on demand
+      onDemand: true
+    # Data retention configuration
+    retention:
+      # Retention period (days)
+      period: 365
+      # Archive old data instead of deleting
+      archive: true
+      # Compression for archived data
+      compression: true
+  
+  # UI configuration
+  ui:
+    # Enable Cost Insights on entity pages
+    entityPageIntegration: true
+    # Show cost summary in catalog
+    showCostSummaryInCatalog: true
+    # Default view for Cost Insights page
+    defaultView: 'overview'
+    # Available views
+    views: ['overview', 'trends', 'breakdown', 'alerts', 'optimization']
+    # Default currency
+    defaultCurrency: 'USD'
+    # Currency formatting
+    currencyFormat: 'symbol'
+    # Show cost comparisons
+    showComparisons: true
+    # Enable cost forecasting
+    enableForecasting: true
+    # Dashboard configuration
+    dashboard:
+      # Enable dashboard widgets
+      enabled: true
+      # Available widgets
+      widgets: ['cost_overview', 'cost_trends', 'top_services', 'budget_status', 'optimization_opportunities']
+      # Default dashboard layout
+      defaultLayout: 'grid'
+      # Refresh interval (seconds)
+      refreshInterval: 300
+    # Export configuration
+    export:
+      # Enable cost data export
+      enabled: true
+      # Export formats
+      formats: ['csv', 'json', 'pdf']
+      # Export scheduling
+      scheduling: true
+      # Available schedules
+      schedules: ['daily', 'weekly', 'monthly']
+
+# GitHub Pull Requests Board configuration for PR management
+githubPullRequestsBoard:
+  # GitHub integration configuration
+  github:
+    # GitHub token for API access
+    token: ${GITHUB_TOKEN}
+    # GitHub organizations to track
+    organizations: [${GITHUB_ORG}]
+    # Repositories to track (leave empty to track all accessible repositories)
+    repositories: []
+  
+  # Team PR visibility configuration
+  team:
+    # Enable team-wide PR tracking
+    enabled: true
+    # Team members to track (GitHub usernames)
+    members: []
+    # Team repositories to focus on
+    repositories: []
+    # PR states to track
+    states: ['open', 'closed', 'merged']
+    # Maximum number of PRs to display per repository
+    maxPRsPerRepo: 25
+  
+  # Review workflow optimization configuration
+  workflow:
+    # Enable review workflow optimization
+    enabled: true
+    # Review requirements
+    reviewRequirements:
+      # Minimum number of required reviews
+      minReviews: 2
+      # Require review from code owners
+      requireCodeOwnerReview: true
+      # Dismiss stale reviews on new commits
+      dismissStaleReviews: true
+    # PR status checks
+    statusChecks:
+      # Show CI/CD status
+      showCIStatus: true
+      # Show deployment status
+      showDeploymentStatus: true
+      # Show security checks
+      showSecurityChecks: true
+  
+  # PR metrics and team collaboration insights configuration
+  metrics:
+    # Enable PR metrics tracking
+    enabled: true
+    # Metrics to track
+    trackingMetrics:
+      - 'review_time'
+      - 'merge_time'
+      - 'pr_size'
+      - 'review_participation'
+      - 'approval_rate'
+    # Time periods for metrics
+    periods: ['7d', '30d', '90d']
+    # Default period
+    defaultPeriod: '30d'
+    # Team collaboration insights
+    collaboration:
+      # Show review participation rates
+      reviewParticipation: true
+      # Show cross-team collaboration
+      crossTeamCollaboration: true
+      # Show knowledge sharing metrics
+      knowledgeSharing: true
+  
+  # PR board configuration
+  board:
+    # Board columns configuration
+    columns:
+      - name: 'Draft'
+        filter: 'is:draft'
+        color: '#6f42c1'
+      - name: 'Ready for Review'
+        filter: 'is:open -is:draft review:none'
+        color: '#0366d6'
+      - name: 'In Review'
+        filter: 'is:open -is:draft review:required'
+        color: '#f66a0a'
+      - name: 'Approved'
+        filter: 'is:open -is:draft review:approved'
+        color: '#28a745'
+      - name: 'Changes Requested'
+        filter: 'is:open -is:draft review:changes_requested'
+        color: '#d73a49'
+    # Board refresh interval (seconds)
+    refreshInterval: 300
+    # Enable drag and drop (if supported)
+    enableDragDrop: false
+  
+  # Filters configuration
+  filters:
+    # Default filters
+    default:
+      # Show only open PRs by default
+      state: 'open'
+      # Sort by creation date (newest first)
+      sort: 'created'
+      # Sort direction
+      direction: 'desc'
+    # Available filters
+    available:
+      - name: 'My PRs'
+        filter: 'author:@me'
+      - name: 'Assigned to me'
+        filter: 'assignee:@me'
+      - name: 'Reviewing'
+        filter: 'review-requested:@me'
+      - name: 'Mentioned'
+        filter: 'mentions:@me'
+      - name: 'Team PRs'
+        filter: 'team:${GITHUB_TEAM}'
+  
+  # Notifications configuration
+  notifications:
+    # Enable PR notifications
+    enabled: true
+    # Notification channels
+    channels: ['slack', 'email']
+    # Notification triggers
+    triggers:
+      - 'pr_opened'
+      - 'pr_ready_for_review'
+      - 'review_requested'
+      - 'pr_approved'
+      - 'pr_merged'
+      - 'pr_closed'
+    # Slack configuration
+    slack:
+      # Slack webhook URL
+      webhookUrl: ${SLACK_WEBHOOK_URL}
+      # Default channel for notifications
+      defaultChannel: '#dev-team'
+      # Channel mapping for different repositories
+      channelMapping:
+        'frontend-*': '#frontend-team'
+        'backend-*': '#backend-team'
+        'infrastructure-*': '#platform-team'
+  
+  # UI configuration
+  ui:
+    # Enable PR board on entity pages
+    entityPageIntegration: true
+    # Show PR metrics in catalog
+    showMetricsInCatalog: true
+    # Default view for PR board
+    defaultView: 'board'
+    # Available views
+    views: ['board', 'list', 'metrics']
+    # Show PR labels
+    showLabels: true
+    # Show PR assignees
+    showAssignees: true
+    # Show PR reviewers
+    showReviewers: true
+    # Show PR status checks
+    showStatusChecks: true
+    # Enable PR creation from board
+    enablePRCreation: false
+    # Show PR templates
+    showTemplates: true
+
+# Slack Scaffolder Actions configuration for notifications
+slackScaffolderActions:
+  # Slack API configuration
+  api:
+    # Slack bot token (starts with xoxb-)
+    botToken: ${SLACK_BOT_TOKEN}
+    # Slack app token (starts with xapp-) for socket mode
+    appToken: ${SLACK_APP_TOKEN}
+    # Slack signing secret for webhook verification
+    signingSecret: ${SLACK_SIGNING_SECRET}
+  
+  # Workflow notifications configuration
+  notifications:
+    # Enable automated Slack notifications for deployments and incidents
+    deployments:
+      enabled: true
+      # Channels for deployment notifications
+      channels:
+        # Default channel for all deployment notifications
+        default: '#deployments'
+        # Environment-specific channels
+        production: '#production-deployments'
+        staging: '#staging-deployments'
+        development: '#dev-deployments'
+      # Notification templates
+      templates:
+        success: |
+          :white_check_mark: *Deployment Successful*
+          
+          *Service:* {{service}}
+          *Environment:* {{environment}}
+          *Version:* {{version}}
+          *Deployed by:* {{deployer}}
+          *Time:* {{timestamp}}
+          
+          <{{argocd_url}}|View in Argo CD> | <{{service_url}}|View Service>
+        failure: |
+          :x: *Deployment Failed*
+          
+          *Service:* {{service}}
+          *Environment:* {{environment}}
+          *Version:* {{version}}
+          *Deployed by:* {{deployer}}
+          *Error:* {{error}}
+          *Time:* {{timestamp}}
+          
+          <{{argocd_url}}|View in Argo CD> | <{{logs_url}}|View Logs>
+        started: |
+          :rocket: *Deployment Started*
+          
+          *Service:* {{service}}
+          *Environment:* {{environment}}
+          *Version:* {{version}}
+          *Deployed by:* {{deployer}}
+          *Time:* {{timestamp}}
+          
+          <{{argocd_url}}|View Progress>
+    
+    # Incident notifications
+    incidents:
+      enabled: true
+      # Channels for incident notifications
+      channels:
+        # Default channel for all incident notifications
+        default: '#incidents'
+        # Severity-specific channels
+        critical: '#critical-incidents'
+        high: '#high-priority-incidents'
+        medium: '#incidents'
+        low: '#low-priority-incidents'
+      # Notification templates
+      templates:
+        created: |
+          :rotating_light: *Incident Created*
+          
+          *Title:* {{title}}
+          *Severity:* {{severity}}
+          *Service:* {{service}}
+          *Created by:* {{creator}}
+          *Time:* {{timestamp}}
+          
+          *Description:* {{description}}
+          
+          <{{incident_url}}|View Incident> | <{{runbook_url}}|View Runbook>
+        resolved: |
+          :white_check_mark: *Incident Resolved*
+          
+          *Title:* {{title}}
+          *Service:* {{service}}
+          *Duration:* {{duration}}
+          *Resolved by:* {{resolver}}
+          *Time:* {{timestamp}}
+          
+          *Resolution:* {{resolution}}
+          
+          <{{incident_url}}|View Incident> | <{{postmortem_url}}|View Post-mortem>
+        escalated: |
+          :warning: *Incident Escalated*
+          
+          *Title:* {{title}}
+          *Severity:* {{severity}} → {{new_severity}}
+          *Service:* {{service}}
+          *Escalated by:* {{escalator}}
+          *Time:* {{timestamp}}
+          
+          *Reason:* {{escalation_reason}}
+          
+          <{{incident_url}}|View Incident>
+  
+  # Team communication integration configuration
+  communication:
+    # Enable team communication integration with platform events
+    enabled: true
+    # Platform events to notify about
+    events:
+      # Service catalog events
+      catalog:
+        - 'service_created'
+        - 'service_updated'
+        - 'service_deleted'
+        - 'dependency_added'
+        - 'dependency_removed'
+      # Scaffolder events
+      scaffolder:
+        - 'template_executed'
+        - 'project_created'
+        - 'project_failed'
+      # Documentation events
+      techdocs:
+        - 'docs_published'
+        - 'docs_failed'
+      # Cost events
+      cost:
+        - 'cost_threshold_exceeded'
+        - 'cost_anomaly_detected'
+        - 'optimization_opportunity'
+      # Security events
+      security:
+        - 'vulnerability_detected'
+        - 'security_scan_failed'
+        - 'compliance_violation'
+    
+    # Event routing configuration
+    routing:
+      # Route events to specific channels based on service or team
+      rules:
+        - pattern: 'service:frontend-*'
+          channel: '#frontend-team'
+        - pattern: 'service:backend-*'
+          channel: '#backend-team'
+        - pattern: 'service:infrastructure-*'
+          channel: '#platform-team'
+        - pattern: 'team:platform'
+          channel: '#platform-team'
+        - pattern: 'severity:critical'
+          channel: '#critical-alerts'
+        - pattern: 'event:cost_*'
+          channel: '#cost-optimization'
+        - pattern: 'event:security_*'
+          channel: '#security-alerts'
+      # Default channel for unmatched events
+      defaultChannel: '#general-notifications'
+  
+  # Scaffolder action configuration
+  actions:
+    # Available Slack actions in scaffolder templates
+    available:
+      - name: 'slack:message'
+        description: 'Send a message to a Slack channel'
+        parameters:
+          - name: 'channel'
+            type: 'string'
+            description: 'Slack channel to send message to'
+            required: true
+          - name: 'message'
+            type: 'string'
+            description: 'Message content'
+            required: true
+          - name: 'username'
+            type: 'string'
+            description: 'Bot username for the message'
+            required: false
+          - name: 'icon_emoji'
+            type: 'string'
+            description: 'Emoji icon for the message'
+            required: false
+      
+      - name: 'slack:thread'
+        description: 'Send a threaded reply to a Slack message'
+        parameters:
+          - name: 'channel'
+            type: 'string'
+            description: 'Slack channel containing the parent message'
+            required: true
+          - name: 'thread_ts'
+            type: 'string'
+            description: 'Timestamp of the parent message'
+            required: true
+          - name: 'message'
+            type: 'string'
+            description: 'Reply message content'
+            required: true
+      
+      - name: 'slack:file'
+        description: 'Upload a file to a Slack channel'
+        parameters:
+          - name: 'channel'
+            type: 'string'
+            description: 'Slack channel to upload file to'
+            required: true
+          - name: 'file_path'
+            type: 'string'
+            description: 'Path to the file to upload'
+            required: true
+          - name: 'title'
+            type: 'string'
+            description: 'File title'
+            required: false
+          - name: 'comment'
+            type: 'string'
+            description: 'File comment'
+            required: false
+      
+      - name: 'slack:workflow'
+        description: 'Trigger a Slack workflow'
+        parameters:
+          - name: 'workflow_id'
+            type: 'string'
+            description: 'Slack workflow ID to trigger'
+            required: true
+          - name: 'inputs'
+            type: 'object'
+            description: 'Workflow input parameters'
+            required: false
+  
+  # User and channel management
+  management:
+    # Enable user lookup and channel management
+    enabled: true
+    # User mapping from Backstage to Slack
+    userMapping:
+      # Mapping strategy (email, username, custom)
+      strategy: 'email'
+      # Custom mapping file (if strategy is 'custom')
+      # mappingFile: '/path/to/user-mapping.json'
+    # Channel management
+    channels:
+      # Auto-create channels for new services
+      autoCreate: false
+      # Channel naming pattern for services
+      serviceChannelPattern: 'service-{{service}}'
+      # Channel naming pattern for teams
+      teamChannelPattern: 'team-{{team}}'
+      # Default channel permissions
+      defaultPermissions:
+        - 'read'
+        - 'write'
+        - 'history'
+  
+  # Rate limiting and error handling
+  limits:
+    # Rate limiting configuration
+    rateLimit:
+      # Messages per minute
+      messagesPerMinute: 60
+      # Burst allowance
+      burstSize: 10
+    # Retry configuration
+    retry:
+      # Maximum retry attempts
+      maxAttempts: 3
+      # Retry delay (milliseconds)
+      delay: 1000
+      # Exponential backoff multiplier
+      backoffMultiplier: 2
+    # Error handling
+    errorHandling:
+      # Fallback channel for failed notifications
+      fallbackChannel: '#platform-alerts'
+      # Enable error notifications
+      notifyOnError: true
+      # Error notification template
+      errorTemplate: |
+        :warning: *Notification Delivery Failed*
+        
+        *Original Channel:* {{original_channel}}
+        *Error:* {{error}}
+        *Message:* {{original_message}}
+        *Time:* {{timestamp}}
+  
+  # Security configuration
+  security:
+    # Enable message content filtering
+    contentFiltering: true
+    # Patterns to filter from messages
+    filterPatterns:
+      - 'AKIA[0-9A-Z]{16}'  # AWS Access Keys
+      - 'sk-[a-zA-Z0-9]{48}' # OpenAI API Keys
+      - '(?i)(password|secret|token|key)\s*[:=]\s*[^\s]+'
+    # Enable audit logging for Slack interactions
+    auditLogging: true
+    # Allowed channels for notifications
+    allowedChannels: []
+    # Blocked channels (takes precedence over allowed)
+    blockedChannels: []
+
+# Feedback plugin configuration for user feedback collection
+feedback:
+  # Feedback collection configuration
+  collection:
+    # Enable service and platform feedback collection and analysis
+    enabled: true
+    # Feedback types
+    types:
+      - name: 'service_feedback'
+        title: 'Service Feedback'
+        description: 'Feedback about a specific service'
+        fields:
+          - name: 'service'
+            type: 'string'
+            label: 'Service Name'
+            required: true
+          - name: 'category'
+            type: 'select'
+            label: 'Feedback Category'
+            options: ['bug', 'feature_request', 'improvement', 'documentation', 'performance']
+            required: true
+          - name: 'rating'
+            type: 'rating'
+            label: 'Overall Rating'
+            min: 1
+            max: 5
+            required: true
+          - name: 'description'
+            type: 'textarea'
+            label: 'Description'
+            required: true
+          - name: 'contact'
+            type: 'email'
+            label: 'Contact Email'
+            required: false
+      
+      - name: 'platform_feedback'
+        title: 'Platform Feedback'
+        description: 'Feedback about the developer platform'
+        fields:
+          - name: 'area'
+            type: 'select'
+            label: 'Platform Area'
+            options: ['catalog', 'scaffolder', 'techdocs', 'search', 'monitoring', 'cost_visibility', 'ai_assistant']
+            required: true
+          - name: 'type'
+            type: 'select'
+            label: 'Feedback Type'
+            options: ['bug', 'feature_request', 'improvement', 'usability', 'performance']
+            required: true
+          - name: 'priority'
+            type: 'select'
+            label: 'Priority'
+            options: ['low', 'medium', 'high', 'critical']
+            required: true
+          - name: 'rating'
+            type: 'rating'
+            label: 'Experience Rating'
+            min: 1
+            max: 5
+            required: true
+          - name: 'description'
+            type: 'textarea'
+            label: 'Detailed Feedback'
+            required: true
+          - name: 'steps_to_reproduce'
+            type: 'textarea'
+            label: 'Steps to Reproduce (for bugs)'
+            required: false
+          - name: 'contact'
+            type: 'email'
+            label: 'Contact Email'
+            required: false
+      
+      - name: 'feature_request'
+        title: 'Feature Request'
+        description: 'Request a new feature or enhancement'
+        fields:
+          - name: 'title'
+            type: 'string'
+            label: 'Feature Title'
+            required: true
+          - name: 'category'
+            type: 'select'
+            label: 'Category'
+            options: ['catalog', 'scaffolder', 'monitoring', 'documentation', 'ai_features', 'integrations', 'ui_ux']
+            required: true
+          - name: 'priority'
+            type: 'select'
+            label: 'Business Priority'
+            options: ['nice_to_have', 'would_help', 'important', 'critical']
+            required: true
+          - name: 'description'
+            type: 'textarea'
+            label: 'Feature Description'
+            required: true
+          - name: 'use_case'
+            type: 'textarea'
+            label: 'Use Case / Business Justification'
+            required: true
+          - name: 'acceptance_criteria'
+            type: 'textarea'
+            label: 'Acceptance Criteria'
+            required: false
+          - name: 'contact'
+            type: 'email'
+            label: 'Contact Email'
+            required: true
+  
+  # Feedback analysis configuration
+  analysis:
+    # Enable feedback-driven improvement tracking and prioritization
+    enabled: true
+    # Analysis methods
+    methods:
+      # Sentiment analysis
+      sentiment:
+        enabled: true
+        # Sentiment analysis provider (built-in, openai, azure)
+        provider: 'built-in'
+        # OpenAI configuration (if using openai provider)
+        openai:
+          apiKey: ${OPENAI_API_KEY}
+          model: 'gpt-3.5-turbo'
+      
+      # Category analysis
+      categorization:
+        enabled: true
+        # Auto-categorization of feedback
+        autoCategorize: true
+        # Category confidence threshold
+        confidenceThreshold: 0.7
+      
+      # Trend analysis
+      trends:
+        enabled: true
+        # Time periods for trend analysis
+        periods: ['7d', '30d', '90d']
+        # Trend metrics
+        metrics: ['volume', 'sentiment', 'categories', 'ratings']
+      
+      # Priority scoring
+      prioritization:
+        enabled: true
+        # Scoring factors and weights
+        factors:
+          user_impact: 0.3
+          business_value: 0.25
+          implementation_effort: 0.2
+          frequency: 0.15
+          sentiment: 0.1
+        # Priority levels
+        levels: ['low', 'medium', 'high', 'critical']
+  
+  # Feedback routing and notifications
+  routing:
+    # Enable automatic routing of feedback to appropriate teams
+    enabled: true
+    # Routing rules
+    rules:
+      - pattern: 'service:frontend-*'
+        assignee: 'frontend-team'
+        channel: '#frontend-feedback'
+      - pattern: 'service:backend-*'
+        assignee: 'backend-team'
+        channel: '#backend-feedback'
+      - pattern: 'area:catalog'
+        assignee: 'platform-team'
+        channel: '#platform-feedback'
+      - pattern: 'area:scaffolder'
+        assignee: 'platform-team'
+        channel: '#platform-feedback'
+      - pattern: 'area:monitoring'
+        assignee: 'platform-team'
+        channel: '#platform-feedback'
+      - pattern: 'priority:critical'
+        assignee: 'platform-team'
+        channel: '#critical-feedback'
+        escalate: true
+      - pattern: 'type:bug'
+        assignee: 'qa-team'
+        channel: '#bug-reports'
+    # Default routing
+    default:
+      assignee: 'platform-team'
+      channel: '#general-feedback'
+  
+  # Integration configuration
+  integrations:
+    # Jira integration for feedback tracking
+    jira:
+      enabled: ${JIRA_INTEGRATION_ENABLED:-false}
+      # Jira project for feedback issues
+      projectKey: ${JIRA_FEEDBACK_PROJECT:-FEEDBACK}
+      # Issue type mapping
+      issueTypeMapping:
+        bug: 'Bug'
+        feature_request: 'Story'
+        improvement: 'Improvement'
+        documentation: 'Task'
+      # Priority mapping
+      priorityMapping:
+        low: 'Low'
+        medium: 'Medium'
+        high: 'High'
+        critical: 'Highest'
+    
+    # Slack integration for feedback notifications
+    slack:
+      enabled: true
+      # Slack webhook for feedback notifications
+      webhookUrl: ${SLACK_FEEDBACK_WEBHOOK_URL}
+      # Notification templates
+      templates:
+        new_feedback: |
+          :speech_balloon: *New Feedback Received*
+          
+          *Type:* {{type}}
+          *Category:* {{category}}
+          *Rating:* {{rating}}/5
+          *Priority:* {{priority}}
+          
+          *Description:* {{description}}
+          
+          *Submitted by:* {{user}}
+          *Time:* {{timestamp}}
+          
+          <{{feedback_url}}|View Feedback>
+        high_priority: |
+          :warning: *High Priority Feedback*
+          
+          *Type:* {{type}}
+          *Category:* {{category}}
+          *Priority:* {{priority}}
+          
+          *Description:* {{description}}
+          
+          *Submitted by:* {{user}}
+          *Time:* {{timestamp}}
+          
+          <{{feedback_url}}|View Feedback> - Requires immediate attention!
+    
+    # Email integration for feedback notifications
+    email:
+      enabled: ${EMAIL_NOTIFICATIONS_ENABLED:-false}
+      # SMTP configuration
+      smtp:
+        host: ${SMTP_HOST}
+        port: ${SMTP_PORT:-587}
+        secure: ${SMTP_SECURE:-false}
+        auth:
+          user: ${SMTP_USER}
+          pass: ${SMTP_PASS}
+      # Email templates
+      templates:
+        feedback_received: |
+          Subject: New Feedback: {{type}} - {{category}}
+          
+          A new feedback has been submitted:
+          
+          Type: {{type}}
+          Category: {{category}}
+          Rating: {{rating}}/5
+          Priority: {{priority}}
+          
+          Description:
+          {{description}}
+          
+          Submitted by: {{user}}
+          Time: {{timestamp}}
+          
+          View feedback: {{feedback_url}}
+  
+  # Storage configuration
+  storage:
+    # Storage backend (database, file, s3)
+    backend: 'database'
+    # Database configuration (uses main Backstage database)
+    database:
+      # Table name for feedback storage
+      tableName: 'feedback'
+      # Enable data retention
+      retention:
+        enabled: true
+        # Retention period (days)
+        period: 365
+        # Archive old feedback instead of deleting
+        archive: true
+    # File storage configuration (alternative)
+    file:
+      # Directory for feedback storage
+      directory: '/var/lib/backstage/feedback'
+      # File format (json, csv)
+      format: 'json'
+    # S3 storage configuration (alternative)
+    s3:
+      # S3 bucket for feedback storage
+      bucket: ${FEEDBACK_S3_BUCKET}
+      # S3 region
+      region: ${AWS_REGION:-us-east-1}
+      # S3 key prefix
+      prefix: 'feedback/'
+  
+  # UI configuration
+  ui:
+    # Enable feedback collection on entity pages
+    entityPageIntegration: true
+    # Show feedback summary in catalog
+    showSummaryInCatalog: true
+    # Enable feedback dashboard
+    dashboard: true
+    # Default view for feedback page
+    defaultView: 'overview'
+    # Available views
+    views: ['overview', 'list', 'analytics', 'trends']
+    # Enable feedback search and filtering
+    search: true
+    # Available filters
+    filters: ['type', 'category', 'priority', 'rating', 'date', 'assignee']
+    # Enable feedback export
+    export: true
+    # Export formats
+    exportFormats: ['csv', 'json', 'pdf']
+    # Feedback form configuration
+    form:
+      # Enable anonymous feedback
+      allowAnonymous: true
+      # Enable file attachments
+      allowAttachments: true
+      # Maximum attachment size (MB)
+      maxAttachmentSize: 10
+      # Allowed attachment types
+      allowedAttachmentTypes: ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'txt', 'log']
+    # Feedback display configuration
+    display:
+      # Show user avatars
+      showAvatars: true
+      # Show timestamps
+      showTimestamps: true
+      # Show feedback status
+      showStatus: true
+      # Enable feedback voting
+      enableVoting: true
+      # Enable feedback comments
+      enableComments: true
+
+# DevPod configuration for development environment management
+devpod:
+  # DevPod API configuration
+  api:
+    # DevPod backend URL
+    baseUrl: ${DEVPOD_API_URL:-http://localhost:8080}
+    # Optional authentication
+    # token: ${DEVPOD_API_TOKEN}
+  
+  # Development environment provisioning configuration
+  provisioning:
+    # Enable development environment provisioning
+    enabled: true
+    # Default provider for development environments
+    defaultProvider: 'docker'
+    # Available providers
+    providers:
+      - name: 'docker'
+        type: 'docker'
+        config:
+          # Docker daemon URL
+          dockerHost: ${DOCKER_HOST:-unix:///var/run/docker.sock}
+          # Default base image
+          baseImage: 'mcr.microsoft.com/devcontainers/base:ubuntu'
+          # Resource limits
+          resources:
+            memory: '4Gi'
+            cpu: '2'
+      - name: 'kubernetes'
+        type: 'kubernetes'
+        config:
+          # Kubernetes cluster configuration
+          kubeconfig: ${KUBECONFIG}
+          # Namespace for development environments
+          namespace: 'devpod'
+          # Storage class for persistent volumes
+          storageClass: 'fast-ssd'
+          # Resource limits
+          resources:
+            memory: '8Gi'
+            cpu: '4'
+            storage: '50Gi'
+    # Environment templates
+    templates:
+      - name: 'node-typescript'
+        description: 'Node.js with TypeScript development environment'
+        image: 'mcr.microsoft.com/devcontainers/typescript-node:18'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+        extensions:
+          - 'ms-vscode.vscode-typescript-next'
+          - 'esbenp.prettier-vscode'
+          - 'bradlc.vscode-tailwindcss'
+      - name: 'python'
+        description: 'Python development environment'
+        image: 'mcr.microsoft.com/devcontainers/python:3.11'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+        extensions:
+          - 'ms-python.python'
+          - 'ms-python.pylint'
+          - 'ms-python.black-formatter'
+      - name: 'java'
+        description: 'Java development environment'
+        image: 'mcr.microsoft.com/devcontainers/java:17'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+          - 'ghcr.io/devcontainers/features/maven:1'
+        extensions:
+          - 'redhat.java'
+          - 'vscjava.vscode-java-pack'
+          - 'vscjava.vscode-spring-boot-dashboard'
+  
+  # Development environment access configuration
+  access:
+    # Enable development environment access
+    enabled: true
+    # Access methods
+    methods: ['vscode', 'ssh', 'web']
+    # Default access method
+    defaultMethod: 'vscode'
+    # VS Code configuration
+    vscode:
+      # Enable VS Code integration
+      enabled: true
+      # VS Code server configuration
+      server:
+        # Server port
+        port: 8080
+        # Enable authentication
+        auth: true
+        # Authentication method
+        authMethod: 'github'
+    # SSH configuration
+    ssh:
+      # Enable SSH access
+      enabled: true
+      # SSH port range
+      portRange: '2222-2322'
+      # SSH key management
+      keyManagement: 'automatic'
+    # Web terminal configuration
+    web:
+      # Enable web terminal access
+      enabled: true
+      # Web terminal port
+      port: 8081
+      # Terminal shell
+      shell: '/bin/bash'
+  
+  # Integration with existing development workflows
+  integration:
+    # Enable integration with development workflows
+    enabled: true
+    # GitHub integration
+    github:
+      # Enable GitHub integration
+      enabled: true
+      # GitHub token for integration
+      token: ${GITHUB_TOKEN}
+      # Auto-clone repositories
+      autoClone: true
+      # Setup development environment from repository
+      setupFromRepo: true
+    # Backstage integration
+    backstage:
+      # Enable Backstage service integration
+      enabled: true
+      # Auto-setup development environment for services
+      autoSetup: true
+      # Service annotation for DevPod configuration
+      annotation: 'devpod.io/template'
+  
+  # Environment lifecycle management
+  lifecycle:
+    # Enable environment lifecycle management
+    enabled: true
+    # Auto-start environments
+    autoStart: false
+    # Auto-stop environments after inactivity
+    autoStop: true
+    # Inactivity timeout (minutes)
+    inactivityTimeout: 60
+    # Environment retention period (days)
+    retentionPeriod: 7
+    # Backup configuration
+    backup:
+      # Enable environment backups
+      enabled: true
+      # Backup frequency
+      frequency: 'daily'
+      # Backup retention (days)
+      retention: 30
+  
+  # UI configuration
+  ui:
+    # Enable DevPod integration on entity pages
+    entityPageIntegration: true
+    # Show development environments in catalog
+    showEnvironmentsInCatalog: true
+    # Default view for DevPod page
+    defaultView: 'environments'
+    # Available views
+    views: ['environments', 'templates', 'providers']
+    # Show environment status
+    showStatus: true
+    # Show environment metrics
+    showMetrics: true
+    # Enable environment sharing
+    enableSharing: true
+
+# Dev Containers configuration for VS Code development environment integration
+devContainers:
+  # Dev Containers API configuration
+  api:
+    # Dev Containers backend URL
+    baseUrl: ${DEV_CONTAINERS_API_URL:-http://localhost:8080}
+    # Optional authentication
+    # token: ${DEV_CONTAINERS_API_TOKEN}
+  
+  # Containerized development environment launching configuration
+  launching:
+    # Enable containerized development environment launching
+    enabled: true
+    # Default container runtime
+    defaultRuntime: 'docker'
+    # Available runtimes
+    runtimes:
+      - name: 'docker'
+        type: 'docker'
+        config:
+          # Docker daemon URL
+          dockerHost: ${DOCKER_HOST:-unix:///var/run/docker.sock}
+          # Enable Docker Compose support
+          composeSupport: true
+          # Enable Docker BuildKit
+          buildKit: true
+      - name: 'podman'
+        type: 'podman'
+        config:
+          # Podman socket URL
+          podmanHost: ${PODMAN_HOST:-unix:///run/user/1000/podman/podman.sock}
+          # Enable Podman Compose support
+          composeSupport: true
+    # Container configuration
+    containers:
+      # Default container configuration
+      default:
+        # Base image
+        image: 'mcr.microsoft.com/devcontainers/base:ubuntu'
+        # Working directory
+        workspaceFolder: '/workspace'
+        # User configuration
+        remoteUser: 'vscode'
+        # Port forwarding
+        forwardPorts: [3000, 8080]
+        # Environment variables
+        containerEnv:
+          NODE_ENV: 'development'
+          DEBUG: '*'
+      # Resource limits
+      resources:
+        # Memory limit
+        memory: '4Gi'
+        # CPU limit
+        cpu: '2'
+        # Shared memory size
+        shmSize: '1Gi'
+  
+  # Development environment standardization configuration
+  standardization:
+    # Enable development environment standardization
+    enabled: true
+    # Standard configurations by language/framework
+    standards:
+      # Node.js/TypeScript standard
+      nodejs:
+        image: 'mcr.microsoft.com/devcontainers/typescript-node:18'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+          - 'ghcr.io/devcontainers/features/node:18'
+        extensions:
+          - 'ms-vscode.vscode-typescript-next'
+          - 'esbenp.prettier-vscode'
+          - 'ms-vscode.vscode-eslint'
+        settings:
+          'typescript.preferences.quoteStyle': 'single'
+          'editor.formatOnSave': true
+          'editor.codeActionsOnSave': { 'source.fixAll.eslint': true }
+      # Python standard
+      python:
+        image: 'mcr.microsoft.com/devcontainers/python:3.11'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+        extensions:
+          - 'ms-python.python'
+          - 'ms-python.pylint'
+          - 'ms-python.black-formatter'
+          - 'ms-python.isort'
+        settings:
+          'python.defaultInterpreterPath': '/usr/local/bin/python'
+          'python.formatting.provider': 'black'
+          'python.linting.enabled': true
+          'python.linting.pylintEnabled': true
+      # Java standard
+      java:
+        image: 'mcr.microsoft.com/devcontainers/java:17'
+        features:
+          - 'ghcr.io/devcontainers/features/git:1'
+          - 'ghcr.io/devcontainers/features/github-cli:1'
+          - 'ghcr.io/devcontainers/features/maven:1'
+        extensions:
+          - 'redhat.java'
+          - 'vscjava.vscode-java-pack'
+          - 'vscjava.vscode-spring-boot-dashboard'
+        settings:
+          'java.home': '/usr/lib/jvm/msopenjdk-current'
+          'java.configuration.runtimes': [{ 'name': 'JavaSE-17', 'path': '/usr/lib/jvm/msopenjdk-current' }]
+    # Enforcement policies
+    enforcement:
+      # Require standard configurations
+      requireStandards: true
+      # Allow custom configurations
+      allowCustom: true
+      # Validation rules
+      validation:
+        # Require specific extensions
+        requiredExtensions: true
+        # Require security scanning
+        securityScanning: true
+        # Require resource limits
+        resourceLimits: true
+  
+  # Development environment sharing configuration
+  sharing:
+    # Enable development environment sharing
+    enabled: true
+    # Sharing methods
+    methods: ['export', 'registry', 'git']
+    # Export configuration
+    export:
+      # Enable container export
+      enabled: true
+      # Export formats
+      formats: ['tar', 'oci']
+      # Compression
+      compression: true
+    # Registry configuration
+    registry:
+      # Enable registry sharing
+      enabled: true
+      # Default registry
+      defaultRegistry: ${CONTAINER_REGISTRY:-docker.io}
+      # Registry authentication
+      auth:
+        # Authentication method
+        method: 'token'
+        # Registry token
+        token: ${CONTAINER_REGISTRY_TOKEN}
+    # Git configuration
+    git:
+      # Enable Git-based sharing
+      enabled: true
+      # Default Git provider
+      provider: 'github'
+      # Repository template
+      template: '${GITHUB_ORG}/devcontainer-templates'
+  
+  # VS Code integration configuration
+  vscode:
+    # Enable VS Code integration
+    enabled: true
+    # VS Code server configuration
+    server:
+      # Server version
+      version: 'latest'
+      # Server port
+      port: 8080
+      # Enable authentication
+      auth: true
+      # Authentication method
+      authMethod: 'github'
+    # Extension management
+    extensions:
+      # Enable extension management
+      enabled: true
+      # Extension marketplace
+      marketplace: 'https://marketplace.visualstudio.com'
+      # Allow private extensions
+      allowPrivate: true
+      # Extension sync
+      sync: true
+    # Settings synchronization
+    settings:
+      # Enable settings sync
+      enabled: true
+      # Sync method
+      method: 'github'
+      # Settings repository
+      repository: '${GITHUB_ORG}/vscode-settings'
+  
+  # Service integration configuration
+  services:
+    # Enable service integration
+    enabled: true
+    # Service annotation for Dev Containers configuration
+    annotation: 'devcontainers.io/config'
+    # Auto-detect configuration
+    autoDetect: true
+    # Configuration sources
+    sources: ['.devcontainer/devcontainer.json', '.devcontainer.json']
+    # Default configuration generation
+    generateDefault: true
+  
+  # Security configuration
+  security:
+    # Enable security features
+    enabled: true
+    # Container scanning
+    scanning:
+      # Enable container image scanning
+      enabled: true
+      # Scanning provider
+      provider: 'trivy'
+      # Scan on build
+      scanOnBuild: true
+      # Fail on high/critical vulnerabilities
+      failOnVulnerabilities: true
+    # Access control
+    accessControl:
+      # Enable access control
+      enabled: true
+      # Allowed users/teams
+      allowedUsers: []
+      allowedTeams: []
+      # Require approval for custom configurations
+      requireApproval: true
+    # Network security
+    network:
+      # Enable network isolation
+      isolation: true
+      # Allowed outbound connections
+      allowedHosts: ['github.com', 'registry-1.docker.io', 'mcr.microsoft.com']
+      # Block privileged containers
+      blockPrivileged: true
+  
+  # UI configuration
+  ui:
+    # Enable Dev Containers integration on entity pages
+    entityPageIntegration: true
+    # Show development environments in catalog
+    showEnvironmentsInCatalog: true
+    # Default view for Dev Containers page
+    defaultView: 'containers'
+    # Available views
+    views: ['containers', 'templates', 'standards']
+    # Show container status
+    showStatus: true
+    # Show container logs
+    showLogs: true
+    # Enable container management
+    enableManagement: true
+    # Container actions
+    actions: ['start', 'stop', 'restart', 'rebuild', 'delete']
+
+# Google Calendar configuration for team coordination
+googleCalendar:
+  # Google Calendar API configuration
+  api:
+    # Google Calendar API credentials
+    credentials: ${GOOGLE_CALENDAR_CREDENTIALS}
+    # Google Calendar API key
+    apiKey: ${GOOGLE_CALENDAR_API_KEY}
+    # OAuth 2.0 configuration
+    oauth:
+      clientId: ${GOOGLE_OAUTH_CLIENT_ID}
+      clientSecret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      redirectUri: ${GOOGLE_OAUTH_REDIRECT_URI}
+  
+  # Team schedule and availability visibility configuration
+  schedule:
+    # Enable team schedule visibility
+    enabled: true
+    # Default calendar view
+    defaultView: 'week'
+    # Available views
+    views: ['day', 'week', 'month', 'agenda']
+    # Time zone configuration
+    timeZone: ${DEFAULT_TIMEZONE:-UTC}
+    # Working hours configuration
+    workingHours:
+      # Start time (24-hour format)
+      start: '09:00'
+      # End time (24-hour format)
+      end: '17:00'
+      # Working days
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+    # Calendar synchronization
+    sync:
+      # Enable calendar synchronization
+      enabled: true
+      # Sync frequency (minutes)
+      frequency: 15
+      # Sync direction (read, write, bidirectional)
+      direction: 'read'
+  
+  # Meeting and availability integration configuration
+  meetings:
+    # Enable meeting integration
+    enabled: true
+    # Meeting types to display
+    types: ['meeting', 'appointment', 'event', 'reminder']
+    # Show meeting details
+    showDetails: true
+    # Show meeting attendees
+    showAttendees: true
+    # Show meeting location
+    showLocation: true
+    # Meeting status tracking
+    status: ['confirmed', 'tentative', 'cancelled']
+    # Availability calculation
+    availability:
+      # Enable availability calculation
+      enabled: true
+      # Availability status
+      statuses: ['free', 'busy', 'tentative', 'out_of_office']
+      # Show availability in team pages
+      showInTeamPages: true
+      # Availability time slots (minutes)
+      timeSlots: 30
+  
+  # Calendar-based team coordination configuration
+  coordination:
+    # Enable calendar-based coordination
+    enabled: true
+    # Team calendars to track
+    teamCalendars: []
+    # Shared calendars
+    sharedCalendars: []
+    # Meeting room calendars
+    roomCalendars: []
+    # Team availability dashboard
+    dashboard:
+      # Enable team availability dashboard
+      enabled: true
+      # Show team member availability
+      showAvailability: true
+      # Show upcoming meetings
+      showUpcomingMeetings: true
+      # Show team events
+      showTeamEvents: true
+      # Dashboard refresh interval (minutes)
+      refreshInterval: 5
+  
+  # Calendar-based planning features configuration
+  planning:
+    # Enable calendar-based planning
+    enabled: true
+    # Meeting scheduling
+    scheduling:
+      # Enable meeting scheduling
+      enabled: true
+      # Default meeting duration (minutes)
+      defaultDuration: 60
+      # Available durations
+      durations: [15, 30, 60, 90, 120]
+      # Buffer time between meetings (minutes)
+      bufferTime: 15
+      # Auto-suggest meeting times
+      autoSuggest: true
+    # Event planning
+    events:
+      # Enable event planning
+      enabled: true
+      # Event types
+      types: ['team_meeting', 'standup', 'retrospective', 'planning', 'review']
+      # Recurring events
+      recurring: true
+      # Event templates
+      templates:
+        - name: 'Daily Standup'
+          duration: 15
+          recurring: 'daily'
+          attendees: 'team'
+        - name: 'Sprint Planning'
+          duration: 120
+          recurring: 'biweekly'
+          attendees: 'team'
+        - name: 'Sprint Review'
+          duration: 60
+          recurring: 'biweekly'
+          attendees: 'team,stakeholders'
+        - name: 'Retrospective'
+          duration: 90
+          recurring: 'biweekly'
+          attendees: 'team'
+  
+  # Team integration configuration
+  teams:
+    # Enable team integration
+    enabled: true
+    # Team mapping
+    mapping:
+      # Team annotation for calendar integration
+      annotation: 'google-calendar.io/team-calendar'
+      # Default team calendar naming
+      namingPattern: 'team-{{team_name}}'
+      # Auto-create team calendars
+      autoCreate: false
+    # Team member calendars
+    members:
+      # Enable team member calendar access
+      enabled: true
+      # Calendar sharing permissions
+      permissions: 'read'
+      # Show personal calendars
+      showPersonal: false
+      # Show work calendars only
+      workOnly: true
+  
+  # Notifications configuration
+  notifications:
+    # Enable calendar notifications
+    enabled: true
+    # Notification channels
+    channels: ['slack', 'email']
+    # Notification triggers
+    triggers:
+      - 'meeting_starting'
+      - 'meeting_cancelled'
+      - 'meeting_rescheduled'
+      - 'availability_changed'
+      - 'team_event_created'
+    # Notification timing
+    timing:
+      # Meeting reminder times (minutes before)
+      reminders: [15, 5]
+      # Availability change notifications
+      availabilityChange: 'immediate'
+    # Slack configuration
+    slack:
+      # Slack webhook URL
+      webhookUrl: ${SLACK_CALENDAR_WEBHOOK_URL}
+      # Default channel for notifications
+      defaultChannel: '#team-calendar'
+      # Notification templates
+      templates:
+        meeting_starting: |
+          :calendar: *Meeting Starting Soon*
+          
+          *Meeting:* {{meeting_title}}
+          *Time:* {{meeting_time}}
+          *Duration:* {{meeting_duration}}
+          *Attendees:* {{attendees}}
+          
+          <{{meeting_url}}|Join Meeting>
+        team_event_created: |
+          :spiral_calendar_pad: *New Team Event*
+          
+          *Event:* {{event_title}}
+          *Date:* {{event_date}}
+          *Time:* {{event_time}}
+          *Organizer:* {{organizer}}
+          
+          <{{event_url}}|View Event>
+  
+  # Privacy and security configuration
+  privacy:
+    # Enable privacy features
+    enabled: true
+    # Data access controls
+    accessControls:
+      # Require authentication
+      requireAuth: true
+      # Role-based access
+      rbac: true
+      # Team-based access
+      teamBased: true
+    # Data filtering
+    filtering:
+      # Hide private events
+      hidePrivate: true
+      # Show only work-related events
+      workOnly: true
+      # Filter sensitive information
+      filterSensitive: true
+    # Audit logging
+    auditLogging:
+      # Enable audit logging
+      enabled: true
+      # Log access events
+      logAccess: true
+      # Log data changes
+      logChanges: true
+  
+  # UI configuration
+  ui:
+    # Enable Google Calendar integration on team pages
+    teamPageIntegration: true
+    # Show calendar widget in dashboard
+    showCalendarWidget: true
+    # Default calendar widget view
+    defaultWidgetView: 'agenda'
+    # Available widget views
+    widgetViews: ['agenda', 'week', 'month']
+    # Show availability indicators
+    showAvailability: true
+    # Show meeting conflicts
+    showConflicts: true
+    # Enable calendar embedding
+    enableEmbedding: true
+    # Calendar theme
+    theme: 'default'
+    # Available themes
+    themes: ['default', 'dark', 'light', 'colorful']
+    # Widget configuration
+    widget:
+      # Widget height
+      height: 400
+      # Show weekends
+      showWeekends: false
+      # Show all-day events
+      showAllDay: true
+      # Event limit per day
+      eventLimit: 3
+      # Enable event creation
+      enableCreation: false

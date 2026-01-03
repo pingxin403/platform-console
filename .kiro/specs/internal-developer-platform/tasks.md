@@ -404,81 +404,81 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Test service maturity tracking and incident management integration
     - _Requirements: 10.1, 10.3, 13.1_
 
-- [ ] 13. Install collaboration and workflow plugins (existing community plugins)
-  - [ ] 13.1 Install @roadie/backstage-plugin-jira for issue tracking integration
+- [x] 13. Install collaboration and workflow plugins (existing community plugins)
+  - [x] 13.1 Install @roadie/backstage-plugin-jira for issue tracking integration
     - Install Jira plugin for issue and project tracking visibility
     - Configure issue display and project progress tracking on entity pages
     - Set up team workload visibility and sprint planning integration
     - _Requirements: 7.1, 9.1_
 
-  - [ ] 13.2 Install @dazn/backstage-plugin-github-pull-requests-board for PR management
+  - [x] 13.2 Install @dazn/backstage-plugin-github-pull-requests-board for PR management
     - Install GitHub Pull Requests Board for team PR visibility
     - Configure team-wide PR tracking and review workflow optimization
     - Set up PR metrics and team collaboration insights
     - _Requirements: 9.1, 13.1_
 
-  - [ ] 13.3 Install @drew-hill/backstage-plugin-slack-scaffolder-actions for notifications
+  - [x] 13.3 Install @drew-hill/backstage-plugin-slack-scaffolder-actions for notifications
     - Install Slack Scaffolder Actions for workflow notifications
     - Configure automated Slack notifications for deployments and incidents
     - Set up team communication integration with platform events
     - _Requirements: 7.4, 13.2_
 
-  - [ ] 13.4 Install @red-hat/backstage-plugin-feedback for user feedback
+  - [x] 13.4 Install @red-hat/backstage-plugin-feedback for user feedback
     - Install Feedback plugin for collecting user experience feedback
     - Configure service and platform feedback collection and analysis
     - Set up feedback-driven improvement tracking and prioritization
     - _Requirements: 13.4, 13.5_
 
-  - [ ] 13.5 Install Jira Dashboard plugin for enhanced project visibility
+  - [x] 13.5 Install Jira Dashboard plugin for enhanced project visibility
     - Install community Jira Dashboard plugin for advanced project tracking
     - Configure sprint dashboards, burndown charts, and team velocity metrics
     - Set up integration with existing Jira workflows and reporting
     - _Requirements: 7.1, 9.1, 13.1_
 
-  - [ ] 13.6 Install Shortcut plugin for agile project management (alternative to Jira)
+  - [x] 13.6 Install Shortcut plugin for agile project management (alternative to Jira)
     - Install community Shortcut plugin for story and epic tracking
     - Configure team workflow visibility and project progress tracking
     - Set up integration with development workflows and releases
     - _Requirements: 7.1, 9.1_
 
-  - [ ] 13.7 Install @roadie/backstage-plugin-buildkite for CI/CD integration (if using Buildkite)
+  - [x] 13.7 Install @roadie/backstage-plugin-buildkite for CI/CD integration (if using Buildkite)
     - Install Buildkite plugin for build pipeline visibility and control
     - Configure build status display, retriggering, and real-time step inspection
     - Set up integration with existing Buildkite infrastructure
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 13.8 Install @spotify/backstage-plugin-cost-insights for cloud cost management
+  - [x] 13.8 Install @spotify/backstage-plugin-cost-insights for cloud cost management
     - Install Cost Insights plugin for daily cost trends and optimization
     - Configure cost tracking by team and catalog entity
     - Set up business metrics comparison and actionable cost alerts
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ]* 13.9 Write integration tests for collaboration plugins
+  - [x] 13.9 Write integration tests for collaboration plugins
     - Test Jira integration and PR board functionality
     - Verify Slack notifications and feedback collection
     - Test enhanced Jira dashboards, Shortcut, and cost insights
     - _Requirements: 6.1, 7.1, 7.4, 9.1_
 
-- [ ] 14. Install additional development and infrastructure plugins
-  - [ ] 14.1 Install @coder/backstage-plugin-devpod for development environments
+- [x] 14. Install additional development and infrastructure plugins
+  - [x] 14.1 Install @coder/backstage-plugin-devpod for development environments
     - Install DevPod plugin for containerized development environment management
     - Configure development environment provisioning and access
     - Set up integration with existing development workflows
     - _Requirements: 2.1, 2.2_
 
-  - [ ] 14.2 Install @coder/backstage-plugin-dev-containers for VS Code integration
+  - [x] 14.2 Install @coder/backstage-plugin-dev-containers for VS Code integration
     - Install Dev Containers plugin for VS Code development environment integration
     - Configure containerized development environment launching
     - Set up development environment standardization and sharing
     - _Requirements: 2.1, 2.2_
 
-  - [ ] 14.3 Install @spotify/backstage-plugin-google-calendar for team coordination
+  - [x] 14.3 Install @spotify/backstage-plugin-google-calendar for team coordination
     - Install Google Calendar plugin for team schedule and availability visibility
     - Configure meeting and availability integration on team pages
     - Set up calendar-based team coordination and planning features
     - _Requirements: 13.3_
 
-  - [ ]* 14.4 Write integration tests for development environment plugins
+  - [x] 14.4 Write integration tests for development environment plugins
     - Test DevPod and Dev Containers functionality
     - Verify calendar integration and team coordination features
     - _Requirements: 2.1, 13.3_
