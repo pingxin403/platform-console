@@ -36,16 +36,17 @@ import { OpenDoraPage } from '@devoteam-nl/open-dora-backstage-plugin';
 import { CortexPage } from '@cortexapps/backstage-plugin';
 import { FireHydrantPage } from '@backstage-community/plugin-firehydrant';
 import { KubernetesGptAnalyzerPage } from '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer';
-import { JiraPage } from '@roadiehq/backstage-plugin-jira';
-import { GithubPullRequestsBoardPage } from '@dazn/backstage-plugin-github-pull-requests-board';
-import { FeedbackPage } from '@red-hat/backstage-plugin-feedback';
-import { JiraDashboardPage } from '@roadiehq/backstage-plugin-jira-dashboard';
-import { ShortcutPage } from '@shortcut/backstage-plugin';
-import { BuildkitePage } from '@roadiehq/backstage-plugin-buildkite';
-import { CostInsightsPage } from '@backstage/plugin-cost-insights';
-import { DevPodPage } from '@coder/backstage-plugin-devpod';
-import { DevContainersPage } from '@coder/backstage-plugin-dev-containers';
-import { GoogleCalendarPage } from '@backstage/plugin-google-calendar';
+// Temporarily commented out for MVP checkpoint - these plugins will be added in later phases
+// import { JiraPage } from '@roadiehq/backstage-plugin-jira';
+// import { GithubPullRequestsBoardPage } from '@dazn/backstage-plugin-github-pull-requests-board';
+// import { FeedbackPage } from '@red-hat/backstage-plugin-feedback';
+// import { JiraDashboardPage } from '@roadiehq/backstage-plugin-jira-dashboard';
+// import { ShortcutPage } from '@shortcut/backstage-plugin';
+// import { BuildkitePage } from '@roadiehq/backstage-plugin-buildkite';
+// import { CostInsightsPage } from '@backstage/plugin-cost-insights';
+// import { DevPodPage } from '@coder/backstage-plugin-devpod';
+// import { DevContainersPage } from '@coder/backstage-plugin-dev-containers';
+// import { GoogleCalendarPage } from '@backstage/plugin-google-calendar';
 
 import {
   AlertDisplay,
@@ -122,7 +123,8 @@ const routes = (
     <Route path="/engineering-effectiveness" element={<CortexPage />} />
     <Route path="/incident-management" element={<FireHydrantPage />} />
     <Route path="/kubernetes-ai-troubleshooting" element={<KubernetesGptAnalyzerPage />} />
-    <Route path="/jira" element={<JiraPage />} />
+    {/* Temporarily commented out for MVP checkpoint - these routes will be added in later phases */}
+    {/* <Route path="/jira" element={<JiraPage />} />
     <Route path="/github-pr-board" element={<GithubPullRequestsBoardPage />} />
     <Route path="/feedback" element={<FeedbackPage />} />
     <Route path="/jira-dashboard" element={<JiraDashboardPage />} />
@@ -131,7 +133,7 @@ const routes = (
     <Route path="/cost-insights" element={<CostInsightsPage />} />
     <Route path="/devpod" element={<DevPodPage />} />
     <Route path="/dev-containers" element={<DevContainersPage />} />
-    <Route path="/google-calendar" element={<GoogleCalendarPage />} />
+    <Route path="/google-calendar" element={<GoogleCalendarPage />} /> */}
     <Route
       path="/catalog-import"
       element={
