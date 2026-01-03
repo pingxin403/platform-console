@@ -72,13 +72,6 @@ import {
   isSentryAvailable,
 } from '@backstage/plugin-sentry';
 
-// Sentry plugin imports
-import {
-  EntitySentryCard,
-  EntitySentryContent,
-  isSentryAvailable,
-} from '@backstage/plugin-sentry';
-
 // Prometheus plugin imports
 import {
   EntityPrometheusContent,
@@ -104,19 +97,6 @@ import {
 import {
   EntityLighthouseContent,
   EntityLastLighthouseAuditCard,
-  isLighthouseAvailable,
-} from '@backstage/plugin-lighthouse';
-
-// Security Insights plugin imports
-import {
-  EntitySecurityInsightsContent,
-  EntitySecurityInsightsCard,
-  isSecurityInsightsAvailable,
-} from '@roadiehq/backstage-plugin-security-insights';
-
-// Lighthouse plugin imports
-import {
-  EntityLighthouseContent,
   isLighthouseAvailable,
 } from '@backstage/plugin-lighthouse';
 
