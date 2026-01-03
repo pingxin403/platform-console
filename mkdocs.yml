@@ -1,0 +1,47 @@
+site_name: 'Internal Developer Platform'
+site_description: 'Comprehensive developer platform documentation'
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Service Catalog: service-catalog.md
+  - Templates: templates.md
+  - Deployment: deployment.md
+  - Contributing: contributing.md
+
+plugins:
+  - search
+  - techdocs-core
+  - mermaid2:
+      arguments:
+        theme: 'neutral'
+        themeCSS: '.node rect { fill: #fff; }'
+
+theme:
+  name: material
+  palette:
+    primary: 'blue'
+    accent: 'blue'
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed
+  - toc:
+      permalink: true
+
+extra:
+  version:
+    provider: mike

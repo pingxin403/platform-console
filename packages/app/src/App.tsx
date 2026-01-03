@@ -28,6 +28,7 @@ import { GrpcPlaygroundPage } from 'backstage-grpc-playground';
 import { ToolboxPage } from '@drodil/backstage-plugin-toolbox';
 import { DevToolsPage } from '@backstage/plugin-devtools';
 import { TechRadarPage } from '@backstage-community/plugin-tech-radar';
+import { S3ViewerPage } from '@spreadshirt/backstage-plugin-s3-viewer';
 
 import {
   AlertDisplay,
@@ -96,6 +97,7 @@ const routes = (
     <Route path="/toolbox" element={<ToolboxPage />} />
     <Route path="/devtools" element={<DevToolsPage />} />
     <Route path="/tech-radar" element={<TechRadarPage />} />
+    <Route path="/s3-viewer" element={<S3ViewerPage />} />
     <Route
       path="/catalog-import"
       element={

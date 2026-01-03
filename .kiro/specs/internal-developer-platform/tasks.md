@@ -319,23 +319,23 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Test SDK generation, tech insights, and tech radar functionality
     - _Requirements: 1.3, 5.1, 5.3, 9.1, 13.1_
 
-- [ ] 10. Implement TechDocs documentation system
-  - [ ] 10.1 Configure TechDocs with MkDocs and S3 storage
+- [x] 10. Implement TechDocs documentation system
+  - [x] 10.1 Configure TechDocs with MkDocs and S3 storage
     - Set up automatic documentation generation from /docs directories
     - Configure S3 bucket for static asset storage
     - Implement documentation rebuild triggers and timing
     - _Requirements: 5.1, 5.2_
 
-  - [ ] 10.2 Add Markdown feature support and search integration
+  - [x] 10.2 Add Markdown feature support and search integration
     - Ensure support for diagrams, code snippets, and cross-references
     - Integrate with Backstage search for documentation indexing
     - _Requirements: 5.3, 5.4_
 
-  - [ ]* 10.3 Write property test for documentation automation
+  - [ ] 10.3 Write property test for documentation automation
     - **Property 11: Documentation automation**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-  - [ ]* 10.4 Write property test for documentation search
+  - [ ] 10.4 Write property test for documentation search
     - **Property 12: Documentation search and migration**
     - **Validates: Requirements 5.4, 5.5**
 
