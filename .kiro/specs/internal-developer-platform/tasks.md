@@ -144,174 +144,176 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Set up integration with lighthouse-audit-service
     - _Requirements: 4.1, 4.3_
 
-  - [ ]* 6.7 Write property test for monitoring integration completeness
+  - [x] 6.7 Write property test for monitoring integration completeness
     - **Property 9: Monitoring integration completeness**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
 
-  - [ ]* 6.8 Write property test for RBAC enforcement
+  - [x] 6.8 Write property test for RBAC enforcement
     - **Property 10: RBAC enforcement**
     - **Validates: Requirements 4.5**
 
-- [ ] 7. Install CI/CD and development workflow plugins (existing community plugins)
-  - [ ] 7.1 Install @spotify/backstage-plugin-github-actions for CI/CD visibility
+- [x] 7. Install CI/CD and development workflow plugins (existing community plugins)
+  - [x] 7.1 Install @spotify/backstage-plugin-github-actions for CI/CD visibility
     - Install GitHub Actions plugin for pipeline status and history
     - Configure workflow run display and re-trigger capabilities
     - Set up build status integration with service catalog
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 7.2 Install @roadie/backstage-plugin-github-pull-requests for PR management
+  - [x] 7.2 Install @roadie/backstage-plugin-github-pull-requests for PR management
     - Install GitHub Pull Requests plugin for PR visibility
     - Configure PR status display and team collaboration features
     - Set up PR metrics and review workflow integration
     - _Requirements: 9.1, 9.2_
 
-  - [ ] 7.3 Install @spotify/backstage-plugin-ci-cd-statistics for build analytics
+  - [x] 7.3 Install @spotify/backstage-plugin-ci-cd-statistics for build analytics
     - Install CI/CD Statistics plugin for build performance tracking
     - Configure build duration and success rate metrics
     - Set up trend analysis and performance benchmarking
     - _Requirements: 13.1, 13.2_
 
-  - [ ] 7.4 Install @roadie/backstage-plugin-scaffolder-git-actions for enhanced scaffolding
+  - [x] 7.4 Install @roadie/backstage-plugin-scaffolder-git-actions for enhanced scaffolding
     - Install Git Actions for Scaffolder to enhance template capabilities
     - Configure advanced git operations in templates
     - Set up automated repository setup and configuration
     - _Requirements: 2.1, 2.2_
 
-  - [ ] 7.5 Install changelog viewer plugin for release tracking
+  - [x] 7.5 Install changelog viewer plugin for release tracking
     - Install community changelog plugin for version and release tracking
     - Configure automatic changelog generation from git commits and PRs
     - Set up release notes and version history visualization
     - _Requirements: 3.1, 3.2, 13.1_
 
-  - [ ] 7.6 Install Jenkins plugin for CI/CD integration (if using Jenkins)
+  - [x] 7.6 Install Jenkins plugin for CI/CD integration (if using Jenkins)
     - Install community Jenkins plugin for build pipeline visibility
     - Configure Jenkins job status and build history display
     - Set up integration with existing Jenkins infrastructure
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 7.7 Install GitHub Insights plugin for repository analytics
+  - [x] 7.7 Install GitHub Insights plugin for repository analytics
     - Install community GitHub Insights plugin for code and team metrics
     - Configure repository activity, contributor insights, and code quality metrics
     - Set up team productivity and collaboration analytics
     - _Requirements: 13.1, 13.2, 13.3_
 
-  - [ ]* 7.8 Write integration tests for CI/CD workflow visibility
+  - [x] 7.8 Write integration tests for CI/CD workflow visibility
     - Test GitHub Actions integration and build status display
     - Verify PR workflow, statistics collection, and changelog generation
     - Test Jenkins integration and GitHub insights functionality
     - _Requirements: 3.1, 3.2, 13.1_
 
-- [ ] 8. Install Kubernetes and infrastructure plugins (existing community plugins)
-  - [ ] 8.1 Install @red-hat/backstage-plugin-topology for Kubernetes visualization
+- [x] 8. Install Kubernetes and infrastructure plugins (existing community plugins)
+  - [x] 8.1 Install @red-hat/backstage-plugin-topology for Kubernetes visualization
     - Install Application Topology plugin for Kubernetes workload visualization
     - Configure deployment, pod, and service topology views
     - Set up real-time status monitoring and resource inspection
     - _Requirements: 3.1, 3.4_
 
-  - [ ] 8.2 Install @deepankumar/backstage-plugin-jaeger for distributed tracing
+  - [x] 8.2 Install @deepankumar/backstage-plugin-jaeger for distributed tracing
     - Install Jaeger Tracing plugin for request tracing and performance analysis
     - Configure trace visualization and service dependency mapping
     - Set up performance bottleneck identification and analysis
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 8.3 Install @spreadgroup/backstage-plugin-vault for secrets management
+  - [x] 8.3 Install @spreadgroup/backstage-plugin-vault for secrets management
     - Install Vault plugin for secrets visibility and management
     - Configure secret access and rotation status display
     - Set up integration with AWS Secrets Manager workflow
     - _Requirements: 8.4_
 
-  - [ ] 8.4 Install @red-hat/backstage-plugin-nexus for artifact management
+  - [x] 8.4 Install @red-hat/backstage-plugin-nexus for artifact management
     - Install Nexus Repository Manager plugin for build artifact visibility
     - Configure artifact version tracking and dependency management
     - Set up integration with existing Nexus instance
     - _Requirements: 2.3, 2.5_
 
-  - [ ] 8.5 Install Terraform provider plugin for infrastructure management
+  - [x] 8.5 Install Terraform provider plugin for infrastructure management
     - Install community Terraform plugin for infrastructure as code visibility
     - Configure Terraform state and plan visualization
     - Set up integration with AWS EKS and infrastructure workflows
     - _Requirements: 3.1, 3.4, 8.4_
 
-  - [ ] 8.6 Install GitOps clusters plugin for multi-cluster management
+  - [x] 8.6 Install GitOps clusters plugin for multi-cluster management
     - Install community GitOps clusters plugin for Argo CD cluster visibility
     - Configure multi-cluster deployment status and health monitoring
     - Set up cluster resource utilization and capacity planning
     - _Requirements: 3.1, 3.4, 3.5_
 
-  - [ ] 8.7 Install Kiali service mesh plugin for microservices observability
+  - [x] 8.7 Install Kiali service mesh plugin for microservices observability
     - Install Kiali plugin for Istio service mesh visualization
     - Configure service topology and traffic flow monitoring
     - Set up distributed tracing and performance analysis
+    - docs: https://roadie.io/backstage/plugins/kiali-service-mesh/
     - _Requirements: 4.1, 4.3_
 
-  - [ ] 8.8 Install Kubelog plugin for Kubernetes log viewing
+  - [x] 8.8 Install Kubelog plugin for Kubernetes log viewing
     - Install community Kubelog plugin for centralized log access
     - Configure pod and container log streaming and search
     - Set up log filtering and real-time monitoring capabilities
+    - docs: https://roadie.io/backstage/plugins/kubelog/
     - _Requirements: 4.1, 4.3_
 
-  - [ ]* 8.9 Write integration tests for Kubernetes and infrastructure plugins
+  - [x] 8.9 Write integration tests for Kubernetes and infrastructure plugins
     - Test topology visualization and resource monitoring
     - Verify tracing integration, secrets management, and Terraform integration
     - Test GitOps clusters, service mesh, and logging functionality
     - _Requirements: 3.1, 4.1, 8.4_
 
-- [ ] 9. Install developer experience and productivity plugins (existing community plugins)
-  - [ ] 9.1 Install @sda-se/backstage-plugin-api-docs for API documentation
+- [x] 9. Install developer experience and productivity plugins (existing community plugins: https://roadie.io/backstage/plugins/)
+  - [x] 9.1 Install @sda-se/backstage-plugin-api-docs for API documentation
     - Install API Docs plugin for OpenAPI, AsyncAPI, and GraphQL documentation
     - Configure automatic API documentation generation and display
     - Set up API testing and exploration capabilities
     - _Requirements: 5.1, 5.3_
 
-  - [ ] 9.2 Install @zalopay-oss/backstage-plugin-grpc-playground for gRPC testing
+  - [x] 9.2 Install @zalopay-oss/backstage-plugin-grpc-playground for gRPC testing
     - Install gRPC Playground for service testing and exploration
     - Configure gRPC service discovery and testing capabilities
     - Set up protocol buffer documentation and testing
     - _Requirements: 5.3, 9.1_
 
-  - [ ] 9.3 Install @spotify/backstage-plugin-todo for code quality tracking
+  - [x] 9.3 Install @spotify/backstage-plugin-todo for code quality tracking
     - Install TODO plugin for tracking code comments and technical debt
     - Configure TODO/FIXME comment aggregation and reporting
     - Set up code quality metrics and improvement tracking
     - _Requirements: 13.1, 13.3_
 
-  - [ ] 9.4 Install @drodil/backstage-plugin-toolbox for developer utilities
+  - [x] 9.4 Install @drodil/backstage-plugin-toolbox for developer utilities
     - Install Toolbox plugin for developer utility tools
     - Configure converters, validators, and common development tools
     - Set up JWT decoding, QR code generation, and other utilities
     - _Requirements: 9.1_
 
-  - [ ] 9.5 Install @keyloop/backstage-plugin-devtools for diagnostics
+  - [x] 9.5 Install @keyloop/backstage-plugin-devtools for diagnostics
     - Install DevTools plugin for Backstage runtime diagnostics
     - Configure system health monitoring and configuration visibility
     - Set up dependency checking and troubleshooting tools
     - _Requirements: 13.2_
 
-  - [ ] 9.6 Install catalog graph plugin for service dependency visualization
+  - [x] 9.6 Install catalog graph plugin for service dependency visualization
     - Install community catalog graph plugin for dependency mapping
     - Configure interactive service dependency visualization
     - Set up real-time dependency tracking and impact analysis
     - _Requirements: 1.3, 1.4_
 
-  - [ ] 9.7 Install API SDK generator plugin for automated SDK generation
+  - [x] 9.7 Install API SDK generator plugin for automated SDK generation
     - Install community API SDK generator for Java, Go, and TypeScript
     - Configure automatic SDK generation from OpenAPI specifications
     - Set up SDK publishing and distribution workflows
     - _Requirements: 2.3, 5.1, 5.3_
 
-  - [ ] 9.8 Install @roadie/backstage-plugin-tech-insights for quality scorecards
+  - [x] 9.8 Install @roadie/backstage-plugin-tech-insights for quality scorecards
     - Install Tech Insights plugin for entity quality measurement
     - Configure compliance scorecards and operational health metrics
     - Set up automated quality checks and improvement tracking
     - _Requirements: 13.1, 13.3, 13.4_
 
-  - [ ] 9.9 Install @spotify/backstage-plugin-tech-radar for technology tracking
+  - [x] 9.9 Install @spotify/backstage-plugin-tech-radar for technology tracking
     - Install Tech Radar plugin for technology adoption visualization
     - Configure quadrants, rings, and entry timelines for tech stack
     - Set up team technology decision tracking and communication
     - _Requirements: 13.1, 13.3_
 
-  - [ ]* 9.10 Write integration tests for developer experience plugins
+  - [x] 9.10 Write integration tests for developer experience plugins
     - Test API documentation generation and gRPC playground functionality
     - Verify TODO tracking, developer toolbox utilities, and catalog graph
     - Test SDK generation, tech insights, and tech radar functionality

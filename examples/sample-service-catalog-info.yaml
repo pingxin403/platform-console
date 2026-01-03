@@ -5,6 +5,7 @@ metadata:
   description: User management service for the platform
   annotations:
     github.com/project-slug: your-org/user-service
+    github.com/workflows: ci.yml,deploy.yml
     backstage.io/source-location: url:https://github.com/your-org/user-service
     backstage.io/view-url: https://github.com/your-org/user-service
     backstage.io/edit-url: https://github.com/your-org/user-service/edit/main/catalog-info.yaml

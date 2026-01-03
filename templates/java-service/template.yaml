@@ -86,6 +86,39 @@ spec:
           springBootVersion: ${{ parameters.springBootVersion }}
           repoUrl: ${{ parameters.repoUrl }}
 
+    - id: generate-readme
+      name: Generate Enhanced README
+      action: roadiehq:utils:fs:replace
+      input:
+        files:
+          - file: README.md
+            find: '# ${{ parameters.name }}'
+            replaceWith: |
+              # ${{ parameters.name }}
+              
+              ${{ parameters.description }}
+              
+              ## Quick Start
+              
+              ```bash
+              # Build the application
+              ./mvnw clean compile
+              
+              # Run tests
+              ./mvnw test
+              
+              # Run the application
+              ./mvnw spring-boot:run
+              ```
+              
+              ## Configuration
+              
+              The service runs on port ${{ parameters.port }} by default.
+              
+              ## Owner
+              
+              This service is owned by: ${{ parameters.owner }}
+
     - id: publish
       name: Publish to GitHub
       action: publish:github
@@ -96,6 +129,19 @@ spec:
         gitCommitMessage: 'Initial commit: Java service ${{ parameters.name }}'
         gitAuthorName: 'Backstage Scaffolder'
         gitAuthorEmail: 'scaffolder@company.com'
+
+    - id: setup-branch-protection
+      name: Setup Branch Protection
+      action: roadiehq:utils:github:branch-protection
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branch: main
+        requiredStatusChecks:
+          - 'ci'
+        enforceAdmins: false
+        requiredPullRequestReviews:
+          requiredApprovingReviewCount: 1
+          dismissStaleReviews: true
 
     - id: register
       name: Register in Catalog

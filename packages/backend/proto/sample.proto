@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package sample;
+
+// Sample gRPC service for demonstration
+service SampleService {
+  // Get user information
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  
+  // List all users
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // Create a new user
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+}
+
+// Request message for GetUser
+message GetUserRequest {
+  string user_id = 1;
+}
+
+// Response message for GetUser
+message GetUserResponse {
+  User user = 1;
+}
+
+// Request message for ListUsers
+message ListUsersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+// Response message for ListUsers
+message ListUsersResponse {
+  repeated User users = 1;
+  string next_page_token = 2;
+}
+
+// Request message for CreateUser
+message CreateUserRequest {
+  User user = 1;
+}
+
+// Response message for CreateUser
+message CreateUserResponse {
+  User user = 1;
+}
+
+// User entity
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+}

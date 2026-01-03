@@ -120,10 +120,107 @@ import {
   isLighthouseAvailable,
 } from '@backstage/plugin-lighthouse';
 
+// GitHub Actions plugin imports
+import {
+  EntityGithubActionsContent,
+  isGithubActionsAvailable,
+} from '@backstage/plugin-github-actions';
+
+// GitHub Pull Requests plugin imports
+import {
+  EntityGithubPullRequestsContent,
+  EntityGithubPullRequestsOverviewCard,
+  isGithubPullRequestsAvailable,
+} from '@roadiehq/backstage-plugin-github-pull-requests';
+
+// CI/CD Statistics plugin imports
+import {
+  EntityCicdStatisticsContent,
+  EntityCicdStatisticsCard,
+  isCicdStatisticsAvailable,
+} from '@backstage-community/plugin-cicd-statistics';
+
+// GitHub Insights plugin imports for release tracking and analytics
+import {
+  EntityGithubInsightsContent,
+  EntityGithubInsightsLanguagesCard,
+  EntityGithubInsightsReleasesCard,
+  EntityGithubInsightsReadmeCard,
+  isGithubInsightsAvailable,
+} from '@roadiehq/backstage-plugin-github-insights';
+
+// Jenkins plugin imports for CI/CD integration
+import {
+  EntityJenkinsContent,
+  EntityLatestJenkinsRunCard,
+  isJenkinsAvailable,
+} from '@backstage/plugin-jenkins';
+
+// Topology plugin imports for Kubernetes visualization
+import {
+  EntityTopologyContent,
+  isTopologyAvailable,
+} from '@backstage-community/plugin-topology';
+
+// Jaeger plugin imports for distributed tracing
+import {
+  EntityJaegerContent,
+  isJaegerAvailable,
+} from '@backstage-community/plugin-jaeger';
+
+// Vault plugin imports for secrets management
+import {
+  EntityVaultContent,
+  EntityVaultCard,
+  isVaultAvailable,
+} from '@backstage-community/plugin-vault';
+
+// Nexus Repository Manager plugin imports for artifact management
+import {
+  EntityNexusRepositoryManagerContent,
+  EntityNexusRepositoryManagerCard,
+  isNexusRepositoryManagerAvailable,
+} from '@backstage-community/plugin-nexus-repository-manager';
+
+// Terraform plugin imports for infrastructure management
+import {
+  EntityTerraformContent,
+  EntityTerraformCard,
+  EntityTerraformLatestRunCard,
+  EntityTerraformWorkspaceHealthAssessmentsCard,
+  isTerraformAvailable,
+} from '@globallogicuki/backstage-plugin-terraform';
+
+// Argo CD plugin imports for GitOps cluster management
+import {
+  EntityArgoCDContent,
+  EntityArgoCDOverviewCard,
+  isArgocdAvailable,
+} from '@roadiehq/backstage-plugin-argo-cd';
+
+// Kiali plugin imports for service mesh observability
+import {
+  EntityKialiContent,
+  EntityKialiGraphCard,
+  isKialiAvailable,
+} from '@backstage-community/plugin-kiali';
+
+// Kubelog plugin imports for Kubernetes log viewing
+import {
+  EntityKubelogContent,
+  isKubelogAvailable,
+} from '@jfvilas/plugin-kubelog';
+
 // Import our custom components
 import { ServiceOverviewCard } from './ServiceOverviewCard';
 import { EnhancedDependencyCard } from './EnhancedDependencyCard';
 import { ArgocdDeploymentCard } from './ArgocdDeploymentCard';
+
+// TODO plugin imports for code quality tracking
+import {
+  EntityTodoContent,
+  isTodoAvailable,
+} from '@backstage/plugin-todo';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -137,13 +234,15 @@ const cicdContent = (
   // This is an example of how you can implement your company's logic in entity page.
   // You can for example enforce that all components of type 'service' should use GitHubActions
   <EntitySwitch>
-    {/*
-      Here you can add support for different CI/CD services, for example
-      using @backstage-community/plugin-github-actions as follows:
-      <EntitySwitch.Case if={isGithubActionsAvailable}>
-        <EntityGithubActionsContent />
-      </EntitySwitch.Case>
-     */}
+    <EntitySwitch.Case if={isGithubActionsAvailable}>
+      <EntityGithubActionsContent />
+    </EntitySwitch.Case>
+    <EntitySwitch.Case if={isCicdStatisticsAvailable}>
+      <EntityCicdStatisticsContent />
+    </EntitySwitch.Case>
+    <EntitySwitch.Case if={isJenkinsAvailable}>
+      <EntityJenkinsContent />
+    </EntitySwitch.Case>
     <EntitySwitch.Case>
       <EmptyState
         title="No CI/CD available for this entity"
@@ -257,9 +356,97 @@ const overviewContent = (
     </EntitySwitch>
     
     <EntitySwitch>
-      <EntitySwitch.Case if={isSecurityInsightsAvailable}>
+      <EntitySwitch.Case if={isGithubPullRequestsAvailable}>
         <Grid item md={6} xs={12}>
-          <EntitySecurityInsightsCard />
+          <EntityGithubPullRequestsOverviewCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isCicdStatisticsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityCicdStatisticsCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isGithubInsightsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityGithubInsightsReleasesCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isGithubInsightsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityGithubInsightsLanguagesCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isJenkinsAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityLatestJenkinsRunCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isVaultAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityVaultCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isNexusRepositoryManagerAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityNexusRepositoryManagerCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isTerraformAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityTerraformCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isTerraformAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityTerraformLatestRunCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isTerraformAvailable}>
+        <Grid item md={12} xs={12}>
+          <EntityTerraformWorkspaceHealthAssessmentsCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isArgocdAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityArgoCDOverviewCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isKialiAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityKialiGraphCard />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
@@ -359,12 +546,110 @@ const serviceEntityPage = (
       {cicdContent}
     </EntityLayout.Route>
 
+    <EntityLayout.Route 
+      path="/pull-requests" 
+      title="Pull Requests"
+      if={isGithubPullRequestsAvailable}
+    >
+      <EntityGithubPullRequestsContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/build-analytics" 
+      title="Build Analytics"
+      if={isCicdStatisticsAvailable}
+    >
+      <EntityCicdStatisticsContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/releases" 
+      title="Releases"
+      if={isGithubInsightsAvailable}
+    >
+      <Grid container spacing={3} alignItems="stretch">
+        <Grid item xs={12}>
+          <EntityGithubInsightsContent />
+        </Grid>
+        <Grid item md={6} xs={12}>
+          <EntityGithubInsightsReleasesCard />
+        </Grid>
+        <Grid item md={6} xs={12}>
+          <EntityGithubInsightsReadmeCard />
+        </Grid>
+      </Grid>
+    </EntityLayout.Route>
+
     <EntityLayout.Route
       path="/kubernetes"
       title="Kubernetes"
       if={isKubernetesAvailable}
     >
       <EntityKubernetesContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/topology"
+      title="Topology"
+      if={isTopologyAvailable}
+    >
+      <EntityTopologyContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/tracing"
+      title="Tracing"
+      if={isJaegerAvailable}
+    >
+      <EntityJaegerContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/secrets"
+      title="Secrets"
+      if={isVaultAvailable}
+    >
+      <EntityVaultContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/artifacts"
+      title="Artifacts"
+      if={isNexusRepositoryManagerAvailable}
+    >
+      <EntityNexusRepositoryManagerContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/terraform"
+      title="Terraform"
+      if={isTerraformAvailable}
+    >
+      <EntityTerraformContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/gitops"
+      title="GitOps"
+      if={isArgocdAvailable}
+    >
+      <EntityArgoCDContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/service-mesh"
+      title="Service Mesh"
+      if={isKialiAvailable}
+    >
+      <EntityKialiContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/logs"
+      title="Logs"
+      if={isKubelogAvailable}
+    >
+      <EntityKubelogContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/api" title="API">
@@ -394,6 +679,14 @@ const serviceEntityPage = (
 
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/todos" 
+      title="TODOs"
+      if={isTodoAvailable}
+    >
+      <EntityTodoContent />
     </EntityLayout.Route>
   </EntityLayout>
 );

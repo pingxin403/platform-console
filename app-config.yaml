@@ -103,6 +103,50 @@ proxy:
       changeOrigin: true
       headers:
         Authorization: 'Bearer ${GRAFANA_TOKEN}'
+    
+    # GitHub API proxy for CI/CD statistics
+    '/github':
+      target: 'https://api.github.com'
+      changeOrigin: true
+      headers:
+        Authorization: 'token ${GITHUB_TOKEN}'
+        Accept: 'application/vnd.github.v3+json'
+    
+    # Jaeger API proxy for distributed tracing
+    '/jaeger/api':
+      target: ${JAEGER_URL:-http://localhost:16686}
+      changeOrigin: true
+      # Optional authentication headers
+      # headers:
+      #   Authorization: 'Basic ${JAEGER_AUTH_TOKEN}'
+    
+    # Vault API proxy for secrets management
+    '/vault/api':
+      target: ${VAULT_URL:-http://localhost:8200}
+      changeOrigin: true
+      headers:
+        X-Vault-Token: ${VAULT_TOKEN}
+    
+    # Nexus Repository Manager API proxy for artifact management
+    '/nexus/api':
+      target: ${NEXUS_URL:-http://localhost:8081}
+      changeOrigin: true
+      headers:
+        Authorization: 'Basic ${NEXUS_AUTH_TOKEN}'
+    
+    # Argo CD API proxy for GitOps cluster management
+    '/argocd/api':
+      target: ${ARGOCD_API_URL}
+      changeOrigin: true
+      headers:
+        Authorization: 'Bearer ${ARGOCD_TOKEN}'
+    
+    # Kiali API proxy for service mesh observability
+    '/kiali/api':
+      target: ${KIALI_URL:-http://localhost:20001}
+      changeOrigin: true
+      headers:
+        Authorization: 'Basic ${KIALI_AUTH_TOKEN}'
 
 # Datadog configuration for dashboard embedding
 datadog:
@@ -175,6 +219,461 @@ lighthouse:
   # Optional authentication
   # token: ${LIGHTHOUSE_TOKEN}
 
+# GitHub Actions configuration for CI/CD visibility
+githubActions:
+  # GitHub integration for workflow visibility
+  github:
+    token: ${GITHUB_TOKEN}
+  # Workflow configuration
+  workflows:
+    # Enable workflow run display and re-trigger capabilities
+    enableRerun: true
+    # Show workflow history
+    showHistory: true
+    # Default number of workflow runs to display
+    defaultLimit: 25
+
+# GitHub Pull Requests configuration for PR management
+githubPullRequests:
+  # GitHub integration for PR visibility
+  github:
+    token: ${GITHUB_TOKEN}
+  # Pull request configuration
+  pullRequests:
+    # Show PR status and team collaboration features
+    showStatus: true
+    # Enable PR metrics and review workflow integration
+    showMetrics: true
+    # Default number of PRs to display
+    defaultLimit: 10
+
+# CI/CD Statistics configuration for build analytics
+cicdStatistics:
+  # GitHub Actions integration for build performance tracking
+  github:
+    token: ${GITHUB_TOKEN}
+  # Build analytics configuration
+  builds:
+    # Show build duration and success rate metrics
+    showMetrics: true
+    # Enable trend analysis and performance benchmarking
+    showTrends: true
+    # Default number of builds to display
+    defaultLimit: 50
+    # Time range for analytics (in days)
+    defaultTimeRange: 30
+
+# GitHub Insights configuration for release tracking and repository analytics
+githubInsights:
+  # GitHub integration for repository analytics
+  github:
+    token: ${GITHUB_TOKEN}
+  # Repository insights configuration
+  insights:
+    # Show release tracking and changelog generation
+    showReleases: true
+    # Show repository activity and contributor insights
+    showActivity: true
+    # Show code quality metrics
+    showLanguages: true
+    # Default number of releases to display
+    defaultReleaseLimit: 10
+
+# Jaeger configuration for distributed tracing
+jaeger:
+  # Jaeger server configuration
+  api:
+    baseUrl: ${JAEGER_URL:-http://localhost:16686}
+    # Optional authentication
+    # username: ${JAEGER_USERNAME}
+    # password: ${JAEGER_PASSWORD}
+  # Tracing configuration
+  tracing:
+    # Default time range for traces
+    defaultTimeRange: '1h'
+    # Default limit for trace queries
+    defaultLimit: 20
+    # Enable trace visualization and service dependency mapping
+    enableVisualization: true
+
+# Vault configuration for secrets management
+vault:
+  # Vault server configuration
+  api:
+    baseUrl: ${VAULT_URL:-http://localhost:8200}
+    # Vault authentication token
+    token: ${VAULT_TOKEN}
+  # Secrets configuration
+  secrets:
+    # Default mount path for secrets
+    defaultMountPath: 'secret'
+    # Enable secret access and rotation status display
+    showRotationStatus: true
+    # Integration with AWS Secrets Manager workflow
+    awsSecretsManager:
+      enabled: ${VAULT_AWS_INTEGRATION:-false}
+      region: ${AWS_REGION:-us-east-1}
+
+# Nexus Repository Manager configuration for artifact management
+nexusRepositoryManager:
+  # Nexus server configuration
+  api:
+    baseUrl: ${NEXUS_URL:-http://localhost:8081}
+    # Nexus authentication
+    username: ${NEXUS_USERNAME}
+    password: ${NEXUS_PASSWORD}
+  # Artifact management configuration
+  artifacts:
+    # Enable artifact version tracking and dependency management
+    showVersions: true
+    # Show build artifact visibility
+    showArtifacts: true
+    # Default number of artifacts to display
+    defaultLimit: 20
+    # Integration with existing Nexus instance
+    repositories:
+      - name: 'maven-public'
+        type: 'maven2'
+      - name: 'npm-public'
+        type: 'npm'
+      - name: 'docker-public'
+        type: 'docker'
+
+# Terraform configuration for infrastructure as code visibility
+terraform:
+  # Terraform Cloud/Enterprise API configuration
+  apiBaseUrl: ${TERRAFORM_API_BASE_URL:-https://app.terraform.io}
+  token:
+    $env: TERRAFORM_TOKEN
+  # Terraform workspace configuration
+  workspaces:
+    # Default workspace for infrastructure
+    default: 'production'
+    # Available workspaces
+    available: ['development', 'staging', 'production']
+  # Integration with AWS EKS and infrastructure workflows
+  integration:
+    aws:
+      enabled: true
+      region: ${AWS_REGION:-us-east-1}
+    kubernetes:
+      enabled: true
+      cluster: ${K8S_CLUSTER_NAME:-production}
+
+# GitOps Profiles configuration for multi-cluster management
+gitopsProfiles:
+  # GitOps API backend URL
+  apiBaseUrl: ${GITOPS_API_BASE_URL:-http://localhost:3008}
+  # Multi-cluster deployment configuration
+  clusters:
+    # Production cluster configuration
+    production:
+      name: 'production'
+      url: ${K8S_CLUSTER_URL}
+      region: ${AWS_REGION:-us-east-1}
+    # Staging cluster configuration
+    staging:
+      name: 'staging'
+      url: ${K8S_STAGING_CLUSTER_URL}
+      region: ${AWS_REGION:-us-east-1}
+    # Development cluster configuration
+    development:
+      name: 'development'
+      url: ${K8S_DEV_CLUSTER_URL}
+      region: ${AWS_REGION:-us-east-1}
+
+# Argo CD configuration for GitOps deployment management
+argocd:
+  # Argo CD server configuration
+  api:
+    baseUrl: ${ARGOCD_API_URL}
+    # Authentication token
+    token: ${ARGOCD_TOKEN}
+  # Application configuration
+  applications:
+    # Enable multi-cluster deployment status and health monitoring
+    showHealth: true
+    # Show cluster resource utilization and capacity planning
+    showResources: true
+    # Default number of applications to display
+    defaultLimit: 50
+  # Cluster configuration
+  clusters:
+    # Enable multi-environment support
+    multiEnvironment: true
+    # Default environments
+    environments: ['development', 'staging', 'production']
+
+# Kiali configuration for service mesh observability
+kiali:
+  # Kiali server configuration
+  api:
+    baseUrl: ${KIALI_URL:-http://localhost:20001}
+    # Optional authentication
+    username: ${KIALI_USERNAME}
+    password: ${KIALI_PASSWORD}
+    # Or use token-based authentication
+    # token: ${KIALI_TOKEN}
+  # Service mesh configuration
+  serviceMesh:
+    # Enable service topology and traffic flow monitoring
+    showTopology: true
+    # Enable distributed tracing and performance analysis
+    showTracing: true
+    # Integration with Istio service mesh
+    istio:
+      enabled: true
+      namespace: 'istio-system'
+    # Metrics configuration
+    metrics:
+      # Default time range for metrics
+      defaultTimeRange: '1h'
+      # Enable performance bottleneck identification
+      showPerformance: true
+
+# Kubelog configuration for Kubernetes log viewing
+kubelog:
+  # Kubelog backend configuration
+  backend:
+    # Enable centralized log access
+    enabled: true
+    # Log streaming and search configuration
+    streaming:
+      enabled: true
+      # Real-time log monitoring capabilities
+      realTime: true
+    # Log filtering configuration
+    filtering:
+      enabled: true
+      # Default log level filter
+      defaultLevel: 'info'
+  # Kubernetes cluster configuration for log access
+  clusters:
+    # Production cluster logs
+    production:
+      name: 'production'
+      # Kwirth service URL for log access
+      kwirthUrl: ${KWIRTH_PRODUCTION_URL}
+      # Authentication for log access
+      token: ${K8S_SERVICE_ACCOUNT_TOKEN}
+    # Staging cluster logs
+    staging:
+      name: 'staging'
+      kwirthUrl: ${KWIRTH_STAGING_URL}
+      token: ${K8S_STAGING_SERVICE_ACCOUNT_TOKEN}
+    # Development cluster logs
+    development:
+      name: 'development'
+      kwirthUrl: ${KWIRTH_DEV_URL}
+      token: ${K8S_DEV_SERVICE_ACCOUNT_TOKEN}
+
+# Jenkins configuration for CI/CD integration (optional)
+jenkins:
+  # Jenkins server configuration
+  instances:
+    - name: default
+      baseUrl: ${JENKINS_BASE_URL:-http://localhost:8080}
+      username: ${JENKINS_USERNAME}
+      apiKey: ${JENKINS_API_KEY}
+  # Build configuration
+  builds:
+    # Show build pipeline visibility and control
+    showPipelines: true
+    # Show build history display
+    showHistory: true
+    # Default number of builds to display
+    defaultLimit: 25
+
+# DevTools plugin configuration for diagnostics
+devtools:
+  # System health monitoring and configuration visibility
+  monitoring:
+    # Enable system health monitoring
+    enabled: true
+    # Show OS, Node/Backstage and package versions
+    versions: true
+    # Show live config with secret masking
+    config: true
+    # Enable secret masking for security
+    secretMasking: true
+  # Dependency checking and troubleshooting tools
+  dependencies:
+    # Enable external dependency checks
+    enabled: true
+    # Check database connectivity
+    database: true
+    # Check external service connectivity
+    externalServices: true
+    # Timeout for dependency checks (ms)
+    timeout: 5000
+  # Runtime diagnostics
+  diagnostics:
+    # Enable runtime diagnostics
+    enabled: true
+    # Show memory usage
+    memory: true
+    # Show CPU usage
+    cpu: true
+    # Show uptime information
+    uptime: true
+
+# Toolbox plugin configuration for developer utilities
+toolbox:
+  # Developer utility tools configuration
+  tools:
+    # Enable converters and validators
+    converters: true
+    validators: true
+    # Enable JWT decoding utility
+    jwt: true
+    # Enable QR code generation
+    qrCode: true
+    # Enable barcode generation
+    barcode: true
+    # Enable other common development tools
+    utilities: true
+  # Favorites and personalization
+  favorites:
+    # Enable favorites functionality
+    enabled: true
+    # Allow users to customize tool order
+    customOrder: true
+  # Internationalization support
+  i18n:
+    # Enable internationalization
+    enabled: true
+    # Default language
+    defaultLanguage: 'en'
+
+# TODO plugin configuration for code quality tracking
+todo:
+  # TODO/FIXME comment aggregation and reporting
+  aggregation:
+    # Enable TODO comment scanning
+    enabled: true
+    # Supported comment types
+    commentTypes: ['TODO', 'FIXME', 'HACK', 'BUG', 'NOTE']
+    # File extensions to scan
+    fileExtensions: ['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.h']
+  # Code quality metrics and improvement tracking
+  metrics:
+    # Enable code quality tracking
+    enabled: true
+    # Track TODO density per file
+    density: true
+    # Track TODO age (days since creation)
+    age: true
+    # Track TODO priority based on comment type
+    priority: true
+  # Integration with version control
+  vcs:
+    # Enable Git integration for TODO tracking
+    git: true
+    # Track TODO author information
+    authors: true
+    # Track TODO creation date
+    creationDate: true
+
+# gRPC Playground configuration for service testing and exploration
+grpcPlayground:
+  # gRPC service discovery and testing capabilities
+  discovery:
+    # Enable automatic gRPC service discovery
+    enabled: true
+    # Support for different gRPC service types
+    supportedTypes: ['grpc', 'grpc-web']
+  # Protocol buffer documentation and testing
+  protobuf:
+    # Enable protocol buffer documentation
+    documentation: true
+    # Support for proto file imports
+    imports: true
+    # Default proto file location
+    defaultPath: '/proto'
+  # gRPC testing capabilities
+  testing:
+    # Enable gRPC service testing interface
+    enabled: true
+    # Support for TLS connections
+    tls: true
+    # Default testing environment
+    defaultEnvironment: 'development'
+    # Request timeout in milliseconds
+    timeout: 30000
+
+# API Documentation configuration for OpenAPI, AsyncAPI, and GraphQL
+apiDocs:
+  # Enable automatic API documentation generation and display
+  generator:
+    # Support for OpenAPI specifications
+    openapi:
+      enabled: true
+      # Automatic generation from code annotations
+      autoGenerate: true
+      # Default OpenAPI version
+      version: '3.0.0'
+    # Support for AsyncAPI specifications
+    asyncapi:
+      enabled: true
+      # Automatic generation from message schemas
+      autoGenerate: true
+      # Default AsyncAPI version
+      version: '2.6.0'
+    # Support for GraphQL schemas
+    graphql:
+      enabled: true
+      # Automatic schema introspection
+      autoIntrospect: true
+      # GraphQL playground integration
+      playground: true
+  # API testing and exploration capabilities
+  testing:
+    # Enable API testing interface
+    enabled: true
+    # Support for different API types
+    supportedTypes: ['openapi', 'asyncapi', 'graphql']
+    # Default testing environment
+    defaultEnvironment: 'development'
+  # API documentation display settings
+  display:
+    # Show API examples and schemas
+    showExamples: true
+    # Show API authentication requirements
+    showAuth: true
+    # Show API rate limits and usage
+    showLimits: true
+    # Enable interactive API explorer
+    interactiveExplorer: true
+  # SDK generation configuration for automated SDK generation
+  sdkGeneration:
+    # Enable SDK generation from OpenAPI specifications
+    enabled: true
+    # Supported programming languages for SDK generation
+    supportedLanguages: ['java', 'go', 'typescript', 'javascript', 'python']
+    # SDK generation templates
+    templates:
+      java: 'openapi-generator-java'
+      go: 'openapi-generator-go'
+      typescript: 'openapi-generator-typescript'
+      javascript: 'openapi-generator-javascript'
+      python: 'openapi-generator-python'
+    # SDK publishing and distribution workflows
+    publishing:
+      # Enable automatic SDK publishing
+      enabled: true
+      # Publishing targets
+      targets: ['npm', 'maven', 'go-modules', 'pypi']
+      # Versioning strategy
+      versioning: 'semantic'
+    # SDK documentation generation
+    documentation:
+      # Generate SDK documentation
+      enabled: true
+      # Documentation formats
+      formats: ['markdown', 'html']
+      # Include code examples
+      examples: true
+
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs
 # and an external cloud storage when deploying TechDocs for production use-case.
@@ -199,6 +698,18 @@ auth:
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
+  # Enhanced scaffolder actions configuration
+  actions:
+    # Roadie utils actions configuration
+    roadiehq:
+      utils:
+        # GitHub integration for enhanced actions
+        github:
+          token: ${GITHUB_TOKEN}
+        # File system operations
+        fs:
+          # Enable file replacement operations
+          enableReplace: true
 
 catalog:
   import:
@@ -206,6 +717,8 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  # Enable Terraform provider integration - not read-only
+  readonly: false
   # Optimized catalog processing with deferred stitching
   processing:
     cache:
@@ -254,8 +767,160 @@ catalog:
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: ${K8S_CLUSTER_URL}
+          name: ${K8S_CLUSTER_NAME:-production}
+          authProvider: 'serviceAccount'
+          serviceAccountToken: ${K8S_SERVICE_ACCOUNT_TOKEN}
+          skipTLSVerify: ${K8S_SKIP_TLS_VERIFY:-false}
+          skipMetricsLookup: false
+          # Custom resources for topology visualization
+          customResources:
+            - group: 'route.openshift.io'
+              apiVersion: 'v1'
+              plural: 'routes'
+            - group: 'tekton.dev'
+              apiVersion: 'v1beta1'
+              plural: 'pipelineruns'
+            - group: 'kubevirt.io'
+              apiVersion: 'v1'
+              plural: 'virtualmachines'
+            - group: 'argoproj.io'
+              apiVersion: 'v1alpha1'
+              plural: 'applications'
 
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+
+# Tech Radar configuration for technology tracking
+techRadar:
+  # Technology adoption visualization configuration
+  visualization:
+    # Enable quadrants, rings, and entry timelines for tech stack
+    quadrants:
+      - name: 'Languages & Frameworks'
+        id: 'languages-frameworks'
+      - name: 'Tools'
+        id: 'tools'
+      - name: 'Platforms'
+        id: 'platforms'
+      - name: 'Techniques'
+        id: 'techniques'
+    # Technology adoption rings
+    rings:
+      - name: 'Adopt'
+        id: 'adopt'
+        color: '#5ba300'
+      - name: 'Trial'
+        id: 'trial'
+        color: '#009eb0'
+      - name: 'Assess'
+        id: 'assess'
+        color: '#c7ba00'
+      - name: 'Hold'
+        id: 'hold'
+        color: '#e09b96'
+  # Team technology decision tracking and communication
+  tracking:
+    # Enable team technology decision tracking
+    enabled: true
+    # Show entry timelines
+    showTimelines: true
+    # Show technology descriptions and rationale
+    showDescriptions: true
+    # Enable technology change notifications
+    notifications: true
+  # Data source configuration
+  data:
+    # Tech radar data source (can be 'static', 'github', or 'api')
+    source: 'static'
+    # Static data configuration
+    static:
+      # Default tech radar entries
+      entries:
+        - name: 'React'
+          quadrant: 'languages-frameworks'
+          ring: 'adopt'
+          moved: 0
+          description: 'JavaScript library for building user interfaces'
+        - name: 'TypeScript'
+          quadrant: 'languages-frameworks'
+          ring: 'adopt'
+          moved: 0
+          description: 'Typed superset of JavaScript'
+        - name: 'Backstage'
+          quadrant: 'platforms'
+          ring: 'adopt'
+          moved: 1
+          description: 'Open platform for building developer portals'
+        - name: 'Kubernetes'
+          quadrant: 'platforms'
+          ring: 'adopt'
+          moved: 0
+          description: 'Container orchestration platform'
+        - name: 'Docker'
+          quadrant: 'tools'
+          ring: 'adopt'
+          moved: 0
+          description: 'Containerization platform'
+        - name: 'GitHub Actions'
+          quadrant: 'tools'
+          ring: 'adopt'
+          moved: 0
+          description: 'CI/CD platform integrated with GitHub'
+        - name: 'Argo CD'
+          quadrant: 'tools'
+          ring: 'adopt'
+          moved: 1
+          description: 'GitOps continuous delivery tool for Kubernetes'
+        - name: 'Datadog'
+          quadrant: 'tools'
+          ring: 'adopt'
+          moved: 0
+          description: 'Monitoring and analytics platform'
+        - name: 'Microservices'
+          quadrant: 'techniques'
+          ring: 'adopt'
+          moved: 0
+          description: 'Architectural approach for building distributed systems'
+        - name: 'Infrastructure as Code'
+          quadrant: 'techniques'
+          ring: 'adopt'
+          moved: 0
+          description: 'Managing infrastructure through code'
+        - name: 'GraphQL'
+          quadrant: 'languages-frameworks'
+          ring: 'trial'
+          moved: 1
+          description: 'Query language and runtime for APIs'
+        - name: 'Istio'
+          quadrant: 'platforms'
+          ring: 'assess'
+          moved: 0
+          description: 'Service mesh platform'
+        - name: 'WebAssembly'
+          quadrant: 'languages-frameworks'
+          ring: 'assess'
+          moved: 0
+          description: 'Binary instruction format for web applications'
+    # GitHub data source configuration (alternative to static)
+    github:
+      # Repository containing tech radar data
+      repository: '${GITHUB_ORG}/tech-radar'
+      # Path to tech radar data file
+      path: 'radar.json'
+      # Branch to read from
+      branch: 'main'
+    # API data source configuration (alternative to static)
+    api:
+      # API endpoint for tech radar data
+      endpoint: '${TECH_RADAR_API_URL}'
+      # Authentication headers
+      headers:
+        Authorization: 'Bearer ${TECH_RADAR_API_TOKEN}'

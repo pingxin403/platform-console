@@ -4,6 +4,11 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
+import GitHubIcon from '@material-ui/icons/GitHub';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import BuildIcon from '@material-ui/icons/Build';
+import SettingsIcon from '@material-ui/icons/Settings';
+import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import {
@@ -74,9 +79,17 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           icon={GroupIcon}
         />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+        <SidebarItem icon={PlayArrowIcon} to="grpc-playground" text="gRPC Playground" />
+        <SidebarItem icon={BuildIcon} to="toolbox" text="Developer Toolbox" />
+        <SidebarItem icon={TrendingUpIcon} to="tech-radar" text="Tech Radar" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
+        <SidebarDivider />
+        <SidebarGroup label="Operations">
+          <SidebarItem icon={GitHubIcon} to="gitops-profiles" text="GitOps Clusters" />
+          <SidebarItem icon={SettingsIcon} to="devtools" text="DevTools" />
+        </SidebarGroup>
         <SidebarDivider />
         <SidebarScrollWrapper>
           {/* Items in this group will be scrollable if they run out of space */}
