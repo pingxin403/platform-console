@@ -26,6 +26,8 @@ backend.add(
 );
 // Enhanced scaffolder actions from Roadie
 backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
+// Slack scaffolder actions for workflow notifications
+backend.add(import('@drew-hill/backstage-plugin-slack-scaffolder-actions'));
 
 // techdocs plugin
 backend.add(import('@backstage/plugin-techdocs-backend'));
@@ -92,6 +94,12 @@ backend.add(import('backstage-grpc-playground-backend'));
 
 // TODO plugin for code quality tracking
 backend.add(import('@backstage/plugin-todo-backend'));
+
+// DevPod plugin for development environment management
+backend.add(import('@coder/backstage-plugin-devpod-backend'));
+
+// Dev Containers plugin for VS Code development environment integration
+backend.add(import('@coder/backstage-plugin-dev-containers-backend'));
 
 // DevTools plugin for Backstage runtime diagnostics
 backend.add(import('@backstage/plugin-devtools-backend'));
