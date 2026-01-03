@@ -199,6 +199,13 @@ proxy:
       # Optional authentication headers if OpenCost requires them
       # headers:
       #   Authorization: 'Bearer ${OPENCOST_TOKEN}'
+    
+    # OpsLevel API proxy for service maturity tracking
+    '/opslevel/api':
+      target: ${OPSLEVEL_BASE_URL:-https://app.opslevel.com}
+      changeOrigin: true
+      headers:
+        Authorization: 'Bearer ${OPSLEVEL_API_TOKEN}'
 
 # Datadog configuration for dashboard embedding
 datadog:
@@ -1189,3 +1196,652 @@ opencost:
     chartTypes: ['line', 'bar', 'pie', 'area']
     # Color scheme for cost visualization
     colorScheme: 'default'
+
+# RAG AI configuration for AI-powered assistance
+ragAi:
+  # AI model configuration
+  model:
+    # Default AI model provider
+    provider: 'openai'
+    # Model configuration
+    openai:
+      # OpenAI API configuration
+      apiKey: ${OPENAI_API_KEY}
+      # Default model for text generation
+      model: 'gpt-4'
+      # Model parameters
+      temperature: 0.7
+      maxTokens: 2048
+      # API base URL (optional, for custom endpoints)
+      # baseUrl: ${OPENAI_BASE_URL}
+    # Alternative: AWS Bedrock configuration
+    bedrock:
+      # AWS region for Bedrock
+      region: ${AWS_REGION:-us-east-1}
+      # Bedrock model ID
+      modelId: 'anthropic.claude-3-sonnet-20240229-v1:0'
+      # AWS credentials (uses default chain if not specified)
+      # accessKeyId: ${AWS_ACCESS_KEY_ID}
+      # secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+  
+  # Embeddings configuration for RAG
+  embeddings:
+    # Embeddings provider
+    provider: 'openai'
+    # OpenAI embeddings configuration
+    openai:
+      # OpenAI API key for embeddings
+      apiKey: ${OPENAI_API_KEY}
+      # Embeddings model
+      model: 'text-embedding-ada-002'
+      # Batch size for embedding generation
+      batchSize: 100
+    # Alternative: AWS Bedrock embeddings
+    bedrock:
+      # AWS region for Bedrock embeddings
+      region: ${AWS_REGION:-us-east-1}
+      # Bedrock embeddings model ID
+      modelId: 'amazon.titan-embed-text-v1'
+  
+  # Vector storage configuration
+  storage:
+    # Use PostgreSQL with pgVector extension
+    type: 'pgvector'
+    # PostgreSQL configuration (uses main database connection)
+    pgvector:
+      # Vector dimension (must match embeddings model)
+      dimension: 1536
+      # Distance metric for similarity search
+      distanceMetric: 'cosine'
+      # Index configuration
+      index:
+        # Index type for vector search
+        type: 'ivfflat'
+        # Number of lists for IVF index
+        lists: 100
+  
+  # Data ingestion configuration
+  ingestion:
+    # Enable automatic ingestion from catalog
+    catalog:
+      enabled: true
+      # Entity types to ingest
+      entityTypes: ['Component', 'API', 'Resource', 'System']
+      # Fields to include in embeddings
+      fields: ['metadata.description', 'spec.description', 'metadata.tags']
+    # Enable TechDocs ingestion
+    techdocs:
+      enabled: true
+      # Chunk size for document splitting
+      chunkSize: 1000
+      # Chunk overlap for better context
+      chunkOverlap: 200
+      # File types to ingest
+      fileTypes: ['md', 'mdx']
+    # Enable code ingestion
+    code:
+      enabled: false
+      # Code repositories to ingest (optional)
+      repositories: []
+      # File extensions to include
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go']
+      # Maximum file size to ingest (bytes)
+      maxFileSize: 100000
+  
+  # Query configuration
+  query:
+    # Default number of context documents to retrieve
+    contextSize: 5
+    # Similarity threshold for context retrieval
+    similarityThreshold: 0.7
+    # Maximum context length (tokens)
+    maxContextLength: 4000
+    # Enable query rewriting for better results
+    queryRewriting: true
+  
+  # Prompt templates configuration
+  prompts:
+    # System prompt template
+    system: |
+      You are an AI assistant for an Internal Developer Platform built on Backstage.
+      You have access to information about services, APIs, documentation, and development practices.
+      Provide helpful, accurate, and contextual responses based on the provided context.
+      If you don't have enough information to answer a question, say so clearly.
+    
+    # User query template with context
+    userWithContext: |
+      Context information:
+      {context}
+      
+      Question: {question}
+      
+      Please provide a helpful answer based on the context above. If the context doesn't contain relevant information, please say so.
+    
+    # User query template without context
+    userWithoutContext: |
+      Question: {question}
+      
+      Please provide a helpful answer based on your knowledge of software development and DevOps practices.
+  
+  # Security and filtering configuration
+  security:
+    # Enable content filtering for sensitive information
+    contentFiltering: true
+    # Patterns to filter from responses
+    filterPatterns:
+      - 'AKIA[0-9A-Z]{16}'  # AWS Access Keys
+      - 'sk-[a-zA-Z0-9]{48}' # OpenAI API Keys
+      - '(?i)(password|secret|token|key)\s*[:=]\s*[^\s]+'
+    # Enable audit logging for AI interactions
+    auditLogging: true
+    # Maximum query length
+    maxQueryLength: 1000
+  
+  # Performance configuration
+  performance:
+    # Cache configuration for AI responses
+    cache:
+      enabled: true
+      # Cache TTL in seconds (1 hour)
+      ttl: 3600
+      # Maximum cache size (number of entries)
+      maxSize: 1000
+    # Rate limiting configuration
+    rateLimit:
+      # Enable rate limiting
+      enabled: true
+      # Requests per minute per user
+      requestsPerMinute: 10
+      # Burst allowance
+      burstSize: 5
+  
+  # UI configuration
+  ui:
+    # Enable AI assistant in entity pages
+    entityPageIntegration: true
+    # Enable standalone AI assistant page
+    standalonePage: true
+    # Default suggestions for users
+    suggestions:
+      - "How do I deploy my service?"
+      - "What are the monitoring best practices?"
+      - "How do I create a new API?"
+      - "What is the incident response process?"
+    # Enable conversation history
+    conversationHistory: true
+    # Maximum conversation history length
+    maxHistoryLength: 10
+
+# OpsLevel configuration for service maturity tracking
+opslevel:
+  # OpsLevel API configuration
+  api:
+    # OpsLevel API base URL (use your self-hosted URL if applicable)
+    baseUrl: ${OPSLEVEL_BASE_URL:-https://app.opslevel.com}
+    # OpsLevel API token (requires administrator permissions)
+    token: ${OPSLEVEL_API_TOKEN}
+  
+  # Service maturity configuration
+  maturity:
+    # Enable service maturity rubrics and automated quality checks
+    rubrics:
+      enabled: true
+      # Default rubric to use for services
+      defaultRubric: 'production-readiness'
+      # Show rubric progress on entity pages
+      showProgress: true
+    
+    # Checks configuration for service quality measurement
+    checks:
+      enabled: true
+      # Show individual check results
+      showResults: true
+      # Enable automated quality checks
+      automated: true
+      # Check categories to display
+      categories: ['security', 'reliability', 'performance', 'documentation', 'observability']
+    
+    # Production readiness dashboards and improvement tracking
+    dashboards:
+      enabled: true
+      # Show service maturity dashboard
+      showMaturityDashboard: true
+      # Show improvement tracking
+      showImprovementTracking: true
+      # Enable maturity trends
+      showTrends: true
+  
+  # Data synchronization configuration
+  sync:
+    # Enable automatic data sync from Backstage to OpsLevel
+    enabled: true
+    # Sync frequency (in minutes)
+    frequency: 60
+    # Entity types to sync
+    entityTypes: ['Component', 'API', 'Resource', 'System']
+    # Fields to sync from Backstage entities
+    fields:
+      - 'metadata.name'
+      - 'metadata.description'
+      - 'metadata.tags'
+      - 'spec.owner'
+      - 'spec.type'
+      - 'spec.lifecycle'
+  
+  # UI configuration
+  ui:
+    # Enable maturity tab on entity pages
+    entityPageIntegration: true
+    # Show maturity scores in catalog
+    showScoresInCatalog: true
+    # Enable deep linking to OpsLevel
+    enableDeepLinking: true
+    # Default view for maturity page
+    defaultView: 'overview'
+
+# OpenDORA configuration for DORA metrics tracking
+openDora:
+  # OpenDORA API configuration
+  api:
+    # OpenDORA backend URL
+    baseUrl: ${OPENDORA_API_URL:-http://localhost:8080}
+    # Optional authentication
+    # token: ${OPENDORA_API_TOKEN}
+  
+  # DORA metrics configuration
+  metrics:
+    # Deployment frequency tracking
+    deploymentFrequency:
+      enabled: true
+      # Time periods for measurement
+      periods: ['daily', 'weekly', 'monthly']
+      # Default period
+      defaultPeriod: 'weekly'
+    
+    # Lead time for changes tracking
+    leadTime:
+      enabled: true
+      # Measurement from commit to deployment
+      measureFrom: 'commit'
+      # Time periods for measurement
+      periods: ['daily', 'weekly', 'monthly']
+      # Default period
+      defaultPeriod: 'weekly'
+    
+    # Change failure rate tracking
+    changeFailureRate:
+      enabled: true
+      # Failure detection methods
+      detectionMethods: ['rollback', 'hotfix', 'incident']
+      # Time periods for measurement
+      periods: ['daily', 'weekly', 'monthly']
+      # Default period
+      defaultPeriod: 'weekly'
+    
+    # Mean time to recovery tracking
+    meanTimeToRecovery:
+      enabled: true
+      # Recovery detection methods
+      detectionMethods: ['deployment', 'incident_resolution']
+      # Time periods for measurement
+      periods: ['daily', 'weekly', 'monthly']
+      # Default period
+      defaultPeriod: 'weekly'
+  
+  # Team and service-level DORA dashboards
+  dashboards:
+    # Enable team-level dashboards
+    teamLevel: true
+    # Enable service-level dashboards
+    serviceLevel: true
+    # Enable organization-level dashboards
+    organizationLevel: true
+    # Default dashboard view
+    defaultView: 'team'
+  
+  # Benchmarking configuration
+  benchmarking:
+    # Enable DORA benchmarking
+    enabled: true
+    # Benchmark categories (Elite, High, Medium, Low performers)
+    categories: ['elite', 'high', 'medium', 'low']
+    # Show benchmark comparisons
+    showComparisons: true
+    # Industry benchmarks
+    industryBenchmarks: true
+  
+  # Data sources configuration
+  dataSources:
+    # GitHub integration for deployment and commit data
+    github:
+      enabled: true
+      # GitHub token for API access
+      token: ${GITHUB_TOKEN}
+      # Organizations to track
+      organizations: [${GITHUB_ORG}]
+    
+    # Argo CD integration for deployment data
+    argocd:
+      enabled: true
+      # Argo CD API URL
+      apiUrl: ${ARGOCD_API_URL}
+      # Argo CD token
+      token: ${ARGOCD_TOKEN}
+    
+    # Jira integration for incident tracking
+    jira:
+      enabled: ${JIRA_INTEGRATION_ENABLED:-false}
+      # Jira server URL
+      serverUrl: ${JIRA_SERVER_URL}
+      # Jira credentials
+      username: ${JIRA_USERNAME}
+      apiToken: ${JIRA_API_TOKEN}
+      # Project keys for incident tracking
+      projectKeys: [${JIRA_PROJECT_KEYS}]
+    
+    # PagerDuty integration for incident tracking
+    pagerduty:
+      enabled: ${PAGERDUTY_INTEGRATION_ENABLED:-false}
+      # PagerDuty API token
+      token: ${PAGERDUTY_API_TOKEN}
+      # Service IDs to track
+      serviceIds: [${PAGERDUTY_SERVICE_IDS}]
+  
+  # UI configuration
+  ui:
+    # Enable DORA metrics on entity pages
+    entityPageIntegration: true
+    # Show metrics in catalog
+    showMetricsInCatalog: true
+    # Default time range for metrics
+    defaultTimeRange: '30d'
+    # Available time ranges
+    timeRanges: ['7d', '30d', '90d', '180d', '365d']
+    # Chart types for visualization
+    chartTypes: ['line', 'bar', 'trend']
+    # Default chart type
+    defaultChartType: 'line'
+
+# Cortex configuration for engineering effectiveness scorecards
+cortex:
+  # Cortex API configuration
+  api:
+    # Cortex API base URL
+    baseUrl: ${CORTEX_BASE_URL:-https://api.getcortexapp.com}
+    # Cortex API token
+    token: ${CORTEX_API_TOKEN}
+  
+  # Engineering effectiveness metrics configuration
+  metrics:
+    # Developer experience metrics and team performance tracking
+    developerExperience:
+      enabled: true
+      # Metrics to track
+      trackingMetrics: ['deployment_frequency', 'lead_time', 'mttr', 'change_failure_rate']
+      # Team performance indicators
+      teamMetrics: ['velocity', 'quality', 'satisfaction']
+    
+    # Service quality and operational excellence scorecards
+    serviceQuality:
+      enabled: true
+      # Quality dimensions
+      dimensions: ['reliability', 'performance', 'security', 'maintainability']
+      # Scoring methodology
+      scoringMethod: 'weighted'
+      # Weight distribution for dimensions
+      weights:
+        reliability: 30
+        performance: 25
+        security: 25
+        maintainability: 20
+    
+    # Custom scorecards configuration
+    customScorecards:
+      enabled: true
+      # Allow custom scorecard creation
+      allowCustom: true
+      # Predefined scorecard templates
+      templates: ['production-readiness', 'security-compliance', 'operational-excellence']
+  
+  # Scorecards configuration
+  scorecards:
+    # Enable service quality scorecards
+    serviceQuality: true
+    # Enable operational excellence scorecards
+    operationalExcellence: true
+    # Enable security compliance scorecards
+    securityCompliance: true
+    # Enable custom scorecards
+    custom: true
+    # Default scorecard for new services
+    defaultScorecard: 'production-readiness'
+  
+  # Data synchronization configuration
+  sync:
+    # Enable automatic data sync from Backstage to Cortex
+    enabled: true
+    # Sync frequency (in minutes)
+    frequency: 30
+    # Entity types to sync
+    entityTypes: ['Component', 'API', 'Resource', 'System']
+    # Sync direction (backstage-to-cortex, cortex-to-backstage, bidirectional)
+    direction: 'bidirectional'
+    # Fields to sync from Backstage entities
+    fields:
+      - 'metadata.name'
+      - 'metadata.description'
+      - 'metadata.tags'
+      - 'spec.owner'
+      - 'spec.type'
+      - 'spec.lifecycle'
+  
+  # UI configuration
+  ui:
+    # Enable Cortex scorecards on entity pages
+    entityPageIntegration: true
+    # Show scorecards in catalog
+    showScorecardsInCatalog: true
+    # Enable deep linking to Cortex
+    enableDeepLinking: true
+    # Default view for scorecards
+    defaultView: 'overview'
+    # Show score trends
+    showTrends: true
+    # Enable scorecard comparisons
+    enableComparisons: true
+
+# FireHydrant configuration for incident management
+firehydrant:
+  # FireHydrant API configuration
+  api:
+    # FireHydrant API base URL
+    baseUrl: ${FIREHYDRANT_BASE_URL:-https://api.firehydrant.io}
+    # FireHydrant API token
+    token: ${FIREHYDRANT_API_TOKEN}
+  
+  # Incident management configuration
+  incidents:
+    # Enable real-time incident visibility and management
+    realTimeVisibility: true
+    # Service-specific incident tracking
+    serviceSpecificTracking: true
+    # Incident status tracking
+    statusTracking: ['open', 'investigating', 'identified', 'monitoring', 'resolved']
+    # Incident severity levels
+    severityLevels: ['sev1', 'sev2', 'sev3', 'sev4']
+    # Default incident view
+    defaultView: 'active'
+  
+  # Reliability metrics configuration
+  reliability:
+    # Enable reliability metrics tracking
+    enabled: true
+    # Metrics to track
+    metrics: ['mttr', 'mtbf', 'incident_frequency', 'escalation_rate']
+    # Time periods for metrics
+    periods: ['7d', '30d', '90d']
+    # Default period
+    defaultPeriod: '30d'
+  
+  # Incident response workflows configuration
+  workflows:
+    # Enable incident response workflows
+    enabled: true
+    # Workflow automation
+    automation: true
+    # Runbook integration
+    runbooks: true
+    # Communication channels
+    communicationChannels: ['slack', 'email', 'webhook']
+  
+  # Post-mortem integration configuration
+  postMortems:
+    # Enable post-mortem integration
+    enabled: true
+    # Automatic post-mortem creation
+    autoCreate: true
+    # Post-mortem templates
+    templates: ['incident-review', 'root-cause-analysis', 'action-items']
+    # Follow-up tracking
+    followUpTracking: true
+  
+  # Service mapping configuration
+  services:
+    # Enable service mapping to FireHydrant services
+    mapping: true
+    # Automatic service discovery
+    autoDiscovery: true
+    # Service annotation for mapping
+    annotation: 'firehydrant.io/service-id'
+    # Default service mapping
+    defaultMapping: 'backstage-entity-name'
+  
+  # UI configuration
+  ui:
+    # Enable FireHydrant integration on entity pages
+    entityPageIntegration: true
+    # Show incident status in catalog
+    showIncidentStatusInCatalog: true
+    # Enable deep linking to FireHydrant
+    enableDeepLinking: true
+    # Default incident dashboard view
+    defaultDashboardView: 'overview'
+    # Show incident trends
+    showTrends: true
+    # Enable incident notifications
+    notifications: true
+
+# Kubernetes GPT Analyzer configuration for AI troubleshooting
+kubernetesGptAnalyzer:
+  # AI configuration
+  ai:
+    # AI provider (openai, azure, bedrock)
+    provider: 'openai'
+    # OpenAI configuration
+    openai:
+      # OpenAI API key
+      apiKey: ${OPENAI_API_KEY}
+      # Model to use for analysis
+      model: 'gpt-4'
+      # API base URL (optional, for custom endpoints)
+      # baseUrl: ${OPENAI_BASE_URL}
+    # Azure OpenAI configuration (alternative)
+    azure:
+      # Azure OpenAI endpoint
+      endpoint: ${AZURE_OPENAI_ENDPOINT}
+      # Azure OpenAI API key
+      apiKey: ${AZURE_OPENAI_API_KEY}
+      # Deployment name
+      deploymentName: ${AZURE_OPENAI_DEPLOYMENT_NAME}
+    # AWS Bedrock configuration (alternative)
+    bedrock:
+      # AWS region
+      region: ${AWS_REGION:-us-east-1}
+      # Bedrock model ID
+      modelId: 'anthropic.claude-3-sonnet-20240229-v1:0'
+  
+  # Kubernetes integration configuration
+  kubernetes:
+    # Enable automatic Kubernetes issue detection
+    autoDetection: true
+    # Kubernetes clusters to analyze
+    clusters:
+      - name: 'production'
+        url: ${K8S_CLUSTER_URL}
+        token: ${K8S_SERVICE_ACCOUNT_TOKEN}
+      - name: 'staging'
+        url: ${K8S_STAGING_CLUSTER_URL}
+        token: ${K8S_STAGING_SERVICE_ACCOUNT_TOKEN}
+    # Resource types to analyze
+    resourceTypes: ['pods', 'deployments', 'services', 'ingresses', 'configmaps', 'secrets']
+    # Namespaces to monitor
+    namespaces: ['default', 'kube-system', 'production', 'staging']
+  
+  # Analysis configuration
+  analysis:
+    # Enable root cause analysis
+    rootCauseAnalysis: true
+    # Enable AI-generated troubleshooting suggestions
+    troubleshootingSuggestions: true
+    # Enable remediation steps generation
+    remediationSteps: true
+    # Analysis depth (basic, detailed, comprehensive)
+    depth: 'detailed'
+    # Include historical data in analysis
+    includeHistoricalData: true
+    # Historical data retention (days)
+    historicalDataRetention: 30
+  
+  # Troubleshooting configuration
+  troubleshooting:
+    # Enable automatic issue categorization
+    autoCategorization: true
+    # Issue categories
+    categories: ['resource-issues', 'networking', 'storage', 'security', 'performance']
+    # Severity levels
+    severityLevels: ['critical', 'high', 'medium', 'low']
+    # Enable suggested fixes
+    suggestedFixes: true
+    # Enable runbook generation
+    runbookGeneration: true
+  
+  # Monitoring integration
+  monitoring:
+    # Enable integration with monitoring systems
+    enabled: true
+    # Monitoring sources
+    sources:
+      # Prometheus integration
+      prometheus:
+        enabled: true
+        url: ${PROMETHEUS_URL}
+        # Optional authentication
+        # username: ${PROMETHEUS_USERNAME}
+        # password: ${PROMETHEUS_PASSWORD}
+      # Grafana integration
+      grafana:
+        enabled: true
+        url: ${GRAFANA_URL}
+        token: ${GRAFANA_TOKEN}
+      # Datadog integration
+      datadog:
+        enabled: true
+        apiKey: ${DATADOG_API_KEY}
+        appKey: ${DATADOG_APP_KEY}
+  
+  # UI configuration
+  ui:
+    # Enable Kubernetes AI analysis on entity pages
+    entityPageIntegration: true
+    # Show AI analysis in Kubernetes tab
+    showInKubernetesTab: true
+    # Enable real-time analysis
+    realTimeAnalysis: true
+    # Default analysis view
+    defaultView: 'overview'
+    # Show analysis history
+    showHistory: true
+    # Enable analysis sharing
+    enableSharing: true
+    # Analysis refresh interval (seconds)
+    refreshInterval: 300

@@ -108,4 +108,15 @@ backend.add(import('./modules/scaffolderAwsModule').then(m => m.scaffolderAwsMod
 // OpenCost enhanced module with AWS cost correlation and benchmarking
 backend.add(import('./plugins/opencostEnhancedModule').then(m => m.opencostEnhancedPlugin));
 
+// RAG AI backend plugin for AI-powered assistance
+backend.add(import('@roadiehq/rag-ai-backend'));
+backend.add(import('@roadiehq/rag-ai-backend-embeddings-openai'));
+backend.add(import('@roadiehq/rag-ai-storage-pgvector'));
+
+// OpsLevel Service Maturity backend plugin for service quality management
+backend.add(import('@opslevel/backstage-maturity-backend'));
+
+// Cortex DX backend plugin for engineering effectiveness
+backend.add(import('@cortexapps/backstage-backend-plugin'));
+
 backend.start();

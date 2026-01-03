@@ -361,44 +361,44 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - **Property 14: Cost benchmarking and freshness**
     - **Validates: Requirements 6.3, 6.5**
 
-- [ ] 12. Install AI and engineering insights plugins (existing community plugins)
-  - [ ] 12.1 Install @roadie/backstage-plugin-ai-assistant for AI-powered assistance
+- [x] 12. Install AI and engineering insights plugins (existing community plugins)
+  - [x] 12.1 Install @roadie/backstage-plugin-ai-assistant for AI-powered assistance
     - Install AI Assistant plugin with RAG capabilities for internal documentation
     - Configure AI-powered search and answers over internal docs and code
     - Set up context-aware AI assistance for development tasks
     - _Requirements: 10.1, 10.2_
 
-  - [ ] 12.2 Install @opslevel/backstage-plugin-service-maturity for service quality management
+  - [x] 12.2 Install @opslevel/backstage-plugin-service-maturity for service quality management
     - Install OpsLevel Service Maturity plugin for comprehensive service health tracking
     - Configure service maturity rubrics and automated quality checks
     - Set up production readiness dashboards and improvement tracking
     - _Requirements: 13.1, 13.3, 13.4_
 
-  - [ ] 12.3 Install @devoteam/backstage-plugin-opendora for DORA metrics
+  - [x] 12.3 Install @devoteam/backstage-plugin-opendora for DORA metrics
     - Install OpenDORA plugin for comprehensive DORA metrics tracking
     - Configure deployment frequency, lead time, and change failure rate tracking
     - Set up team and service-level DORA dashboards and benchmarking
     - _Requirements: 13.1, 13.2, 13.3_
 
-  - [ ] 12.4 Install @cortex/backstage-plugin-dx for engineering effectiveness
+  - [x] 12.4 Install @cortex/backstage-plugin-dx for engineering effectiveness
     - Install DX plugin for engineering effectiveness scorecards and insights
     - Configure developer experience metrics and team performance tracking
     - Set up custom scorecards for service quality and operational excellence
     - _Requirements: 13.1, 13.3, 13.4_
 
-  - [ ] 12.5 Install @firehydrant/backstage-plugin-firehydrant for incident management
+  - [x] 12.5 Install @firehydrant/backstage-plugin-firehydrant for incident management
     - Install FireHydrant plugin for real-time incident visibility and management
     - Configure service-specific incident tracking and reliability metrics
     - Set up incident response workflows and post-mortem integration
     - _Requirements: 4.2, 11.1, 11.2_
 
-  - [ ] 12.6 Install @veecode/backstage-plugin-kubernetes-gpt-analyzer for AI troubleshooting
+  - [x] 12.6 Install @veecode/backstage-plugin-kubernetes-gpt-analyzer for AI troubleshooting
     - Install Kubernetes GPT Analyzer for AI-powered error analysis
     - Configure automatic Kubernetes issue detection and root cause analysis
     - Set up AI-generated troubleshooting suggestions and remediation steps
     - _Requirements: 10.3, 11.1, 11.2_
 
-  - [ ] 12.7 Write integration tests for AI and insights plugins
+  - [x] 12.7 Write integration tests for AI and insights plugins
     - Test AI assistant functionality and DORA metrics collection
     - Verify engineering effectiveness tracking and Kubernetes AI analysis
     - Test service maturity tracking and incident management integration
