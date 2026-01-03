@@ -105,4 +105,7 @@ backend.add(import('@spreadshirt/backstage-plugin-s3-viewer-backend'));
 // AWS scaffolder actions module
 backend.add(import('./modules/scaffolderAwsModule').then(m => m.scaffolderAwsModule));
 
+// OpenCost enhanced module with AWS cost correlation and benchmarking
+backend.add(import('./plugins/opencostEnhancedModule').then(m => m.opencostEnhancedPlugin));
+
 backend.start();
