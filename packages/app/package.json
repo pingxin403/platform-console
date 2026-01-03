@@ -19,6 +19,7 @@
     "@backstage-community/plugin-jaeger": "^0.11.0",
     "@backstage-community/plugin-kiali": "^1.47.0",
     "@backstage-community/plugin-nexus-repository-manager": "^1.19.2",
+    "@backstage-community/plugin-opencost": "^0.15.0",
     "@backstage-community/plugin-tech-radar": "^1.13.0",
     "@backstage-community/plugin-topology": "^2.9.1",
     "@backstage-community/plugin-vault": "^0.15.0",

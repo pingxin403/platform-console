@@ -331,33 +331,33 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Integrate with Backstage search for documentation indexing
     - _Requirements: 5.3, 5.4_
 
-  - [ ] 10.3 Write property test for documentation automation
+  - [x] 10.3 Write property test for documentation automation
     - **Property 11: Documentation automation**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-  - [ ] 10.4 Write property test for documentation search
+  - [x] 10.4 Write property test for documentation search
     - **Property 12: Documentation search and migration**
     - **Validates: Requirements 5.4, 5.5**
 
-- [ ] 11. Install OpenCost plugin and configure cost visibility (existing community plugin)
-  - [ ] 11.1 Install @mattray/backstage-plugin-opencost for cost visibility
+- [x] 11. Install OpenCost plugin and configure cost visibility (existing community plugin)
+  - [x] 11.1 Install @mattray/backstage-plugin-opencost for cost visibility
     - Install the community OpenCost plugin by Matt Ray
     - Configure OpenCost API integration for Kubernetes cost data
     - Set up cost display components with monthly breakdowns
     - Add cost trend analysis and highlighting for significant changes
     - _Requirements: 6.1, 6.2_
 
-  - [ ] 11.2 Enhance with AWS cost correlation and benchmarking
+  - [x] 11.2 Enhance with AWS cost correlation and benchmarking
     - Implement AWS cost data integration via cost allocation tags
     - Create cost benchmarking functionality for similar services
     - Ensure daily cost data updates with complete breakdowns
     - _Requirements: 6.3, 6.4, 6.5_
 
-  - [ ]* 11.3 Write property test for cost data display
+  - [x] 11.3 Write property test for cost data display
     - **Property 13: Cost data display**
     - **Validates: Requirements 6.1, 6.2, 6.4**
 
-  - [ ]* 11.4 Write property test for cost benchmarking and freshness
+  - [x] 11.4 Write property test for cost benchmarking and freshness
     - **Property 14: Cost benchmarking and freshness**
     - **Validates: Requirements 6.3, 6.5**
 
@@ -398,7 +398,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
     - Set up AI-generated troubleshooting suggestions and remediation steps
     - _Requirements: 10.3, 11.1, 11.2_
 
-  - [ ]* 12.7 Write integration tests for AI and insights plugins
+  - [ ] 12.7 Write integration tests for AI and insights plugins
     - Test AI assistant functionality and DORA metrics collection
     - Verify engineering effectiveness tracking and Kubernetes AI analysis
     - Test service maturity tracking and incident management integration

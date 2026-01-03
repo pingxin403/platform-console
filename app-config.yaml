@@ -191,6 +191,14 @@ proxy:
       changeOrigin: true
       headers:
         Authorization: 'Basic ${KIALI_AUTH_TOKEN}'
+    
+    # OpenCost API proxy for Kubernetes cost data
+    '/opencost':
+      target: ${OPENCOST_URL:-http://opencost-svc.opencost:9003}
+      changeOrigin: true
+      # Optional authentication headers if OpenCost requires them
+      # headers:
+      #   Authorization: 'Bearer ${OPENCOST_TOKEN}'
 
 # Datadog configuration for dashboard embedding
 datadog:
@@ -1088,3 +1096,96 @@ s3Viewer:
     allowDownload: true
     # Enable object preview
     allowPreview: true
+
+# OpenCost configuration for Kubernetes cost visibility
+opencost:
+  # OpenCost API configuration using Backstage proxy
+  baseUrl: http://localhost:7007/api/proxy/opencost
+  # Alternative: Direct access if OpenCost API is reachable from browser
+  # baseUrl: ${OPENCOST_URL:-http://localhost:9003}
+  
+  # Cost data configuration
+  costs:
+    # Default time range for cost queries
+    defaultTimeRange: '7d'
+    # Supported time ranges
+    timeRanges: ['1d', '7d', '30d', '90d']
+    # Currency configuration
+    currency: 'USD'
+    # Cost aggregation settings
+    aggregation:
+      # Default aggregation level
+      default: 'namespace'
+      # Available aggregation levels
+      levels: ['cluster', 'namespace', 'deployment', 'service', 'pod']
+  
+  # Cost trend analysis configuration
+  trends:
+    # Enable cost trend analysis
+    enabled: true
+    # Threshold for highlighting significant changes (percentage)
+    significantChangeThreshold: 15
+    # Comparison periods for trend analysis
+    comparisonPeriods: ['1d', '7d', '30d']
+  
+  # Cost benchmarking configuration
+  benchmarking:
+    # Enable cost benchmarking across similar services
+    enabled: true
+    # Service similarity criteria
+    similarityFactors: ['cpu_requests', 'memory_requests', 'replicas']
+    # Benchmarking categories
+    categories: ['microservice', 'api', 'frontend', 'database', 'worker']
+  
+  # AWS cost correlation configuration
+  aws:
+    # Enable AWS cost correlation
+    enabled: ${OPENCOST_AWS_INTEGRATION:-false}
+    # AWS cost allocation tags for correlation
+    costAllocationTags:
+      - 'service'
+      - 'environment' 
+      - 'team'
+      - 'cost-center'
+    # AWS Cost Explorer integration
+    costExplorer:
+      # Enable Cost Explorer integration
+      enabled: ${AWS_COST_EXPLORER_ENABLED:-false}
+      # AWS region for Cost Explorer API
+      region: ${AWS_REGION:-us-east-1}
+      # Cost Explorer query configuration
+      queries:
+        # Default granularity for cost queries
+        granularity: 'DAILY'
+        # Default metrics to retrieve
+        metrics: ['BlendedCost', 'UnblendedCost', 'UsageQuantity']
+  
+  # Data freshness and update configuration
+  data:
+    # Cost data update frequency
+    updateFrequency: 'daily'
+    # Data retention period
+    retentionPeriod: '90d'
+    # Enable real-time cost updates
+    realTimeUpdates: false
+    # Data freshness requirements
+    freshness:
+      # Maximum age for cost data to be considered fresh
+      maxAge: '24h'
+      # Show data freshness indicators in UI
+      showIndicators: true
+  
+  # UI configuration
+  ui:
+    # Enable monthly cost breakdowns
+    monthlyBreakdowns: true
+    # Show cost breakdown by resource type (CPU, memory, storage)
+    resourceBreakdowns: true
+    # Enable cost optimization recommendations
+    optimizationRecommendations: true
+    # Default chart type for cost visualization
+    defaultChartType: 'line'
+    # Available chart types
+    chartTypes: ['line', 'bar', 'pie', 'area']
+    # Color scheme for cost visualization
+    colorScheme: 'default'
