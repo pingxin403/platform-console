@@ -216,6 +216,41 @@ import { ServiceOverviewCard } from './ServiceOverviewCard';
 import { EnhancedDependencyCard } from './EnhancedDependencyCard';
 import { ArgocdDeploymentCard } from './ArgocdDeploymentCard';
 
+// OpsLevel Service Maturity plugin imports
+import {
+  EntityOpsLevelMaturityContent,
+  EntityOpsLevelMaturityCard,
+  isOpsLevelMaturityAvailable,
+} from '@opslevel/backstage-maturity';
+
+// OpenDORA plugin imports for DORA metrics
+import {
+  EntityOpenDoraContent,
+  EntityOpenDoraCard,
+  isOpenDoraAvailable,
+} from '@devoteam-nl/open-dora-backstage-plugin';
+
+// Cortex plugin imports for engineering effectiveness
+import {
+  EntityCortexContent,
+  EntityCortexScorecardCard,
+  isCortexAvailable,
+} from '@cortexapps/backstage-plugin';
+
+// FireHydrant plugin imports for incident management
+import {
+  EntityFireHydrantContent,
+  EntityFireHydrantCard,
+  isFireHydrantAvailable,
+} from '@backstage-community/plugin-firehydrant';
+
+// Kubernetes GPT Analyzer plugin imports for AI troubleshooting
+import {
+  EntityKubernetesGptAnalyzerContent,
+  EntityKubernetesGptAnalyzerCard,
+  isKubernetesGptAnalyzerAvailable,
+} from '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer';
+
 // TODO plugin imports for code quality tracking
 import {
   EntityTodoContent,
@@ -447,6 +482,46 @@ const overviewContent = (
       <EntitySwitch.Case if={isKialiAvailable}>
         <Grid item md={6} xs={12}>
           <EntityKialiGraphCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isOpsLevelMaturityAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityOpsLevelMaturityCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isOpenDoraAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityOpenDoraCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isCortexAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityCortexScorecardCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isFireHydrantAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityFireHydrantCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
+    
+    <EntitySwitch>
+      <EntitySwitch.Case if={isKubernetesGptAnalyzerAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityKubernetesGptAnalyzerCard />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
@@ -687,6 +762,46 @@ const serviceEntityPage = (
       if={isTodoAvailable}
     >
       <EntityTodoContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/service-maturity" 
+      title="Service Maturity"
+      if={isOpsLevelMaturityAvailable}
+    >
+      <EntityOpsLevelMaturityContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/dora-metrics" 
+      title="DORA Metrics"
+      if={isOpenDoraAvailable}
+    >
+      <EntityOpenDoraContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/engineering-effectiveness" 
+      title="Engineering Effectiveness"
+      if={isCortexAvailable}
+    >
+      <EntityCortexContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/incident-management" 
+      title="Incident Management"
+      if={isFireHydrantAvailable}
+    >
+      <EntityFireHydrantContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route 
+      path="/ai-troubleshooting" 
+      title="AI Troubleshooting"
+      if={isKubernetesGptAnalyzerAvailable}
+    >
+      <EntityKubernetesGptAnalyzerContent />
     </EntityLayout.Route>
   </EntityLayout>
 );

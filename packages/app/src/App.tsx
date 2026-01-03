@@ -30,6 +30,12 @@ import { DevToolsPage } from '@backstage/plugin-devtools';
 import { TechRadarPage } from '@backstage-community/plugin-tech-radar';
 import { S3ViewerPage } from '@spreadshirt/backstage-plugin-s3-viewer';
 import { EnhancedOpenCostPage } from './components/opencost/EnhancedOpenCostPage';
+import { RagAiPage } from '@roadiehq/rag-ai';
+import { OpsLevelMaturityPage } from '@opslevel/backstage-maturity';
+import { OpenDoraPage } from '@devoteam-nl/open-dora-backstage-plugin';
+import { CortexPage } from '@cortexapps/backstage-plugin';
+import { FireHydrantPage } from '@backstage-community/plugin-firehydrant';
+import { KubernetesGptAnalyzerPage } from '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer';
 
 import {
   AlertDisplay,
@@ -100,6 +106,12 @@ const routes = (
     <Route path="/tech-radar" element={<TechRadarPage />} />
     <Route path="/s3-viewer" element={<S3ViewerPage />} />
     <Route path="/opencost" element={<EnhancedOpenCostPage />} />
+    <Route path="/ai-assistant" element={<RagAiPage />} />
+    <Route path="/service-maturity" element={<OpsLevelMaturityPage />} />
+    <Route path="/dora-metrics" element={<OpenDoraPage />} />
+    <Route path="/engineering-effectiveness" element={<CortexPage />} />
+    <Route path="/incident-management" element={<FireHydrantPage />} />
+    <Route path="/kubernetes-ai-troubleshooting" element={<KubernetesGptAnalyzerPage />} />
     <Route
       path="/catalog-import"
       element={
