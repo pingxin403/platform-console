@@ -24,6 +24,10 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
+import { GrpcPlaygroundPage } from 'backstage-grpc-playground';
+import { ToolboxPage } from '@drodil/backstage-plugin-toolbox';
+import { DevToolsPage } from '@backstage/plugin-devtools';
+import { TechRadarPage } from '@backstage-community/plugin-tech-radar';
 
 import {
   AlertDisplay,
@@ -37,6 +41,11 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
+import {
+  GitopsProfilesClusterListPage,
+  GitopsProfilesClusterPage,
+  GitopsProfilesCreatePage,
+} from '@backstage-community/plugin-gitops-profiles';
 
 const app = createApp({
   apis,
@@ -83,6 +92,10 @@ const routes = (
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
+    <Route path="/grpc-playground" element={<GrpcPlaygroundPage />} />
+    <Route path="/toolbox" element={<ToolboxPage />} />
+    <Route path="/devtools" element={<DevToolsPage />} />
+    <Route path="/tech-radar" element={<TechRadarPage />} />
     <Route
       path="/catalog-import"
       element={
@@ -97,6 +110,12 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/gitops-profiles" element={<GitopsProfilesClusterListPage />} />
+    <Route path="/gitops-profiles/create" element={<GitopsProfilesCreatePage />} />
+    <Route
+      path="/gitops-profiles/:owner/:repo"
+      element={<GitopsProfilesClusterPage />}
+    />
   </FlatRoutes>
 );
 

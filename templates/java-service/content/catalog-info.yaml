@@ -5,6 +5,8 @@ metadata:
   description: ${{ values.description }}
   annotations:
     github.com/project-slug: ${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}
+    github.com/workflows: ci.yml
+    # jenkins.io/job-full-name: ${{ values.name }}/main  # Optional: uncomment if using Jenkins
     argocd/app-name: ${{ values.name }}
     datadog/dashboard-url: https://app.datadoghq.com/dashboard/list?q=service%3A${{ values.name }}
     sentry/project-slug: company/${{ values.name }}

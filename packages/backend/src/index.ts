@@ -24,6 +24,8 @@ backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(
   import('@backstage/plugin-scaffolder-backend-module-notifications'),
 );
+// Enhanced scaffolder actions from Roadie
+backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
 
 // techdocs plugin
 backend.add(import('@backstage/plugin-techdocs-backend'));
@@ -75,5 +77,26 @@ backend.add(import('@backstage/plugin-signals-backend'));
 
 // lighthouse plugin for performance monitoring
 backend.add(import('@backstage/plugin-lighthouse-backend'));
+
+// terraform plugin for infrastructure management
+backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
+
+// argo cd plugin for GitOps cluster management
+backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
+
+// kubelog plugin for Kubernetes log viewing
+backend.add(import('./plugins/kubelogModule').then(m => m.kubelogModule));
+
+// gRPC playground plugin for service testing and exploration
+backend.add(import('backstage-grpc-playground-backend'));
+
+// TODO plugin for code quality tracking
+backend.add(import('@backstage/plugin-todo-backend'));
+
+// DevTools plugin for Backstage runtime diagnostics
+backend.add(import('@backstage/plugin-devtools-backend'));
+
+// Tech Radar plugin for technology tracking
+backend.add(import('@backstage-community/plugin-tech-radar-backend'));
 
 backend.start();
