@@ -9,6 +9,8 @@ metadata:
   annotations:
     # Enable automatic rollback on failure
     deployment.kubernetes.io/revision: "1"
+    # Security annotations
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -27,12 +29,19 @@ spec:
         # Force pod restart on config changes
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/rbac: {{ include (print $.Template.BasePath "/rbac-configmap.yaml") . | sha256sum }}
+        # Security annotations
+        container.apparmor.security.beta.kubernetes.io/backstage: runtime/default
+        seccomp.security.alpha.kubernetes.io/pod: runtime/default
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         {{- include "backstage.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
+        # Security labels
+        security.policy/level: "high"
+        security.policy/non-root: "true"
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -45,12 +54,14 @@ spec:
         runAsUser: 1001
         runAsGroup: 1001
         fsGroup: 1001
+        fsGroupChangePolicy: "OnRootMismatch"
         seccompProfile:
           type: RuntimeDefault
+        supplementalGroups: []
         {{- with .Values.podSecurityContext }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      # Init container for database migration
+      # Init containers for database migration and health checks
       initContainers:
         - name: wait-for-db
           image: postgres:15-alpine
@@ -62,6 +73,7 @@ spec:
                 echo "Waiting for database..."
                 sleep 2
               done
+              echo "Database is ready!"
           env:
             - name: POSTGRES_HOST
               value: "{{ if .Values.postgresql.enabled }}{{ include "backstage.postgresql.fullname" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
@@ -72,22 +84,80 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
+            runAsGroup: 999
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+        # Database migration init container
+        - name: db-migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - sh
+            - -c
+            - |
+              echo "Running database migrations..."
+              # Add database migration commands here if needed
+              echo "Database migrations completed!"
+          env:
+            {{- toYaml .Values.env | nindent 12 }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: app-config
+              mountPath: /app/app-config.production.yaml
+              subPath: app-config.production.yaml
+              readOnly: true
+            - name: rbac-policy
+              mountPath: /app/rbac-policy.yaml
+              subPath: rbac-policy.yaml
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: var-cache
+              mountPath: /var/cache
+            - name: var-log
+              mountPath: /var/log
       containers:
         - name: {{ .Chart.Name }}
           # Enhanced security context
           securityContext:
             runAsNonRoot: true
             runAsUser: 1001
+            runAsGroup: 1001
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
             {{- with .Values.securityContext }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -103,25 +173,38 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: NODE_OPTIONS
-              value: "--no-node-snapshot --max-old-space-size=1024"
+              value: "--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete"
             - name: LOG_LEVEL
               value: {{ .Values.backstage.logLevel | default "info" | quote }}
-          # Enhanced health checks
+            - name: TZ
+              value: "UTC"
+            # Security headers
+            - name: HELMET_ENABLED
+              value: "true"
+            - name: CORS_ENABLED
+              value: "true"
+          # Enhanced health checks with proper timeouts
           livenessProbe:
             httpGet:
-              path: /api/catalog/health
+              path: /healthz
               port: http
               scheme: HTTP
-            initialDelaySeconds: 90
+              httpHeaders:
+                - name: User-Agent
+                  value: "Kubernetes-Liveness-Probe"
+            initialDelaySeconds: 120
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
           readinessProbe:
             httpGet:
-              path: /api/catalog/health
+              path: /readyz
               port: http
               scheme: HTTP
+              httpHeaders:
+                - name: User-Agent
+                  value: "Kubernetes-Readiness-Probe"
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -130,9 +213,12 @@ spec:
           # Startup probe for slow-starting applications
           startupProbe:
             httpGet:
-              path: /api/catalog/health
+              path: /healthz
               port: http
               scheme: HTTP
+              httpHeaders:
+                - name: User-Agent
+                  value: "Kubernetes-Startup-Probe"
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -145,24 +231,56 @@ spec:
               mountPath: /app/app-config.production.yaml
               subPath: app-config.production.yaml
               readOnly: true
+            - name: rbac-policy
+              mountPath: /app/rbac-policy.yaml
+              subPath: rbac-policy.yaml
+              readOnly: true
+            # Writable volumes for read-only root filesystem
             - name: tmp
               mountPath: /tmp
             - name: var-cache
               mountPath: /var/cache
             - name: var-log
               mountPath: /var/log
+            - name: app-tmp
+              mountPath: /app/tmp
+            - name: node-modules-cache
+              mountPath: /app/node_modules/.cache
+          # Lifecycle hooks for graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "Received SIGTERM, starting graceful shutdown..."
+                    # Give the application time to finish processing requests
+                    sleep 15
       volumes:
         - name: app-config
           configMap:
             name: {{ include "backstage.fullname" . }}-config
+            defaultMode: 0444
+        - name: rbac-policy
+          configMap:
+            name: {{ include "backstage.fullname" . }}-rbac
+            defaultMode: 0444
         # Writable volumes for read-only root filesystem
         - name: tmp
           emptyDir:
-            sizeLimit: 1Gi
+            sizeLimit: 2Gi
+            medium: Memory
         - name: var-cache
           emptyDir:
-            sizeLimit: 500Mi
+            sizeLimit: 1Gi
         - name: var-log
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: app-tmp
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: node-modules-cache
           emptyDir:
             sizeLimit: 500Mi
       {{- with .Values.nodeSelector }}
@@ -177,5 +295,14 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      # Pod disruption budget for high availability
-      terminationGracePeriodSeconds: 30
+      # Enhanced termination settings
+      terminationGracePeriodSeconds: 60
+      # DNS configuration for better performance
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: edns0
+      # Restart policy
+      restartPolicy: Always

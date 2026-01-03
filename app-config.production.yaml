@@ -11,19 +11,51 @@ backend:
   # Listen on all interfaces in production
   listen: ':7007'
   
+  # Production authentication configuration
+  auth:
+    keys:
+      - secret: ${BACKEND_SECRET}
+    # Production token issuer
+    issuer: https://backstage.${DOMAIN_NAME}
+    # Production token signing with RSA keys
+    signing:
+      algorithm: RS256
+      publicKey: ${AUTH_PUBLIC_KEY}
+      privateKey: ${AUTH_PRIVATE_KEY}
+  
   # Enhanced security headers for production
   csp:
     connect-src: ["'self'", 'https:', 'wss:']
+    default-src: ["'self'"]
     img-src: ["'self'", 'data:', 'https:']
     script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
     style-src: ["'self'", "'unsafe-inline'", 'https:']
+    font-src: ["'self'", 'https:']
+    frame-src: ["'self'", 'https:']
+    object-src: ["'none'"]
+    base-uri: ["'self'"]
+    form-action: ["'self'"]
+    frame-ancestors: ["'none'"]
+  
+  # Production security headers
+  security:
+    headers:
+      hsts:
+        maxAge: 31536000
+        includeSubDomains: true
+        preload: true
+      frameOptions: 'DENY'
+      contentTypeOptions: 'nosniff'
+      xssProtection: '1; mode=block'
+      referrerPolicy: 'strict-origin-when-cross-origin'
+      permissionsPolicy: 'camera=(), microphone=(), geolocation=()'
   
   cors:
     origin: https://backstage.${DOMAIN_NAME}
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
 
-  # Production database configuration with SSL
+  # Production database configuration with SSL and enhanced pooling
   database:
     client: pg
     connection:
@@ -35,22 +67,59 @@ backend:
       ssl: 
         require: true
         rejectUnauthorized: false
+        ca: ${POSTGRES_CA_CERT}
+      connectionTimeoutMillis: 30000
+      statement_timeout: 30000
+      query_timeout: 30000
     # Production connection pool settings
     pool:
-      min: 5
-      max: 20
+      min: 10
+      max: 50
       acquireTimeoutMillis: 60000
       createTimeoutMillis: 30000
       destroyTimeoutMillis: 5000
       idleTimeoutMillis: 30000
       reapIntervalMillis: 1000
       createRetryIntervalMillis: 200
+      testOnBorrow: true
+      validateOnBorrow: true
+    options:
+      preparedStatements: true
+      poolMonitoring: true
+      queryLogging: false
+
+  # Production health check configuration
+  healthcheck:
+    enabled: true
+    path: /api/catalog/health
+    timeout: 10000
+    interval: 30000
+    dependencies: true
+    endpoints:
+      - path: /healthz
+        name: 'liveness'
+      - path: /readyz
+        name: 'readiness'
+      - path: /metrics
+        name: 'metrics'
 
   # Production logging configuration
   logging:
     level: info
     format: json
     redactSecrets: true
+    rotation:
+      enabled: true
+      maxFiles: 30
+      maxSize: '100MB'
+    audit:
+      enabled: true
+      events: ['auth', 'permission', 'catalog', 'scaffolder']
+      retention: '90d'
+    performance:
+      enabled: true
+      slowQueryThreshold: 1000
+      includeStackTrace: false
 
 auth:
   providers:
@@ -61,14 +130,35 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         # Production callback URL
         callbackUrl: https://backstage.${DOMAIN_NAME}/api/auth/github/handler/frame
+        # Enhanced security settings
+        scope: 'read:user read:org'
+        # Enable team membership verification
+        signIn:
+          resolvers:
+            - resolver: github
+              params:
+                # Require organization membership
+                organization: ${GITHUB_ORG}
+                # Require specific team membership for access
+                teams: ['platform-team', 'engineering-team', 'contractors']
     # Disable guest auth in production
     # guest: {}
 
-# Production TechDocs configuration with S3
+# Production TechDocs configuration with S3 and enhanced security
 techdocs:
   builder: 'external' # Use external builder for production
   generator:
     runIn: 'docker'
+    # Security configuration for Docker
+    docker:
+      # Use specific image version for security
+      image: 'mkdocs:1.5.3'
+      # Security options
+      securityOpt: ['no-new-privileges:true']
+      # Read-only root filesystem
+      readOnlyRootFilesystem: true
+      # Drop all capabilities
+      capDrop: ['ALL']
   publisher:
     type: 'awsS3'
     awsS3:
@@ -77,8 +167,24 @@ techdocs:
       # Use IAM roles instead of access keys in production
       credentials:
         roleArn: ${TECHDOCS_S3_ROLE_ARN}
+      # Enable server-side encryption
+      sse: 'AES256'
+      # Enable versioning
+      versioning: true
+      # Lifecycle policy for cost optimization
+      lifecycle:
+        enabled: true
+        rules:
+          - id: 'delete-old-versions'
+            status: 'Enabled'
+            noncurrentVersionExpiration: 30
+          - id: 'transition-to-ia'
+            status: 'Enabled'
+            transition:
+              days: 30
+              storageClass: 'STANDARD_IA'
 
-# Production catalog configuration
+# Production catalog configuration with enhanced error handling
 catalog:
   # Remove example data in production
   locations: []
@@ -87,8 +193,33 @@ catalog:
   processing:
     cache:
       ttl: 600 # 10 minutes cache for production
+      maxSize: 50000
+      compression: true
     stitching:
       strategy: deferred
+      timeout: 30000
+      batchSize: 100
+    errorHandling:
+      events: true
+      retention: '7d'
+      thresholds:
+        warning: 10
+        critical: 50
+      categories:
+        - 'validation'
+        - 'network'
+        - 'authentication'
+        - 'processing'
+    intervals:
+      entityRefresh: 300
+      locationRefresh: 600
+      orphanCleanup: 3600
+    monitoring:
+      enabled: true
+      thresholds:
+        warning: 5000
+        critical: 15000
+      metrics: true
   
   providers:
     github:
@@ -98,12 +229,20 @@ catalog:
         filters:
           branch: 'main'
           repository: '.*'
+          archived: false
+          hasFile: 'catalog-info.yaml'
         schedule:
           frequency: { minutes: 15 } # More frequent updates in production
           timeout: { minutes: 5 }
           initialDelay: { seconds: 30 }
+        api:
+          useGraphQL: true
+          batchSize: 50
+          rateLimit:
+            requests: 5000
+            window: 3600
 
-# Production integrations
+# Production integrations with enhanced security
 integrations:
   github:
     - host: github.com
@@ -111,8 +250,13 @@ integrations:
       # Enhanced GitHub integration settings
       apiBaseUrl: https://api.github.com
       rawBaseUrl: https://raw.githubusercontent.com
+      # Security settings
+      apps:
+        - appId: ${GITHUB_APP_ID}
+          privateKey: ${GITHUB_APP_PRIVATE_KEY}
+          installationId: ${GITHUB_APP_INSTALLATION_ID}
 
-# Production Kubernetes configuration
+# Production Kubernetes configuration with enhanced security
 kubernetes:
   serviceLocatorMethod:
     type: 'multiTenant'
@@ -124,14 +268,33 @@ kubernetes:
           authProvider: 'aws'
           skipTLSVerify: false
           skipMetricsLookup: false
+          # Enhanced security configuration
+          caData: ${KUBERNETES_CA_DATA}
+          # Service account token with limited permissions
+          serviceAccountToken: ${KUBERNETES_SERVICE_ACCOUNT_TOKEN}
+          # Custom resources for enhanced monitoring
+          customResources:
+            - group: 'argoproj.io'
+              apiVersion: 'v1alpha1'
+              plural: 'applications'
+            - group: 'networking.istio.io'
+              apiVersion: 'v1beta1'
+              plural: 'virtualservices'
 
-# Production permission configuration
+# Production permission configuration with RBAC
 permission:
   enabled: true
-  # TODO: Replace with proper RBAC policy in production
-  # policy: 'allow-all' # This should be replaced with a proper policy
+  policy:
+    policyFile: './rbac-policy.yaml'
+    refreshInterval: 300
+    cache: true
+  audit:
+    enabled: true
+    retention: '90d'
+    events: ['permission:check', 'permission:grant', 'permission:deny']
+    storage: 'database'
 
-# Production proxy configuration for external services
+# Production proxy configuration for external services with enhanced security
 proxy:
   endpoints:
     '/argocd/api':
@@ -139,9 +302,140 @@ proxy:
       changeOrigin: true
       headers:
         Authorization: Bearer ${ARGOCD_TOKEN}
+      # Security configuration
+      secure: true
+      timeout: 30000
     '/datadog/api':
       target: https://api.datadoghq.com
       changeOrigin: true
       headers:
         DD-API-KEY: ${DATADOG_API_KEY}
         DD-APPLICATION-KEY: ${DATADOG_APP_KEY}
+      secure: true
+      timeout: 30000
+    '/opencost':
+      target: ${OPENCOST_URL}
+      changeOrigin: true
+      secure: true
+      timeout: 30000
+
+# Backup and disaster recovery configuration
+backup:
+  # Database backup configuration
+  database:
+    enabled: true
+    # Backup schedule (cron format)
+    schedule: '0 2 * * *' # Daily at 2 AM
+    # Backup retention
+    retention: '30d'
+    # Backup storage
+    storage:
+      type: 's3'
+      bucket: ${BACKUP_S3_BUCKET}
+      prefix: 'database-backups/'
+      encryption: 'AES256'
+  
+  # Configuration backup
+  configuration:
+    enabled: true
+    schedule: '0 3 * * *' # Daily at 3 AM
+    retention: '90d'
+    storage:
+      type: 's3'
+      bucket: ${BACKUP_S3_BUCKET}
+      prefix: 'config-backups/'
+      encryption: 'AES256'
+
+# Disaster recovery configuration
+disasterRecovery:
+  # RTO (Recovery Time Objective) in minutes
+  rto: 60
+  # RPO (Recovery Point Objective) in minutes
+  rpo: 15
+  # Failover configuration
+  failover:
+    enabled: true
+    # Secondary region for failover
+    secondaryRegion: ${DR_AWS_REGION}
+    # Automated failover threshold
+    threshold:
+      # Failover if primary is down for more than 10 minutes
+      downtime: 600
+      # Failover if error rate exceeds 50%
+      errorRate: 0.5
+  # Data replication
+  replication:
+    # Database replication
+    database:
+      enabled: true
+      type: 'async'
+      lag: 30 # seconds
+    # S3 cross-region replication
+    s3:
+      enabled: true
+      destinationBucket: ${DR_S3_BUCKET}
+      destinationRegion: ${DR_AWS_REGION}
+
+# Monitoring and alerting configuration
+monitoring:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    path: '/metrics'
+    # Custom metrics
+    customMetrics:
+      - name: 'backstage_catalog_entities_total'
+        help: 'Total number of catalog entities'
+        type: 'gauge'
+      - name: 'backstage_auth_requests_total'
+        help: 'Total number of authentication requests'
+        type: 'counter'
+      - name: 'backstage_database_connections'
+        help: 'Number of active database connections'
+        type: 'gauge'
+  
+  # Health checks
+  healthChecks:
+    - name: 'database'
+      endpoint: '/health/database'
+      timeout: 5000
+      interval: 30000
+    - name: 'github'
+      endpoint: '/health/github'
+      timeout: 10000
+      interval: 60000
+    - name: 'argocd'
+      endpoint: '/health/argocd'
+      timeout: 10000
+      interval: 60000
+  
+  # Alerting
+  alerts:
+    # Slack notifications
+    slack:
+      webhook: ${MONITORING_SLACK_WEBHOOK}
+      channel: '#platform-alerts'
+    # Email notifications
+    email:
+      smtp:
+        host: ${SMTP_HOST}
+        port: ${SMTP_PORT}
+        secure: true
+        auth:
+          user: ${SMTP_USER}
+          pass: ${SMTP_PASS}
+      recipients: ['platform-team@company.com']
+    # Alert rules
+    rules:
+      - name: 'high-error-rate'
+        condition: 'error_rate > 0.05'
+        duration: '5m'
+        severity: 'critical'
+      - name: 'high-response-time'
+        condition: 'response_time_p95 > 5000'
+        duration: '10m'
+        severity: 'warning'
+      - name: 'database-connection-high'
+        condition: 'database_connections > 40'
+        duration: '5m'
+        severity: 'warning'

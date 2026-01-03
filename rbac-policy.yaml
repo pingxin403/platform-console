@@ -1,0 +1,290 @@
+# RBAC Policy Configuration for Internal Developer Platform
+# This file defines role-based access control policies for Backstage
+
+# Policy version
+apiVersion: v1
+kind: RBACPolicy
+
+# Default policy - deny all unless explicitly allowed
+default: deny
+
+# Role definitions
+roles:
+  # Platform Admin - Full access to all resources
+  platform-admin:
+    permissions:
+      - resource: '*'
+        action: '*'
+        effect: allow
+    
+  # Engineering Lead - Administrative access with some restrictions
+  engineering-lead:
+    permissions:
+      - resource: 'catalog'
+        action: '*'
+        effect: allow
+      - resource: 'scaffolder'
+        action: '*'
+        effect: allow
+      - resource: 'techdocs'
+        action: '*'
+        effect: allow
+      - resource: 'kubernetes'
+        action: '*'
+        effect: allow
+      - resource: 'permission'
+        action: 'read'
+        effect: allow
+      # Deny sensitive operations
+      - resource: 'permission'
+        action: 'write'
+        effect: deny
+        conditions:
+          - field: 'user.role'
+            operator: 'not_equals'
+            value: 'platform-admin'
+  
+  # Developer - Standard development access
+  developer:
+    permissions:
+      - resource: 'catalog'
+        action: ['read', 'write']
+        effect: allow
+      - resource: 'scaffolder'
+        action: ['read', 'write']
+        effect: allow
+      - resource: 'techdocs'
+        action: ['read', 'write']
+        effect: allow
+      - resource: 'kubernetes'
+        action: 'read'
+        effect: allow
+      # Limited Kubernetes write access
+      - resource: 'kubernetes'
+        action: 'write'
+        effect: allow
+        conditions:
+          - field: 'resource.namespace'
+            operator: 'in'
+            value: ['development', 'staging']
+      # Deny production Kubernetes access
+      - resource: 'kubernetes'
+        action: 'write'
+        effect: deny
+        conditions:
+          - field: 'resource.namespace'
+            operator: 'equals'
+            value: 'production'
+  
+  # Viewer - Read-only access
+  viewer:
+    permissions:
+      - resource: 'catalog'
+        action: 'read'
+        effect: allow
+      - resource: 'techdocs'
+        action: 'read'
+        effect: allow
+      - resource: 'kubernetes'
+        action: 'read'
+        effect: allow
+        conditions:
+          - field: 'resource.namespace'
+            operator: 'not_equals'
+            value: 'production'
+  
+  # Contractor - Limited access with data boundaries
+  contractor:
+    permissions:
+      - resource: 'catalog'
+        action: 'read'
+        effect: allow
+        conditions:
+          - field: 'resource.visibility'
+            operator: 'equals'
+            value: 'public'
+      - resource: 'techdocs'
+        action: 'read'
+        effect: allow
+        conditions:
+          - field: 'resource.visibility'
+            operator: 'equals'
+            value: 'public'
+      # Deny access to sensitive resources
+      - resource: 'kubernetes'
+        action: '*'
+        effect: deny
+      - resource: 'scaffolder'
+        action: 'write'
+        effect: deny
+    # Data retention limits for contractors
+    dataRetention: '30d'
+    # Require approval for certain operations
+    requireApproval:
+      - 'scaffolder:write'
+      - 'catalog:write'
+
+# User role mappings
+userRoles:
+  # GitHub team mappings
+  github:
+    # Platform team gets admin access
+    'platform-team': 'platform-admin'
+    'devops-team': 'platform-admin'
+    
+    # Engineering leads get elevated access
+    'engineering-leads': 'engineering-lead'
+    'tech-leads': 'engineering-lead'
+    
+    # Development teams get developer access
+    'backend-team': 'developer'
+    'frontend-team': 'developer'
+    'mobile-team': 'developer'
+    'qa-team': 'developer'
+    
+    # External contractors get limited access
+    'contractors': 'contractor'
+    'external-consultants': 'contractor'
+    
+    # Default role for authenticated users
+    'default': 'viewer'
+  
+  # Individual user overrides (optional)
+  users:
+    # Example: specific user with admin access
+    # 'john.doe@company.com': 'platform-admin'
+
+# Resource-specific policies
+resources:
+  # Catalog policies
+  catalog:
+    # Sensitive catalog entities
+    sensitive:
+      - 'Component:production-database'
+      - 'System:payment-system'
+      - 'API:internal-admin-api'
+    # Public catalog entities
+    public:
+      - 'Component:documentation-site'
+      - 'API:public-api'
+  
+  # Kubernetes policies
+  kubernetes:
+    # Production namespace restrictions
+    production:
+      namespaces: ['production', 'prod-*']
+      requiredRole: 'platform-admin'
+    # Staging namespace access
+    staging:
+      namespaces: ['staging', 'stage-*']
+      requiredRole: 'developer'
+    # Development namespace access
+    development:
+      namespaces: ['development', 'dev-*', 'feature-*']
+      requiredRole: 'developer'
+  
+  # Scaffolder policies
+  scaffolder:
+    # Template restrictions
+    templates:
+      # Production templates require elevated access
+      production:
+        - 'production-service-template'
+        - 'infrastructure-template'
+        requiredRole: 'engineering-lead'
+      # Standard templates for developers
+      standard:
+        - 'microservice-template'
+        - 'frontend-template'
+        - 'documentation-template'
+        requiredRole: 'developer'
+
+# Audit configuration
+audit:
+  # Enable audit logging
+  enabled: true
+  # Events to audit
+  events:
+    - 'permission:check'
+    - 'permission:grant'
+    - 'permission:deny'
+    - 'catalog:create'
+    - 'catalog:update'
+    - 'catalog:delete'
+    - 'scaffolder:execute'
+    - 'kubernetes:apply'
+    - 'kubernetes:delete'
+  # Audit retention period
+  retention: '90d'
+  # Audit storage configuration
+  storage:
+    type: 'database'
+    table: 'audit_logs'
+
+# Security policies
+security:
+  # Session management
+  session:
+    # Session timeout (minutes)
+    timeout: 480 # 8 hours
+    # Require re-authentication for sensitive operations
+    reAuthRequired:
+      - 'catalog:delete'
+      - 'kubernetes:delete'
+      - 'permission:write'
+  
+  # Rate limiting
+  rateLimit:
+    # Requests per minute per user
+    requestsPerMinute: 100
+    # Burst allowance
+    burstSize: 20
+    # Rate limit by IP address
+    byIpAddress: true
+  
+  # Content filtering
+  contentFilter:
+    # Enable content filtering for AI responses
+    enabled: true
+    # Patterns to filter
+    patterns:
+      - 'AKIA[0-9A-Z]{16}'  # AWS Access Keys
+      - 'sk-[a-zA-Z0-9]{48}' # OpenAI API Keys
+      - '(?i)(password|secret|token|key)\s*[:=]\s*[^\s]+'
+    # Action when pattern is detected
+    action: 'redact' # or 'block'
+
+# Notification policies
+notifications:
+  # Security event notifications
+  security:
+    # Events that trigger notifications
+    events:
+      - 'permission:deny'
+      - 'authentication:failure'
+      - 'authorization:violation'
+    # Notification channels
+    channels:
+      - type: 'slack'
+        webhook: '${SECURITY_SLACK_WEBHOOK}'
+        channel: '#security-alerts'
+      - type: 'email'
+        recipients: ['security@company.com']
+  
+  # Policy violation notifications
+  violations:
+    # Threshold for notifications
+    threshold: 5 # violations per hour
+    # Notification channels
+    channels:
+      - type: 'slack'
+        webhook: '${SECURITY_SLACK_WEBHOOK}'
+        channel: '#security-alerts'
+
+# Policy metadata
+metadata:
+  version: '1.0.0'
+  lastUpdated: '2024-01-03'
+  owner: 'platform-team'
+  description: 'RBAC policy for Internal Developer Platform'
+  reviewSchedule: 'quarterly'

@@ -1,8 +1,8 @@
-# Default values for backstage.
+# Production values for backstage.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 2
 
 image:
   repository: backstage
@@ -29,28 +29,41 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "7007"
   prometheus.io/path: "/metrics"
+  # Security annotations
+  container.apparmor.security.beta.kubernetes.io/backstage: runtime/default
+  seccomp.security.alpha.kubernetes.io/pod: runtime/default
 
-# Enhanced security context
+# Enhanced security context for production
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1001
   runAsGroup: 1001
   fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
   seccompProfile:
     type: RuntimeDefault
+  supplementalGroups: []
 
 securityContext:
   runAsNonRoot: true
   runAsUser: 1001
+  runAsGroup: 1001
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
     drop:
       - ALL
+  seccompProfile:
+    type: RuntimeDefault
 
 service:
   type: ClusterIP
   port: 7007
+  # Additional service annotations for monitoring
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7007"
+    prometheus.io/path: "/metrics"
 
 ingress:
   enabled: true
@@ -62,7 +75,7 @@ ingress:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN}
-    # Security headers
+    # Enhanced security headers
     alb.ingress.kubernetes.io/actions.ssl-redirect: |
       {
         "Type": "redirect",
@@ -72,6 +85,26 @@ ingress:
           "StatusCode": "HTTP_301"
         }
       }
+    # Security headers
+    alb.ingress.kubernetes.io/actions.response-headers: |
+      {
+        "Type": "fixed-response",
+        "FixedResponseConfig": {
+          "ContentType": "text/plain",
+          "StatusCode": "200",
+          "MessageBody": "OK"
+        },
+        "ResponseHeaders": {
+          "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+          "X-Frame-Options": "DENY",
+          "X-Content-Type-Options": "nosniff",
+          "X-XSS-Protection": "1; mode=block",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https: wss:; frame-src 'self' https:; object-src 'none';"
+        }
+      }
+    # Rate limiting
+    alb.ingress.kubernetes.io/wafv2-acl-arn: ${WAF_ACL_ARN}
   hosts:
     - host: backstage.${DOMAIN_NAME}
       paths:
@@ -81,33 +114,117 @@ ingress:
     enabled: true
     clusterIssuer: letsencrypt-prod
 
-# Production resource limits
+# Production resource limits with enhanced configuration
 resources:
   limits:
+    cpu: 2000m
+    memory: 2Gi
+    ephemeral-storage: 2Gi
+  requests:
     cpu: 1000m
     memory: 1Gi
-  requests:
-    cpu: 500m
-    memory: 512Mi
+    ephemeral-storage: 1Gi
 
+# Horizontal Pod Autoscaler for production
 autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  # Custom metrics for scaling
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
 
 # Pod disruption budget for high availability
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
-  # maxUnavailable: 1
+  # maxUnavailable: 50%
 
-nodeSelector: {}
+# Network policy for enhanced security
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 7007
+  egress:
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow HTTPS outbound
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow PostgreSQL connection
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
 
-tolerations: []
+# Node selector for production workloads
+nodeSelector:
+  node-type: "application"
+  instance-type: "m5.large"
 
-affinity: {}
+# Tolerations for dedicated nodes
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "application"
+    effect: "NoSchedule"
+
+# Anti-affinity for high availability
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - backstage
+          topologyKey: kubernetes.io/hostname
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
 
 # Backstage configuration
 backstage:
@@ -150,7 +267,7 @@ backstage:
     datadogApiKey: ${DATADOG_API_KEY}
     datadogAppKey: ${DATADOG_APP_KEY}
 
-# PostgreSQL configuration
+# PostgreSQL configuration with enhanced security
 postgresql:
   enabled: true
   auth:
@@ -161,30 +278,66 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 20Gi
+      size: 50Gi
       storageClass: gp3
     resources:
       limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
         cpu: 500m
         memory: 512Mi
-      requests:
-        cpu: 250m
-        memory: 256Mi
     # Enhanced PostgreSQL security
     securityContext:
       enabled: true
       runAsNonRoot: true
       runAsUser: 999
+      runAsGroup: 999
       fsGroup: 999
+      fsGroupChangePolicy: "OnRootMismatch"
     containerSecurityContext:
       enabled: true
       runAsNonRoot: true
       runAsUser: 999
+      runAsGroup: 999
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: false
       capabilities:
         drop:
           - ALL
+      seccompProfile:
+        type: RuntimeDefault
+    # PostgreSQL configuration for production
+    configuration: |
+      # Connection settings
+      max_connections = 200
+      shared_buffers = 256MB
+      effective_cache_size = 1GB
+      maintenance_work_mem = 64MB
+      checkpoint_completion_target = 0.9
+      wal_buffers = 16MB
+      default_statistics_target = 100
+      random_page_cost = 1.1
+      effective_io_concurrency = 200
+      work_mem = 4MB
+      min_wal_size = 1GB
+      max_wal_size = 4GB
+      # Security settings
+      ssl = on
+      ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL'
+      ssl_prefer_server_ciphers = on
+      password_encryption = scram-sha-256
+      # Logging
+      log_statement = 'mod'
+      log_min_duration_statement = 1000
+      log_connections = on
+      log_disconnections = on
+      log_hostname = on
+    # Backup configuration
+    backup:
+      enabled: true
+      schedule: "0 2 * * *"
+      retention: "30d"
 
 # External PostgreSQL (when postgresql.enabled is false)
 externalPostgresql:
@@ -200,9 +353,11 @@ env:
   - name: NODE_ENV
     value: production
   - name: NODE_OPTIONS
-    value: "--no-node-snapshot --max-old-space-size=1024"
+    value: "--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete"
   - name: LOG_LEVEL
     value: info
+  - name: TZ
+    value: UTC
   - name: POSTGRES_HOST
     value: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.fullname\" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
   - name: POSTGRES_PORT
@@ -217,7 +372,7 @@ env:
   - name: POSTGRES_DB
     value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.database }}{{ else }}{{ .Values.externalPostgresql.database }}{{ end }}"
   - name: POSTGRES_SSL
-    value: "{{ if .Values.postgresql.enabled }}false{{ else }}{{ .Values.externalPostgresql.ssl }}{{ end }}"
+    value: "{{ if .Values.postgresql.enabled }}require{{ else }}{{ .Values.externalPostgresql.ssl }}{{ end }}"
   - name: BACKEND_SECRET
     valueFrom:
       secretKeyRef:
@@ -268,3 +423,44 @@ env:
         name: backstage-secrets
         key: datadog-app-key
         optional: true
+  # Security environment variables
+  - name: AUTH_PUBLIC_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-auth-keys
+        key: public-key
+  - name: AUTH_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-auth-keys
+        key: private-key
+  - name: AUTH_TOKEN_ISSUER
+    value: https://backstage.${DOMAIN_NAME}
+
+# Monitoring configuration
+monitoring:
+  # ServiceMonitor for Prometheus
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+    labels:
+      app: backstage
+      monitoring: prometheus
+  
+  # Grafana dashboard
+  grafanaDashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"
+  storage:
+    type: s3
+    bucket: ${BACKUP_S3_BUCKET}
+    prefix: backstage-backups/
+    encryption: AES256
