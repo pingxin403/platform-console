@@ -497,7 +497,7 @@ This implementation plan breaks down the Internal Developer Platform (IDP) devel
   - **Commit**: `git add . && git commit -m "config: apply production best practices and security hardening"`
   - _Requirements: 8.1, 8.3, 8.4, 8.5_
 
-- [-] 16. Checkpoint - Core platform MVP complete
+- [x] 16. Checkpoint - Core platform MVP complete
   - Ensure all tests pass, ask the user if questions arise.
   - **Checkpoint commit**: `git add . && git commit -m "checkpoint: core platform MVP complete" && git tag -a "checkpoint-2" -m "Checkpoint 2: Core platform MVP" && git push origin main --tags`
 
