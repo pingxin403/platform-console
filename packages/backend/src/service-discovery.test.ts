@@ -65,7 +65,10 @@ class ServiceDiscoveryAutomation {
    */
   async registerServices(entities: Entity[]): Promise<void> {
     for (const entity of entities) {
-      this.discoveredServices.set(entity.metadata.name, entity);
+      // Use a unique key that combines name and source location to handle duplicates
+      const sourceLocation = entity.metadata.annotations?.['backstage.io/source-location'] || '';
+      const uniqueKey = `${entity.metadata.name}:${sourceLocation}`;
+      this.discoveredServices.set(uniqueKey, entity);
     }
   }
 
