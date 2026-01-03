@@ -99,4 +99,10 @@ backend.add(import('@backstage/plugin-devtools-backend'));
 // Tech Radar plugin for technology tracking
 backend.add(import('@backstage-community/plugin-tech-radar-backend'));
 
+// S3 Viewer plugin for AWS S3 bucket and object viewing
+backend.add(import('@spreadshirt/backstage-plugin-s3-viewer-backend'));
+
+// AWS scaffolder actions module
+backend.add(import('./modules/scaffolderAwsModule').then(m => m.scaffolderAwsModule));
+
 backend.start();

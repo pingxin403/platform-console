@@ -9,6 +9,7 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import BuildIcon from '@material-ui/icons/Build';
 import SettingsIcon from '@material-ui/icons/Settings';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
+import CloudIcon from '@material-ui/icons/Cloud';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import {
@@ -82,6 +83,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={PlayArrowIcon} to="grpc-playground" text="gRPC Playground" />
         <SidebarItem icon={BuildIcon} to="toolbox" text="Developer Toolbox" />
         <SidebarItem icon={TrendingUpIcon} to="tech-radar" text="Tech Radar" />
+        <SidebarItem icon={CloudIcon} to="s3-viewer" text="S3 Viewer" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}

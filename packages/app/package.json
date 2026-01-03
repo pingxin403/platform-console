@@ -72,6 +72,7 @@
     "@roadiehq/backstage-plugin-github-pull-requests": "^3.6.1",
     "@roadiehq/backstage-plugin-prometheus": "^3.2.0",
     "@roadiehq/backstage-plugin-security-insights": "^3.3.0",
+    "@spreadshirt/backstage-plugin-s3-viewer": "^0.8.1",
     "backstage-grpc-playground": "^0.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

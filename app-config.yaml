@@ -55,6 +55,50 @@ backend:
     format: json
     redactSecrets: true
 
+# Search configuration for enhanced discovery
+search:
+  # PostgreSQL search engine configuration
+  pg:
+    # Enable full-text search
+    enabled: true
+    # Search result highlighting
+    highlightPreTag: '<mark>'
+    highlightPostTag: '</mark>'
+  # Search indexing configuration
+  indexing:
+    # Batch size for indexing operations
+    batchSize: 1000
+    # Index refresh interval
+    refreshInterval: 600 # 10 minutes
+  # Search result configuration
+  results:
+    # Maximum results per page
+    maxResults: 25
+    # Default results per page
+    defaultResults: 10
+    # Enable search suggestions
+    suggestions: true
+  # Search collators configuration
+  collators:
+    # Catalog search collator
+    catalog:
+      # Enable catalog entity search
+      enabled: true
+      # Index all entity types
+      entityTypes: ['Component', 'API', 'Resource', 'System', 'Domain', 'Location', 'User', 'Group']
+      # Search fields
+      fields: ['metadata.name', 'metadata.description', 'metadata.tags', 'spec.owner']
+    # TechDocs search collator
+    techdocs:
+      # Enable documentation search
+      enabled: true
+      # Index all documentation
+      indexAll: true
+      # Search fields
+      fields: ['title', 'text', 'location']
+      # Boost recent documents
+      recencyBoost: 1.2
+
 integrations:
   github:
     - host: github.com
@@ -674,16 +718,80 @@ apiDocs:
       # Include code examples
       examples: true
 
-# Reference documentation http://backstage.io/docs/features/techdocs/configuration
-# Note: After experimenting with basic setup, use CI/CD to generate docs
-# and an external cloud storage when deploying TechDocs for production use-case.
+# TechDocs configuration with S3 storage and MkDocs
+# Production-ready setup with automatic documentation generation and S3 publishing
 # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
 techdocs:
-  builder: 'local' # Alternatives - 'external'
+  # Use external builder for production (CI/CD generates docs)
+  builder: 'external' # Alternatives - 'local'
   generator:
+    # Run MkDocs in Docker for consistent builds
     runIn: 'docker' # Alternatives - 'local'
+    # MkDocs configuration
+    mkdocs:
+      # Default MkDocs configuration
+      defaultPlugins: ['search', 'mkdocs-techdocs-core']
+      # Additional plugins for enhanced documentation
+      additionalPlugins: ['mermaid2', 'plantuml-markdown']
   publisher:
-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+    # Use AWS S3 for production storage
+    type: 'awsS3' # Alternatives - 'local', 'googleGcs'
+    # S3 configuration
+    awsS3:
+      # S3 bucket for TechDocs storage
+      bucketName: ${TECHDOCS_S3_BUCKET_NAME}
+      # AWS region
+      region: ${AWS_REGION:-us-east-1}
+      # S3 bucket path prefix
+      bucketRootPath: 'techdocs'
+      # Enable server-side encryption
+      sse: 'AES256'
+      # Optional: Custom endpoint for S3-compatible storage
+      # endpoint: ${S3_ENDPOINT}
+      # Optional: Force path style for S3-compatible storage
+      # forcePathStyle: true
+      # Optional: Custom credentials (uses AWS SDK default chain if not specified)
+      # credentials:
+      #   accessKeyId: ${AWS_ACCESS_KEY_ID}
+      #   secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+  # Cache configuration for better performance
+  cache:
+    # Enable caching
+    enabled: true
+    # Cache TTL in seconds (1 hour)
+    ttl: 3600
+    # Cache size limit in MB
+    sizeLimit: 1000
+  # Documentation rebuild triggers and timing
+  rebuild:
+    # Enable automatic rebuilds
+    enabled: true
+    # Rebuild triggers
+    triggers:
+      # Rebuild on catalog entity changes
+      catalogEntityChange: true
+      # Rebuild on repository changes (webhook)
+      repositoryChange: true
+      # Rebuild on schedule
+      schedule:
+        # Rebuild frequency (daily at 2 AM)
+        frequency: { hours: 24 }
+        # Initial delay before first rebuild
+        initialDelay: { minutes: 5 }
+    # Rebuild timeout in minutes
+    timeout: 30
+  # Search integration configuration
+  search:
+    # Enable TechDocs search indexing
+    enabled: true
+    # Search index update frequency
+    indexUpdateFrequency: { minutes: 10 }
+    # Search result ranking
+    ranking:
+      # Boost recent documents
+      recencyBoost: 1.2
+      # Boost documents with more views
+      popularityBoost: 1.1
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
@@ -924,3 +1032,59 @@ techRadar:
       # Authentication headers
       headers:
         Authorization: 'Bearer ${TECH_RADAR_API_TOKEN}'
+
+# S3 Viewer configuration for AWS S3 bucket and object viewing
+s3Viewer:
+  # S3 connections configuration
+  connections:
+    # Production S3 buckets
+    - name: 'production-assets'
+      endpoint: 'https://s3.amazonaws.com'
+      region: '${AWS_REGION:-us-east-1}'
+      buckets:
+        - name: '${S3_ASSETS_BUCKET:-company-assets-prod}'
+          prefix: 'assets/'
+        - name: '${S3_LOGS_BUCKET:-company-logs-prod}'
+          prefix: 'logs/'
+    # Staging S3 buckets
+    - name: 'staging-assets'
+      endpoint: 'https://s3.amazonaws.com'
+      region: '${AWS_REGION:-us-east-1}'
+      buckets:
+        - name: '${S3_ASSETS_BUCKET_STAGING:-company-assets-staging}'
+          prefix: 'assets/'
+        - name: '${S3_LOGS_BUCKET_STAGING:-company-logs-staging}'
+          prefix: 'logs/'
+    # Development S3 buckets
+    - name: 'development-assets'
+      endpoint: 'https://s3.amazonaws.com'
+      region: '${AWS_REGION:-us-east-1}'
+      buckets:
+        - name: '${S3_ASSETS_BUCKET_DEV:-company-assets-dev}'
+          prefix: 'assets/'
+  # Authentication configuration
+  auth:
+    # Use AWS SDK default credential chain
+    useDefaultCredentials: true
+    # Optional: Custom credentials
+    # accessKeyId: ${AWS_ACCESS_KEY_ID}
+    # secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+    # sessionToken: ${AWS_SESSION_TOKEN}
+  # UI configuration
+  ui:
+    # Enable object preview for images and text files
+    enablePreview: true
+    # Enable object download
+    enableDownload: true
+    # Maximum file size for preview (in bytes)
+    maxPreviewSize: 10485760 # 10MB
+    # Supported preview file types
+    previewTypes: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'txt', 'md', 'json', 'yaml', 'yml']
+  # Permissions configuration
+  permissions:
+    # Enable bucket listing
+    allowListing: true
+    # Enable object download
+    allowDownload: true
+    # Enable object preview
+    allowPreview: true
