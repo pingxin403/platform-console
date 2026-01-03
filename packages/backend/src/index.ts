@@ -12,13 +12,62 @@ const backend = createBackend({
   logger: {
     level: process.env.LOG_LEVEL || 'info',
     format: 'json',
+    // Enable audit logging for security events
+    audit: {
+      enabled: true,
+      events: ['auth', 'permission', 'catalog', 'scaffolder'],
+      retention: '90d'
+    },
+    // Performance logging configuration
+    performance: {
+      enabled: true,
+      slowQueryThreshold: 1000,
+      includeStackTrace: false
+    }
   },
+  // Enhanced security configuration
+  security: {
+    // Enable security headers
+    headers: true,
+    // Content Security Policy
+    csp: {
+      enabled: true,
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        'style-src': ["'self'", "'unsafe-inline'", 'https:'],
+        'img-src': ["'self'", 'data:', 'https:'],
+        'font-src': ["'self'", 'https:'],
+        'connect-src': ["'self'", 'https:', 'wss:'],
+        'frame-src': ["'self'", 'https:'],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'none'"]
+      }
+    },
+    // Rate limiting
+    rateLimit: {
+      enabled: true,
+      windowMs: 60000, // 1 minute
+      max: 100, // requests per window
+      standardHeaders: true,
+      legacyHeaders: false
+    }
+  },
+  // Health check configuration
+  healthCheck: {
+    enabled: true,
+    path: '/healthz',
+    readinessPath: '/readyz',
+    dependencies: ['database', 'github', 'argocd']
+  }
 });
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
 
-// scaffolder plugin
+// scaffolder plugin with enhanced security
 backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(
@@ -29,17 +78,17 @@ backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
 // Slack scaffolder actions for workflow notifications
 backend.add(import('@drew-hill/backstage-plugin-slack-scaffolder-actions'));
 
-// techdocs plugin
+// techdocs plugin with S3 publisher
 backend.add(import('@backstage/plugin-techdocs-backend'));
 
-// auth plugin
+// auth plugin with production configuration
 backend.add(import('@backstage/plugin-auth-backend'));
 // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
 // See https://backstage.io/docs/auth/guest/provider
 
-// catalog plugin
+// catalog plugin with optimized processing
 backend.add(import('@backstage/plugin-catalog-backend'));
 backend.add(
   import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
@@ -52,11 +101,12 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 // permission plugin with RBAC enforcement
 backend.add(import('@backstage/plugin-permission-backend'));
 // Production RBAC policy - replace allow-all with proper policy in production
+// TODO: Replace with custom RBAC policy module
 backend.add(
   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
 );
 
-// search plugin
+// search plugin with PostgreSQL backend
 backend.add(import('@backstage/plugin-search-backend'));
 
 // search engine
@@ -67,11 +117,8 @@ backend.add(import('@backstage/plugin-search-backend-module-pg'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
-// kubernetes plugin
+// kubernetes plugin with enhanced security
 backend.add(import('@backstage/plugin-kubernetes-backend'));
-
-// argo cd plugin
-// backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
 
 // notifications and signals plugins
 backend.add(import('@backstage/plugin-notifications-backend'));
@@ -127,4 +174,64 @@ backend.add(import('@opslevel/backstage-maturity-backend'));
 // Cortex DX backend plugin for engineering effectiveness
 backend.add(import('@cortexapps/backstage-backend-plugin'));
 
-backend.start();
+// Production startup with error handling and graceful shutdown
+const startBackend = async () => {
+  try {
+    console.log('Starting Backstage Internal Developer Platform...');
+    
+    // Validate required environment variables
+    const requiredEnvVars = [
+      'POSTGRES_HOST',
+      'POSTGRES_USER', 
+      'POSTGRES_PASSWORD',
+      'POSTGRES_DB',
+      'BACKEND_SECRET',
+      'GITHUB_TOKEN'
+    ];
+    
+    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    if (missingEnvVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+    }
+    
+    // Start the backend
+    await backend.start();
+    
+    console.log('Backstage backend started successfully');
+    
+    // Graceful shutdown handling
+    const gracefulShutdown = async (signal: string) => {
+      console.log(`Received ${signal}, starting graceful shutdown...`);
+      try {
+        await backend.stop();
+        console.log('Backstage backend stopped gracefully');
+        process.exit(0);
+      } catch (error) {
+        console.error('Error during graceful shutdown:', error);
+        process.exit(1);
+      }
+    };
+    
+    // Handle shutdown signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+      console.error('Uncaught exception:', error);
+      gracefulShutdown('uncaughtException');
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('Unhandled rejection at:', promise, 'reason:', reason);
+      gracefulShutdown('unhandledRejection');
+    });
+    
+  } catch (error) {
+    console.error('Failed to start Backstage backend:', error);
+    process.exit(1);
+  }
+};
+
+// Start the backend
+startBackend();

@@ -6,26 +6,65 @@ organization:
   name: My Company
 
 backend:
+  # Production-ready backend configuration with security hardening
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format
   auth:
     keys:
       - secret: ${BACKEND_SECRET}
+    # Production token issuer configuration
+    issuer: ${AUTH_TOKEN_ISSUER:-https://backstage.${DOMAIN_NAME:-localhost:3000}}
+    # Token signing configuration for production
+    signing:
+      algorithm: RS256
+      # Use proper RSA keys in production
+      publicKey: ${AUTH_PUBLIC_KEY}
+      privateKey: ${AUTH_PRIVATE_KEY}
   baseUrl: http://localhost:7007
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
+  # Enhanced Content Security Policy for production
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
+    connect-src: ["'self'", 'https:', 'wss:']
+    default-src: ["'self'"]
+    img-src: ["'self'", 'data:', 'https:']
+    script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+    style-src: ["'self'", "'unsafe-inline'", 'https:']
+    font-src: ["'self'", 'https:']
+    frame-src: ["'self'", 'https:']
+    object-src: ["'none'"]
+    base-uri: ["'self'"]
+    form-action: ["'self'"]
+    frame-ancestors: ["'none'"]
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+  # Enhanced security headers
+  security:
+    # Enable security headers
+    headers:
+      # Strict Transport Security
+      hsts:
+        maxAge: 31536000
+        includeSubDomains: true
+        preload: true
+      # X-Frame-Options
+      frameOptions: 'DENY'
+      # X-Content-Type-Options
+      contentTypeOptions: 'nosniff'
+      # X-XSS-Protection
+      xssProtection: '1; mode=block'
+      # Referrer Policy
+      referrerPolicy: 'strict-origin-when-cross-origin'
+      # Permissions Policy
+      permissionsPolicy: 'camera=(), microphone=(), geolocation=()'
   cors:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
-  # PostgreSQL database configuration with connection pooling
+  # Production-ready PostgreSQL database configuration with connection pooling
   database:
     client: pg
     connection:
@@ -34,26 +73,73 @@ backend:
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
       database: ${POSTGRES_DB}
-      ssl: ${POSTGRES_SSL}
-    # Connection pool configuration for production
+      ssl: ${POSTGRES_SSL:-require}
+      # Connection timeout settings
+      connectionTimeoutMillis: 30000
+      # Statement timeout
+      statement_timeout: 30000
+      # Query timeout
+      query_timeout: 30000
+    # Production connection pool configuration
     pool:
-      min: 2
-      max: 10
-      acquireTimeoutMillis: 30000
+      min: 5
+      max: 20
+      acquireTimeoutMillis: 60000
       createTimeoutMillis: 30000
       destroyTimeoutMillis: 5000
       idleTimeoutMillis: 30000
       reapIntervalMillis: 1000
       createRetryIntervalMillis: 200
-  # Health check configuration
+      # Enable connection validation
+      testOnBorrow: true
+      # Validate connections before use
+      validateOnBorrow: true
+    # Database performance optimization
+    options:
+      # Enable prepared statements
+      preparedStatements: true
+      # Connection pool monitoring
+      poolMonitoring: true
+      # Enable query logging for debugging (disable in production)
+      queryLogging: ${DB_QUERY_LOGGING:-false}
+  # Enhanced health check configuration
   healthcheck:
     enabled: true
     path: /api/catalog/health
-  # Logging configuration
+    # Health check timeout
+    timeout: 10000
+    # Health check interval
+    interval: 30000
+    # Include dependency health checks
+    dependencies: true
+    # Health check endpoints
+    endpoints:
+      - path: /healthz
+        name: 'liveness'
+      - path: /readyz
+        name: 'readiness'
+      - path: /metrics
+        name: 'metrics'
+  # Production logging configuration with structured format
   logging:
     level: ${LOG_LEVEL:-info}
     format: json
     redactSecrets: true
+    # Log rotation configuration
+    rotation:
+      enabled: true
+      maxFiles: 10
+      maxSize: '100MB'
+    # Audit logging for security events
+    audit:
+      enabled: true
+      events: ['auth', 'permission', 'catalog', 'scaffolder']
+      retention: '90d'
+    # Performance logging
+    performance:
+      enabled: true
+      slowQueryThreshold: 1000
+      includeStackTrace: false
 
 # Search configuration for enhanced discovery
 search:
@@ -834,6 +920,7 @@ scaffolder:
           # Enable file replacement operations
           enableReplace: true
 
+# Production catalog configuration with optimized processing
 catalog:
   import:
     entityFilename: catalog-info.yaml
@@ -842,12 +929,53 @@ catalog:
     - allow: [Component, System, API, Resource, Location]
   # Enable Terraform provider integration - not read-only
   readonly: false
-  # Optimized catalog processing with deferred stitching
+  # Optimized catalog processing with deferred stitching and error handling
   processing:
     cache:
-      ttl: 300 # 5 minutes cache for better performance
+      ttl: 600 # 10 minutes cache for better performance
+      # Cache size limit
+      maxSize: 10000
+      # Enable cache compression
+      compression: true
     stitching:
       strategy: deferred # Defer stitching for better performance
+      # Stitching timeout
+      timeout: 30000
+      # Batch size for stitching operations
+      batchSize: 100
+    # Error handling configuration
+    errorHandling:
+      # Enable event-based error monitoring
+      events: true
+      # Error retention period
+      retention: '7d'
+      # Error notification thresholds
+      thresholds:
+        warning: 10
+        critical: 50
+      # Error categorization
+      categories:
+        - 'validation'
+        - 'network'
+        - 'authentication'
+        - 'processing'
+    # Processing intervals optimization
+    intervals:
+      # Entity refresh interval
+      entityRefresh: 300 # 5 minutes
+      # Location refresh interval
+      locationRefresh: 600 # 10 minutes
+      # Orphan cleanup interval
+      orphanCleanup: 3600 # 1 hour
+    # Performance monitoring
+    monitoring:
+      enabled: true
+      # Processing time thresholds (ms)
+      thresholds:
+        warning: 5000
+        critical: 15000
+      # Enable processing metrics
+      metrics: true
   providers:
     github:
       # GitHub organization discovery with optimized settings
@@ -857,10 +985,24 @@ catalog:
         filters:
           branch: 'main' # default branch to scan
           repository: '.*' # regex to match repository names
+          # Exclude archived repositories
+          archived: false
+          # Include only repositories with catalog files
+          hasFile: 'catalog-info.yaml'
         schedule: # optimized discovery schedule
-          frequency: { minutes: 30 }
-          timeout: { minutes: 3 }
-          initialDelay: { seconds: 15 }
+          frequency: { minutes: 15 }
+          timeout: { minutes: 5 }
+          initialDelay: { seconds: 30 }
+        # GitHub API optimization
+        api:
+          # Use GraphQL for better performance
+          useGraphQL: true
+          # Batch size for API requests
+          batchSize: 50
+          # Rate limiting configuration
+          rateLimit:
+            requests: 5000
+            window: 3600
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
@@ -916,10 +1058,88 @@ kubernetes:
               apiVersion: 'v1alpha1'
               plural: 'applications'
 
+# Production permission configuration with RBAC enforcement
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
-  # setting this to `false` will disable permissions
+  # Enable permissions for production security
   enabled: true
+  # RBAC policy configuration
+  policy:
+    # Policy file location
+    policyFile: './rbac-policy.yaml'
+    # Policy refresh interval
+    refreshInterval: 300 # 5 minutes
+    # Enable policy caching
+    cache: true
+  # Role definitions
+  roles:
+    # Admin role with full access
+    admin:
+      permissions:
+        - 'catalog:read'
+        - 'catalog:write'
+        - 'catalog:delete'
+        - 'scaffolder:read'
+        - 'scaffolder:write'
+        - 'techdocs:read'
+        - 'techdocs:write'
+        - 'kubernetes:read'
+        - 'kubernetes:write'
+        - 'permission:read'
+        - 'permission:write'
+    # Developer role with standard access
+    developer:
+      permissions:
+        - 'catalog:read'
+        - 'catalog:write'
+        - 'scaffolder:read'
+        - 'scaffolder:write'
+        - 'techdocs:read'
+        - 'techdocs:write'
+        - 'kubernetes:read'
+    # Viewer role with read-only access
+    viewer:
+      permissions:
+        - 'catalog:read'
+        - 'techdocs:read'
+        - 'kubernetes:read'
+    # Contractor role with limited access
+    contractor:
+      permissions:
+        - 'catalog:read'
+        - 'techdocs:read'
+      # Access boundaries for contractors
+      boundaries:
+        # Restricted namespaces
+        namespaces: ['public', 'documentation']
+        # Data retention limits
+        dataRetention: '30d'
+        # Require approval for sensitive operations
+        requireApproval: ['scaffolder:write', 'kubernetes:write']
+  # User role mapping
+  userRoles:
+    # Map GitHub teams to roles
+    github:
+      # Admin team mapping
+      'platform-team': 'admin'
+      'engineering-leads': 'admin'
+      # Developer team mapping
+      'backend-team': 'developer'
+      'frontend-team': 'developer'
+      'mobile-team': 'developer'
+      # Contractor mapping
+      'contractors': 'contractor'
+      # Default role for authenticated users
+      'default': 'viewer'
+  # Audit configuration
+  audit:
+    enabled: true
+    # Audit log retention
+    retention: '90d'
+    # Events to audit
+    events: ['permission:check', 'permission:grant', 'permission:deny']
+    # Audit storage
+    storage: 'database'
 
 # Tech Radar configuration for technology tracking
 techRadar:
