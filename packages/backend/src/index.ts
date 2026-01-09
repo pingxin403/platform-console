@@ -7,62 +7,7 @@
 
 import { createBackend } from '@backstage/backend-defaults';
 
-const backend = createBackend({
-  // Enable comprehensive logging with structured format
-  logger: {
-    level: process.env.LOG_LEVEL || 'info',
-    format: 'json',
-    // Enable audit logging for security events
-    audit: {
-      enabled: true,
-      events: ['auth', 'permission', 'catalog', 'scaffolder'],
-      retention: '90d'
-    },
-    // Performance logging configuration
-    performance: {
-      enabled: true,
-      slowQueryThreshold: 1000,
-      includeStackTrace: false
-    }
-  },
-  // Enhanced security configuration
-  security: {
-    // Enable security headers
-    headers: true,
-    // Content Security Policy
-    csp: {
-      enabled: true,
-      directives: {
-        'default-src': ["'self'"],
-        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        'style-src': ["'self'", "'unsafe-inline'", 'https:'],
-        'img-src': ["'self'", 'data:', 'https:'],
-        'font-src': ["'self'", 'https:'],
-        'connect-src': ["'self'", 'https:', 'wss:'],
-        'frame-src': ["'self'", 'https:'],
-        'object-src': ["'none'"],
-        'base-uri': ["'self'"],
-        'form-action': ["'self'"],
-        'frame-ancestors': ["'none'"]
-      }
-    },
-    // Rate limiting
-    rateLimit: {
-      enabled: true,
-      windowMs: 60000, // 1 minute
-      max: 100, // requests per window
-      standardHeaders: true,
-      legacyHeaders: false
-    }
-  },
-  // Health check configuration
-  healthCheck: {
-    enabled: true,
-    path: '/healthz',
-    readinessPath: '/readyz',
-    dependencies: ['database', 'github', 'argocd']
-  }
-});
+const backend = createBackend();
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
@@ -75,8 +20,6 @@ backend.add(
 );
 // Enhanced scaffolder actions from Roadie
 backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
-// Slack scaffolder actions for workflow notifications
-backend.add(import('@drew-hill/backstage-plugin-slack-scaffolder-actions'));
 
 // techdocs plugin with S3 publisher
 backend.add(import('@backstage/plugin-techdocs-backend'));
@@ -125,7 +68,7 @@ backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
 // lighthouse plugin for performance monitoring
-backend.add(import('@backstage/plugin-lighthouse-backend'));
+backend.add(import('@backstage/plugin-lighthouse-backend').then(m => m.default()));
 
 // terraform plugin for infrastructure management
 backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
@@ -134,19 +77,10 @@ backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
 
 // kubelog plugin for Kubernetes log viewing
-backend.add(import('./plugins/kubelogModule').then(m => m.kubelogModule));
-
-// gRPC playground plugin for service testing and exploration
-backend.add(import('backstage-grpc-playground-backend'));
+backend.add(import('./plugins/kubelogModule').then(m => ({ default: m.kubelogModule })));
 
 // TODO plugin for code quality tracking
-backend.add(import('@backstage/plugin-todo-backend'));
-
-// DevPod plugin for development environment management
-backend.add(import('@coder/backstage-plugin-devpod-backend'));
-
-// Dev Containers plugin for VS Code development environment integration
-backend.add(import('@coder/backstage-plugin-dev-containers-backend'));
+backend.add(import('@backstage/plugin-todo-backend').then(m => m.default()));
 
 // DevTools plugin for Backstage runtime diagnostics
 backend.add(import('@backstage/plugin-devtools-backend'));
@@ -158,21 +92,25 @@ backend.add(import('@backstage-community/plugin-tech-radar-backend'));
 backend.add(import('@spreadshirt/backstage-plugin-s3-viewer-backend'));
 
 // AWS scaffolder actions module
-backend.add(import('./modules/scaffolderAwsModule').then(m => m.scaffolderAwsModule));
+backend.add(import('./modules/scaffolderAwsModule').then(m => ({ default: m.scaffolderAwsModule })));
 
 // OpenCost enhanced module with AWS cost correlation and benchmarking
-backend.add(import('./plugins/opencostEnhancedModule').then(m => m.opencostEnhancedPlugin));
+backend.add(import('./plugins/opencostEnhancedModule').then(m => ({ default: m.opencostEnhancedPlugin })));
 
 // RAG AI backend plugin for AI-powered assistance
 backend.add(import('@roadiehq/rag-ai-backend'));
-backend.add(import('@roadiehq/rag-ai-backend-embeddings-openai'));
-backend.add(import('@roadiehq/rag-ai-storage-pgvector'));
 
 // OpsLevel Service Maturity backend plugin for service quality management
 backend.add(import('@opslevel/backstage-maturity-backend'));
 
 // Cortex DX backend plugin for engineering effectiveness
-backend.add(import('@cortexapps/backstage-backend-plugin'));
+backend.add(import('@cortexapps/backstage-backend-plugin').then(m => ({ default: m.cortexPlugin })));
+
+// Entity Feedback backend plugin for collecting user feedback
+backend.add(import('@backstage-community/plugin-entity-feedback-backend'));
+
+// Toolbox backend plugin for developer tools
+backend.add(import('@drodil/backstage-plugin-toolbox-backend'));
 
 // Production startup with error handling and graceful shutdown
 const startBackend = async () => {

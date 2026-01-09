@@ -17,7 +17,6 @@ import {
   Tooltip,
   Box,
   CircularProgress,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -29,6 +28,7 @@ import {
   FormControl,
   InputLabel,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import {
   Refresh as RefreshIcon,
   Launch as LaunchIcon,

@@ -24,7 +24,7 @@ import {
   ANNOTATION_SOURCE_LOCATION,
   Entity,
 } from '@backstage/catalog-model';
-import { ScmIntegrationsApi, scmIntegrationsApiRef } from '@backstage/integration';
+import { ScmIntegrationsApi, scmIntegrationsApiRef } from '@backstage/integration-react';
 import { useApi } from '@backstage/core-plugin-api';
 
 const useStyles = makeStyles(theme => ({
