@@ -17,7 +17,6 @@ import {
   Box,
   Chip,
   LinearProgress,
-  Alert,
   Tabs,
   Tab,
   Table,
@@ -28,6 +27,7 @@ import {
   TableRow,
   Paper,
 } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,

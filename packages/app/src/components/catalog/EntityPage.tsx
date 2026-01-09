@@ -81,9 +81,8 @@ import {
 
 // Grafana plugin imports
 import {
-  EntityGrafanaContent,
   EntityGrafanaDashboardsCard,
-  isGrafanaAvailable,
+  isDashboardSelectorAvailable,
 } from '@k-phoen/backstage-plugin-grafana';
 
 // Security Insights plugin imports
@@ -109,16 +108,11 @@ import {
 // GitHub Pull Requests plugin imports
 import {
   EntityGithubPullRequestsContent,
-  EntityGithubPullRequestsOverviewCard,
   isGithubPullRequestsAvailable,
 } from '@roadiehq/backstage-plugin-github-pull-requests';
 
 // CI/CD Statistics plugin imports
-import {
-  EntityCicdStatisticsContent,
-  EntityCicdStatisticsCard,
-  isCicdStatisticsAvailable,
-} from '@backstage-community/plugin-cicd-statistics';
+// Note: EntityCicdStatisticsContent is available but not used in current implementation
 
 // GitHub Insights plugin imports for release tracking and analytics
 import {
@@ -137,28 +131,23 @@ import {
 } from '@backstage/plugin-jenkins';
 
 // Topology plugin imports for Kubernetes visualization
-import {
-  EntityTopologyContent,
-  isTopologyAvailable,
-} from '@backstage-community/plugin-topology';
+// Note: This plugin only provides TopologyPage, no entity-specific components
 
 // Jaeger plugin imports for distributed tracing
 import {
-  EntityJaegerContent,
+  JaegerCard,
   isJaegerAvailable,
 } from '@backstage-community/plugin-jaeger';
 
 // Vault plugin imports for secrets management
 import {
-  EntityVaultContent,
   EntityVaultCard,
   isVaultAvailable,
 } from '@backstage-community/plugin-vault';
 
 // Nexus Repository Manager plugin imports for artifact management
 import {
-  EntityNexusRepositoryManagerContent,
-  EntityNexusRepositoryManagerCard,
+  NexusRepositoryManagerPage,
   isNexusRepositoryManagerAvailable,
 } from '@backstage-community/plugin-nexus-repository-manager';
 
@@ -182,7 +171,6 @@ import {
 import {
   EntityKialiContent,
   EntityKialiGraphCard,
-  isKialiAvailable,
 } from '@backstage-community/plugin-kiali';
 
 // Kubelog plugin imports for Kubernetes log viewing
@@ -199,42 +187,25 @@ import { ArgocdDeploymentCard } from './ArgocdDeploymentCard';
 // OpsLevel Service Maturity plugin imports
 import {
   EntityOpsLevelMaturityContent,
-  EntityOpsLevelMaturityCard,
-  isOpsLevelMaturityAvailable,
 } from '@opslevel/backstage-maturity';
 
 // OpenDORA plugin imports for DORA metrics
-import {
-  EntityOpenDoraContent,
-  EntityOpenDoraCard,
-  isOpenDoraAvailable,
-} from '@devoteam-nl/open-dora-backstage-plugin';
+// Note: This plugin only provides OpenDoraPluginPage, no entity-specific components
 
 // Cortex plugin imports for engineering effectiveness
 import {
   EntityCortexContent,
-  EntityCortexScorecardCard,
-  isCortexAvailable,
 } from '@cortexapps/backstage-plugin';
 
 // FireHydrant plugin imports for incident management
 import {
-  EntityFireHydrantContent,
-  EntityFireHydrantCard,
+  FirehydrantCard,
   isFireHydrantAvailable,
 } from '@backstage-community/plugin-firehydrant';
-
-// Kubernetes GPT Analyzer plugin imports for AI troubleshooting
-import {
-  EntityKubernetesGptAnalyzerContent,
-  EntityKubernetesGptAnalyzerCard,
-  isKubernetesGptAnalyzerAvailable,
-} from '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer';
 
 // TODO plugin imports for code quality tracking
 import {
   EntityTodoContent,
-  isTodoAvailable,
 } from '@backstage/plugin-todo';
 
 const techdocsContent = (
@@ -251,9 +222,6 @@ const cicdContent = (
   <EntitySwitch>
     <EntitySwitch.Case if={isGithubActionsAvailable}>
       <EntityGithubActionsContent />
-    </EntitySwitch.Case>
-    <EntitySwitch.Case if={isCicdStatisticsAvailable}>
-      <EntityCicdStatisticsContent />
     </EntitySwitch.Case>
     <EntitySwitch.Case if={isJenkinsAvailable}>
       <EntityJenkinsContent />
@@ -347,7 +315,7 @@ const overviewContent = (
     </EntitySwitch>
     
     <EntitySwitch>
-      <EntitySwitch.Case if={isGrafanaAvailable}>
+      <EntitySwitch.Case if={entity => !!isDashboardSelectorAvailable(entity)}>
         <Grid item md={6} xs={12}>
           <EntityGrafanaDashboardsCard />
         </Grid>
@@ -371,22 +339,6 @@ const overviewContent = (
     </EntitySwitch>
     
     <EntitySwitch>
-      <EntitySwitch.Case if={isGithubPullRequestsAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityGithubPullRequestsOverviewCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
-      <EntitySwitch.Case if={isCicdStatisticsAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityCicdStatisticsCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
       <EntitySwitch.Case if={isGithubInsightsAvailable}>
         <Grid item md={6} xs={12}>
           <EntityGithubInsightsReleasesCard />
@@ -405,7 +357,7 @@ const overviewContent = (
     <EntitySwitch>
       <EntitySwitch.Case if={isJenkinsAvailable}>
         <Grid item md={6} xs={12}>
-          <EntityLatestJenkinsRunCard />
+          <EntityLatestJenkinsRunCard branch="main" />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
@@ -421,7 +373,7 @@ const overviewContent = (
     <EntitySwitch>
       <EntitySwitch.Case if={isNexusRepositoryManagerAvailable}>
         <Grid item md={6} xs={12}>
-          <EntityNexusRepositoryManagerCard />
+          <NexusRepositoryManagerPage />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
@@ -458,50 +410,14 @@ const overviewContent = (
       </EntitySwitch.Case>
     </EntitySwitch>
     
-    <EntitySwitch>
-      <EntitySwitch.Case if={isKialiAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityKialiGraphCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
-      <EntitySwitch.Case if={isOpsLevelMaturityAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityOpsLevelMaturityCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
-      <EntitySwitch.Case if={isOpenDoraAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityOpenDoraCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
-      <EntitySwitch.Case if={isCortexAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityCortexScorecardCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
+    <Grid item md={6} xs={12}>
+      <EntityKialiGraphCard />
+    </Grid>
     
     <EntitySwitch>
       <EntitySwitch.Case if={isFireHydrantAvailable}>
         <Grid item md={6} xs={12}>
-          <EntityFireHydrantCard />
-        </Grid>
-      </EntitySwitch.Case>
-    </EntitySwitch>
-    
-    <EntitySwitch>
-      <EntitySwitch.Case if={isKubernetesGptAnalyzerAvailable}>
-        <Grid item md={6} xs={12}>
-          <EntityKubernetesGptAnalyzerCard />
+          <FirehydrantCard />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
@@ -556,9 +472,9 @@ const serviceEntityPage = (
         </EntitySwitch>
         
         <EntitySwitch>
-          <EntitySwitch.Case if={isGrafanaAvailable}>
+          <EntitySwitch.Case if={entity => !!isDashboardSelectorAvailable(entity)}>
             <Grid item xs={12}>
-              <EntityGrafanaContent />
+              <EntityGrafanaDashboardsCard />
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
@@ -610,14 +526,6 @@ const serviceEntityPage = (
     </EntityLayout.Route>
 
     <EntityLayout.Route 
-      path="/build-analytics" 
-      title="Build Analytics"
-      if={isCicdStatisticsAvailable}
-    >
-      <EntityCicdStatisticsContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route 
       path="/releases" 
       title="Releases"
       if={isGithubInsightsAvailable}
@@ -644,27 +552,15 @@ const serviceEntityPage = (
     </EntityLayout.Route>
 
     <EntityLayout.Route
-      path="/topology"
-      title="Topology"
-      if={isTopologyAvailable}
-    >
-      <EntityTopologyContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route
       path="/tracing"
       title="Tracing"
       if={isJaegerAvailable}
     >
-      <EntityJaegerContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route
-      path="/secrets"
-      title="Secrets"
-      if={isVaultAvailable}
-    >
-      <EntityVaultContent />
+      <Grid container spacing={3} alignItems="stretch">
+        <Grid item xs={12}>
+          <JaegerCard />
+        </Grid>
+      </Grid>
     </EntityLayout.Route>
 
     <EntityLayout.Route
@@ -672,7 +568,7 @@ const serviceEntityPage = (
       title="Artifacts"
       if={isNexusRepositoryManagerAvailable}
     >
-      <EntityNexusRepositoryManagerContent />
+      <NexusRepositoryManagerPage />
     </EntityLayout.Route>
 
     <EntityLayout.Route
@@ -694,7 +590,6 @@ const serviceEntityPage = (
     <EntityLayout.Route
       path="/service-mesh"
       title="Service Mesh"
-      if={isKialiAvailable}
     >
       <EntityKialiContent />
     </EntityLayout.Route>
@@ -739,7 +634,6 @@ const serviceEntityPage = (
     <EntityLayout.Route 
       path="/todos" 
       title="TODOs"
-      if={isTodoAvailable}
     >
       <EntityTodoContent />
     </EntityLayout.Route>
@@ -747,41 +641,15 @@ const serviceEntityPage = (
     <EntityLayout.Route 
       path="/service-maturity" 
       title="Service Maturity"
-      if={isOpsLevelMaturityAvailable}
     >
       <EntityOpsLevelMaturityContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route 
-      path="/dora-metrics" 
-      title="DORA Metrics"
-      if={isOpenDoraAvailable}
-    >
-      <EntityOpenDoraContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route 
       path="/engineering-effectiveness" 
       title="Engineering Effectiveness"
-      if={isCortexAvailable}
     >
       <EntityCortexContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route 
-      path="/incident-management" 
-      title="Incident Management"
-      if={isFireHydrantAvailable}
-    >
-      <EntityFireHydrantContent />
-    </EntityLayout.Route>
-
-    <EntityLayout.Route 
-      path="/ai-troubleshooting" 
-      title="AI Troubleshooting"
-      if={isKubernetesGptAnalyzerAvailable}
-    >
-      <EntityKubernetesGptAnalyzerContent />
     </EntityLayout.Route>
   </EntityLayout>
 );

@@ -30,12 +30,10 @@ import { DevToolsPage } from '@backstage/plugin-devtools';
 import { TechRadarPage } from '@backstage-community/plugin-tech-radar';
 import { S3ViewerPage } from '@spreadshirt/backstage-plugin-s3-viewer';
 import { EnhancedOpenCostPage } from './components/opencost/EnhancedOpenCostPage';
-import { RagAiPage } from '@roadiehq/rag-ai';
-import { OpsLevelMaturityPage } from '@opslevel/backstage-maturity';
-import { OpenDoraPage } from '@devoteam-nl/open-dora-backstage-plugin';
+import { RagModal } from '@roadiehq/rag-ai';
+import { OpslevelMaturityPage } from '@opslevel/backstage-maturity';
+import { OpenDoraPluginPage } from '@devoteam-nl/open-dora-backstage-plugin';
 import { CortexPage } from '@cortexapps/backstage-plugin';
-import { FireHydrantPage } from '@backstage-community/plugin-firehydrant';
-import { KubernetesGptAnalyzerPage } from '@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer';
 // Temporarily commented out for MVP checkpoint - these plugins will be added in later phases
 // import { JiraPage } from '@roadiehq/backstage-plugin-jira';
 // import { GithubPullRequestsBoardPage } from '@dazn/backstage-plugin-github-pull-requests-board';
@@ -117,12 +115,10 @@ const routes = (
     <Route path="/tech-radar" element={<TechRadarPage />} />
     <Route path="/s3-viewer" element={<S3ViewerPage />} />
     <Route path="/opencost" element={<EnhancedOpenCostPage />} />
-    <Route path="/ai-assistant" element={<RagAiPage />} />
-    <Route path="/service-maturity" element={<OpsLevelMaturityPage />} />
-    <Route path="/dora-metrics" element={<OpenDoraPage />} />
+    <Route path="/ai-assistant" element={<RagModal />} />
+    <Route path="/service-maturity" element={<OpslevelMaturityPage />} />
+    <Route path="/dora-metrics" element={<OpenDoraPluginPage />} />
     <Route path="/engineering-effectiveness" element={<CortexPage />} />
-    <Route path="/incident-management" element={<FireHydrantPage />} />
-    <Route path="/kubernetes-ai-troubleshooting" element={<KubernetesGptAnalyzerPage />} />
     {/* Temporarily commented out for MVP checkpoint - these routes will be added in later phases */}
     {/* <Route path="/jira" element={<JiraPage />} />
     <Route path="/github-pr-board" element={<GithubPullRequestsBoardPage />} />

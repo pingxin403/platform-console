@@ -16,7 +16,7 @@ import {
 } from '@roadiehq/backstage-plugin-datadog';
 import {
   sentryApiRef,
-  SentryApi,
+  ProductionSentryApi,
 } from '@backstage/plugin-sentry';
 import {
   CicdStatisticsApi,
@@ -186,7 +186,7 @@ export const apis: AnyApiFactory[] = [
   createApiFactory({
     api: sentryApiRef,
     deps: { discoveryApi: discoveryApiRef, configApi: configApiRef },
-    factory: ({ discoveryApi, configApi }) => new SentryApi({ discoveryApi, configApi }),
+    factory: ({ discoveryApi, configApi }) => new ProductionSentryApi({ discoveryApi, configApi }),
   }),
   createApiFactory({
     api: cicdStatisticsApiRef,

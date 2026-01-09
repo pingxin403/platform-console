@@ -1738,7 +1738,8 @@ openDora:
       # GitHub token for API access
       token: ${GITHUB_TOKEN}
       # Organizations to track
-      organizations: [${GITHUB_ORG}]
+      organizations: 
+        - ${GITHUB_ORG}
     
     # Argo CD integration for deployment data
     argocd:
@@ -1757,7 +1758,8 @@ openDora:
       username: ${JIRA_USERNAME}
       apiToken: ${JIRA_API_TOKEN}
       # Project keys for incident tracking
-      projectKeys: [${JIRA_PROJECT_KEYS}]
+      projectKeys: 
+        - ${JIRA_PROJECT_KEYS}
     
     # PagerDuty integration for incident tracking
     pagerduty:
@@ -1765,7 +1767,8 @@ openDora:
       # PagerDuty API token
       token: ${PAGERDUTY_API_TOKEN}
       # Service IDs to track
-      serviceIds: [${PAGERDUTY_SERVICE_IDS}]
+      serviceIds: 
+        - ${PAGERDUTY_SERVICE_IDS}
   
   # UI configuration
   ui:
@@ -2101,7 +2104,8 @@ jira:
     # Enable project progress tracking
     progressTracking: true
     # Project keys to track (leave empty to track all accessible projects)
-    projectKeys: [${JIRA_PROJECT_KEYS}]
+    projectKeys: 
+      - ${JIRA_PROJECT_KEYS}
     # Show project statistics
     showStatistics: true
     # Show sprint information
@@ -2629,7 +2633,8 @@ buildkite:
     # Enable build pipeline visibility
     enabled: true
     # Organizations to track
-    organizations: [${BUILDKITE_ORG}]
+    organizations: 
+      - ${BUILDKITE_ORG}
     # Pipelines to track (leave empty to track all accessible pipelines)
     pipelineNames: []
     # Build states to display
@@ -3149,7 +3154,8 @@ githubPullRequestsBoard:
     # GitHub token for API access
     token: ${GITHUB_TOKEN}
     # GitHub organizations to track
-    organizations: [${GITHUB_ORG}]
+    organizations: 
+      - ${GITHUB_ORG}
     # Repositories to track (leave empty to track all accessible repositories)
     repositories: []
   
