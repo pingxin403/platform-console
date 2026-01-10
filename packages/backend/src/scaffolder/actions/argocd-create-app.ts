@@ -111,9 +111,9 @@ export class ArgocdApiClient {
           applicationName: appName,
           applicationUrl,
         };
-      } else {
+      } 
         throw new Error(response.error || 'Failed to create Argo CD application');
-      }
+      
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -156,9 +156,9 @@ export class ArgocdApiClient {
         };
 
         return status;
-      } else {
+      } 
         throw new Error(response.error || 'Failed to get application status');
-      }
+      
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -204,9 +204,9 @@ export class ArgocdApiClient {
           success: true,
           syncId: `sync-${Date.now()}`,
         };
-      } else {
+      } 
         throw new Error(response.error || 'Failed to trigger sync');
-      }
+      
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

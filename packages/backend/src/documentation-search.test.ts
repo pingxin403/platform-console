@@ -514,7 +514,7 @@ class MockDocumentationSearch implements DocumentationSearch {
     // If no matches found but query is very short, provide a default match for any non-empty content
     if (matches.length === 0 && fullQuery.length <= 2 && doc.content.length > 0) {
       matches.push({
-        snippet: doc.content.substring(0, 100) + '...',
+        snippet: `${doc.content.substring(0, 100)  }...`,
         score: 10,
         type: 'content',
         highlights: [],

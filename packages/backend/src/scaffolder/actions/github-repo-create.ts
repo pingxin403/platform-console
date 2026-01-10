@@ -306,9 +306,9 @@ async function registerServiceInCatalog(
       const entityRef = registrationResult.entities[0].metadata.name;
       logger.info(`Successfully registered entity: ${entityRef}`);
       return entityRef;
-    } else {
+    } 
       throw new Error('No entities were registered');
-    }
+    
   } catch (error) {
     logger.error(`Failed to register service in catalog: ${error}`);
     throw error;

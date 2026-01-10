@@ -10,10 +10,6 @@ jest.mock('@backstage-community/plugin-kiali', () => ({
   isKialiAvailable: () => false,
 }));
 
-// Mock the Kubernetes GPT Analyzer plugin to prevent dependency issues
-jest.mock('@veecode-platform/backstage-plugin-kubernetes-gpt-analyzer', () => ({
-  EntityKubernetesGptAnalyzerContent: () => null,
-  EntityKubernetesGptAnalyzerCard: () => null,
-  isKubernetesGptAnalyzerAvailable: () => false,
-  KubernetesGptAnalyzerPage: () => null,
-}));
+// Note: @veecode-platform/backstage-plugin-kubernetes-gpt-analyzer is not installed
+// If you need AI-powered Kubernetes troubleshooting, install it with:
+// yarn workspace app add @veecode-platform/backstage-plugin-kubernetes-gpt-analyzer

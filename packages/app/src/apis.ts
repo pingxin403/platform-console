@@ -25,12 +25,16 @@ import {
   ChartTypes,
   FetchBuildsOptions,
   CicdState,
+  FilterStatusType,
+  GetConfigurationOptions,
+  CicdConfiguration,
+  FilterBranchType,
 } from '@backstage-community/plugin-cicd-statistics';
 import {
   gitOpsApiRef,
   GitOpsRestApi,
 } from '@backstage-community/plugin-gitops-profiles';
-import { Entity, ApiEntity } from '@backstage/catalog-model';
+import { ApiEntity } from '@backstage/catalog-model';
 import { FetchApi } from '@backstage/core-plugin-api';
 import { apiDocsConfigRef, defaultDefinitionWidgets } from '@backstage/plugin-api-docs';
 import { GrpcPlaygroundComponent } from 'backstage-grpc-playground';
@@ -39,8 +43,8 @@ import { GrpcPlaygroundComponent } from 'backstage-grpc-playground';
 class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
   constructor(private readonly fetchApi: FetchApi) {}
 
-  async getConfiguration(_opts: { entity: Entity }) {
-    const chartTypesAllStatuses: Record<string, ChartTypes> = {
+  async getConfiguration(_opts: GetConfigurationOptions): Promise<Partial<CicdConfiguration>> {
+    const chartTypesAllStatuses: Record<FilterStatusType, ChartTypes> = {
       succeeded: ['duration', 'count'],
       failed: ['duration', 'count'],
       running: ['count'],
@@ -59,9 +63,9 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
         lowercaseNames: true,
         hideLimit: 6,
         collapsedLimit: 10,
-        chartTypes: chartTypesAllStatuses as any,
-        filterStatus: ['succeeded', 'failed'],
-        filterType: 'all',
+        chartTypes: chartTypesAllStatuses,
+        filterStatus: ['succeeded', 'failed'] as FilterStatusType[],
+        filterType: 'all' as FilterBranchType | 'all',
       },
       formatStageName: (_parents: string[], name: string) => name,
     };
@@ -72,8 +76,6 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
       entity,
       timeFrom,
       timeTo,
-      filterStatus,
-      filterType,
       abortSignal,
       updateProgress,
     } = options;
@@ -186,7 +188,10 @@ export const apis: AnyApiFactory[] = [
   createApiFactory({
     api: sentryApiRef,
     deps: { discoveryApi: discoveryApiRef, configApi: configApiRef },
-    factory: ({ discoveryApi, configApi }) => new ProductionSentryApi({ discoveryApi, configApi }),
+    factory: ({ discoveryApi, configApi }) => {
+      const organization = configApi.getOptionalString('sentry.organization') ?? 'default';
+      return new ProductionSentryApi(discoveryApi, organization);
+    },
   }),
   createApiFactory({
     api: cicdStatisticsApiRef,
