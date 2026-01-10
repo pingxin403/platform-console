@@ -127,7 +127,7 @@ class MockCatalogApi {
     
     // Determine entity type based on template type
     let entityType = 'service';
-    let entityKind = 'Component';
+    const entityKind = 'Component';
     
     if (templateType === 'react-app') {
       entityType = 'website';
