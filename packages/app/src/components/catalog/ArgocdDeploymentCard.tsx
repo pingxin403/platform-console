@@ -37,7 +37,6 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import { makeStyles } from '@material-ui/core/styles';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -562,7 +561,6 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = () => {
                                   ? 'error'
                                   : 'warning'
                               }
-                              size="small"
                             >
                               <Typography variant="body2" component="div">
                                 <strong>
@@ -570,8 +568,8 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = () => {
                                 </strong>{' '}
                                 {err.message}
                               </Typography>
-                              {error.suggestedActions &&
-                                error.suggestedActions.length > 0 && (
+                              {err.suggestedActions &&
+                                err.suggestedActions.length > 0 && (
                                   <Box mt={1}>
                                     <Typography
                                       variant="caption"
@@ -582,7 +580,7 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = () => {
                                     <ul
                                       style={{ margin: 0, paddingLeft: '16px' }}
                                     >
-                                      {error.suggestedActions
+                                      {err.suggestedActions
                                         .slice(0, 2)
                                         .map((action, actionIndex) => (
                                           <li key={actionIndex}>
