@@ -55,7 +55,14 @@ export class ArgocdApiClient {
     applicationUrl: string;
     error?: string;
   }> {
-    const { appName, repoUrl, targetRevision = 'HEAD', path = '.', namespace = 'default', project = 'default' } = appConfig;
+    const {
+      appName,
+      repoUrl,
+      targetRevision = 'HEAD',
+      path = '.',
+      namespace = 'default',
+      project = 'default',
+    } = appConfig;
 
     try {
       this.logger.info(`Creating Argo CD application: ${appName}`);
@@ -88,37 +95,48 @@ export class ArgocdApiClient {
             server: 'https://kubernetes.default.svc',
             namespace,
           },
-          syncPolicy: appConfig.syncPolicy ? {
-            automated: appConfig.syncPolicy.automated ? {
-              prune: appConfig.syncPolicy.prune || false,
-              selfHeal: appConfig.syncPolicy.selfHeal || false,
-            } : undefined,
-          } : undefined,
+          syncPolicy: appConfig.syncPolicy
+            ? {
+                automated: appConfig.syncPolicy.automated
+                  ? {
+                      prune: appConfig.syncPolicy.prune || false,
+                      selfHeal: appConfig.syncPolicy.selfHeal || false,
+                    }
+                  : undefined,
+              }
+            : undefined,
         },
       };
 
       // In a real implementation, this would make an HTTP request to Argo CD API
       // For now, we'll simulate the API call
-      const response = await this.simulateArgocdApiCall('/api/v1/applications', 'POST', applicationManifest);
+      const response = await this.simulateArgocdApiCall(
+        '/api/v1/applications',
+        'POST',
+        applicationManifest,
+      );
 
       if (response.success) {
         const applicationUrl = `${this.baseUrl}/applications/${appName}`;
-        
-        this.logger.info(`Argo CD application created successfully: ${appName}`);
-        
+
+        this.logger.info(
+          `Argo CD application created successfully: ${appName}`,
+        );
+
         return {
           success: true,
           applicationName: appName,
           applicationUrl,
         };
-      } 
-        throw new Error(response.error || 'Failed to create Argo CD application');
-      
-
+      }
+      throw new Error(response.error || 'Failed to create Argo CD application');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to create Argo CD application ${appName}: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to create Argo CD application ${appName}: ${errorMessage}`,
+      );
+
       return {
         success: false,
         applicationName: appName,
@@ -133,7 +151,13 @@ export class ArgocdApiClient {
    */
   async getApplicationStatus(appName: string): Promise<{
     name: string;
-    health: 'Healthy' | 'Progressing' | 'Degraded' | 'Suspended' | 'Missing' | 'Unknown';
+    health:
+      | 'Healthy'
+      | 'Progressing'
+      | 'Degraded'
+      | 'Suspended'
+      | 'Missing'
+      | 'Unknown';
     sync: 'Synced' | 'OutOfSync' | 'Unknown';
     lastSyncTime?: string;
     environment?: string;
@@ -143,7 +167,10 @@ export class ArgocdApiClient {
       this.logger.debug(`Getting status for Argo CD application: ${appName}`);
 
       // Simulate API call to get application status
-      const response = await this.simulateArgocdApiCall(`/api/v1/applications/${appName}`, 'GET');
+      const response = await this.simulateArgocdApiCall(
+        `/api/v1/applications/${appName}`,
+        'GET',
+      );
 
       if (response.success) {
         // Simulate application status response
@@ -156,14 +183,15 @@ export class ArgocdApiClient {
         };
 
         return status;
-      } 
-        throw new Error(response.error || 'Failed to get application status');
-      
-
+      }
+      throw new Error(response.error || 'Failed to get application status');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to get status for Argo CD application ${appName}: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to get status for Argo CD application ${appName}: ${errorMessage}`,
+      );
+
       return {
         name: appName,
         health: 'Unknown',
@@ -176,7 +204,10 @@ export class ArgocdApiClient {
   /**
    * Trigger manual sync for an application
    */
-  async syncApplication(appName: string, prune: boolean = false): Promise<{
+  async syncApplication(
+    appName: string,
+    prune: boolean = false,
+  ): Promise<{
     success: boolean;
     syncId?: string;
     error?: string;
@@ -195,23 +226,30 @@ export class ArgocdApiClient {
         },
       };
 
-      const response = await this.simulateArgocdApiCall(`/api/v1/applications/${appName}/sync`, 'POST', syncRequest);
+      const response = await this.simulateArgocdApiCall(
+        `/api/v1/applications/${appName}/sync`,
+        'POST',
+        syncRequest,
+      );
 
       if (response.success) {
-        this.logger.info(`Sync triggered successfully for application: ${appName}`);
-        
+        this.logger.info(
+          `Sync triggered successfully for application: ${appName}`,
+        );
+
         return {
           success: true,
           syncId: `sync-${Date.now()}`,
         };
-      } 
-        throw new Error(response.error || 'Failed to trigger sync');
-      
-
+      }
+      throw new Error(response.error || 'Failed to trigger sync');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to sync Argo CD application ${appName}: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to sync Argo CD application ${appName}: ${errorMessage}`,
+      );
+
       return {
         success: false,
         error: errorMessage,
@@ -223,7 +261,11 @@ export class ArgocdApiClient {
    * Simulate Argo CD API calls for development/testing
    * In production, this would be replaced with actual HTTP requests
    */
-  private async simulateArgocdApiCall(endpoint: string, method: string, data?: any): Promise<{
+  private async simulateArgocdApiCall(
+    endpoint: string,
+    method: string,
+    data?: any,
+  ): Promise<{
     success: boolean;
     data?: any;
     error?: string;
@@ -247,8 +289,8 @@ export class ArgocdApiClient {
         success: true,
         data: {
           metadata: { name: endpoint.split('/').pop() },
-          status: { 
-            health: { status: 'Healthy' }, 
+          status: {
+            health: { status: 'Healthy' },
             sync: { status: 'Synced', finishedAt: new Date().toISOString() },
           },
         },
@@ -288,9 +330,11 @@ export class ArgocdApiClient {
 /**
  * Create Argo CD application scaffolder action
  */
-export function createArgocdCreateAppAction(options: ArgocdCreateAppActionOptions) {
+export function createArgocdCreateAppAction(
+  options: ArgocdCreateAppActionOptions,
+) {
   const { config, logger } = options;
-  
+
   const argocdClient = new ArgocdApiClient(config, logger);
 
   return createTemplateAction<{
@@ -312,23 +356,50 @@ export function createArgocdCreateAppAction(options: ArgocdCreateAppActionOption
     schema: {
       input: z.object({
         appName: z.string().describe('Name of the Argo CD application'),
-        repoUrl: z.string().describe('Git repository URL for the application source'),
-        targetRevision: z.string().optional().describe('Git revision to deploy (default: HEAD)'),
-        path: z.string().optional().describe('Path within the repository (default: .)'),
-        namespace: z.string().optional().describe('Kubernetes namespace for deployment (default: default)'),
-        project: z.string().optional().describe('Argo CD project (default: default)'),
-        environment: z.enum(['development', 'staging', 'production']).optional().describe('Deployment environment'),
-        syncPolicy: z.object({
-          automated: z.boolean().optional().describe('Enable automated sync'),
-          prune: z.boolean().optional().describe('Enable resource pruning'),
-          selfHeal: z.boolean().optional().describe('Enable self-healing'),
-        }).optional().describe('Sync policy configuration'),
+        repoUrl: z
+          .string()
+          .describe('Git repository URL for the application source'),
+        targetRevision: z
+          .string()
+          .optional()
+          .describe('Git revision to deploy (default: HEAD)'),
+        path: z
+          .string()
+          .optional()
+          .describe('Path within the repository (default: .)'),
+        namespace: z
+          .string()
+          .optional()
+          .describe('Kubernetes namespace for deployment (default: default)'),
+        project: z
+          .string()
+          .optional()
+          .describe('Argo CD project (default: default)'),
+        environment: z
+          .enum(['development', 'staging', 'production'])
+          .optional()
+          .describe('Deployment environment'),
+        syncPolicy: z
+          .object({
+            automated: z.boolean().optional().describe('Enable automated sync'),
+            prune: z.boolean().optional().describe('Enable resource pruning'),
+            selfHeal: z.boolean().optional().describe('Enable self-healing'),
+          })
+          .optional()
+          .describe('Sync policy configuration'),
       }),
       output: z.object({
-        applicationName: z.string().describe('Name of the created Argo CD application'),
+        applicationName: z
+          .string()
+          .describe('Name of the created Argo CD application'),
         applicationUrl: z.string().describe('URL to the Argo CD application'),
-        success: z.boolean().describe('Whether the application was created successfully'),
-        error: z.string().optional().describe('Error message if creation failed'),
+        success: z
+          .boolean()
+          .describe('Whether the application was created successfully'),
+        error: z
+          .string()
+          .optional()
+          .describe('Error message if creation failed'),
       }),
     },
     async handler(ctx) {
@@ -343,7 +414,9 @@ export function createArgocdCreateAppAction(options: ArgocdCreateAppActionOption
         syncPolicy,
       } = ctx.input;
 
-      logger.info(`Creating Argo CD application: ${appName} for repository: ${repoUrl}`);
+      logger.info(
+        `Creating Argo CD application: ${appName} for repository: ${repoUrl}`,
+      );
 
       try {
         const result = await argocdClient.createApplication({
@@ -360,7 +433,7 @@ export function createArgocdCreateAppAction(options: ArgocdCreateAppActionOption
         ctx.output('applicationName', result.applicationName);
         ctx.output('applicationUrl', result.applicationUrl);
         ctx.output('success', result.success);
-        
+
         if (result.error) {
           ctx.output('error', result.error);
         }
@@ -368,15 +441,20 @@ export function createArgocdCreateAppAction(options: ArgocdCreateAppActionOption
         if (result.success) {
           logger.info(`Successfully created Argo CD application: ${appName}`);
         } else {
-          logger.error(`Failed to create Argo CD application: ${appName} - ${result.error}`);
+          logger.error(
+            `Failed to create Argo CD application: ${appName} - ${result.error}`,
+          );
         }
-
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         logger.error(`Argo CD application creation failed: ${errorMessage}`);
-        
+
         ctx.output('applicationName', appName);
-        ctx.output('applicationUrl', `${config.getString('argocd.baseUrl')}/applications/${appName}`);
+        ctx.output(
+          'applicationUrl',
+          `${config.getString('argocd.baseUrl')}/applications/${appName}`,
+        );
         ctx.output('success', false);
         ctx.output('error', errorMessage);
       }

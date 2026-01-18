@@ -2,7 +2,7 @@
  * Integration tests for collaboration and workflow plugins
  * Tests Jira integration, PR board functionality, Slack notifications,
  * feedback collection, enhanced Jira dashboards, Shortcut, and cost insights
- * 
+ *
  * Requirements: 6.1, 7.1, 7.4, 9.1
  */
 
@@ -104,8 +104,10 @@ describe('Collaboration Plugins Integration', () => {
     it('should configure Jira plugin correctly', async () => {
       // Test that Jira configuration is loaded correctly
       const jiraConfig = config.getConfig('jira');
-      
-      expect(jiraConfig.getString('api.baseUrl')).toBe('https://test-jira.atlassian.net');
+
+      expect(jiraConfig.getString('api.baseUrl')).toBe(
+        'https://test-jira.atlassian.net',
+      );
       expect(jiraConfig.getString('api.username')).toBe('test-user');
       expect(jiraConfig.getBoolean('issues.entityPageIntegration')).toBe(true);
       expect(jiraConfig.getBoolean('projects.progressTracking')).toBe(true);
@@ -114,7 +116,7 @@ describe('Collaboration Plugins Integration', () => {
     it('should handle Jira API configuration validation', async () => {
       // Test configuration validation
       const jiraConfig = config.getConfig('jira');
-      
+
       // Verify required fields are present
       expect(() => jiraConfig.getString('api.baseUrl')).not.toThrow();
       expect(() => jiraConfig.getString('api.username')).not.toThrow();
@@ -123,8 +125,10 @@ describe('Collaboration Plugins Integration', () => {
 
     it('should configure issue tracking settings', async () => {
       const jiraConfig = config.getConfig('jira');
-      
-      expect(jiraConfig.getString('issues.defaultJql')).toContain('assignee = currentUser()');
+
+      expect(jiraConfig.getString('issues.defaultJql')).toContain(
+        'assignee = currentUser()',
+      );
       expect(jiraConfig.getNumber('issues.maxResults')).toBe(50);
     });
   });
@@ -132,23 +136,29 @@ describe('Collaboration Plugins Integration', () => {
   describe('GitHub Pull Requests Board', () => {
     it('should configure GitHub PR board correctly', async () => {
       const prBoardConfig = config.getConfig('githubPullRequestsBoard');
-      
+
       expect(prBoardConfig.getString('github.token')).toBe('test-github-token');
-      expect(prBoardConfig.getStringArray('github.organizations')).toContain('test-org');
+      expect(prBoardConfig.getStringArray('github.organizations')).toContain(
+        'test-org',
+      );
       expect(prBoardConfig.getBoolean('team.enabled')).toBe(true);
     });
 
     it('should configure PR metrics tracking', async () => {
       const prBoardConfig = config.getConfig('githubPullRequestsBoard');
-      
+
       expect(prBoardConfig.getBoolean('metrics.enabled')).toBe(true);
-      expect(prBoardConfig.getStringArray('metrics.trackingMetrics')).toContain('review_time');
-      expect(prBoardConfig.getStringArray('metrics.trackingMetrics')).toContain('merge_time');
+      expect(prBoardConfig.getStringArray('metrics.trackingMetrics')).toContain(
+        'review_time',
+      );
+      expect(prBoardConfig.getStringArray('metrics.trackingMetrics')).toContain(
+        'merge_time',
+      );
     });
 
     it('should validate team configuration', async () => {
       const prBoardConfig = config.getConfig('githubPullRequestsBoard');
-      
+
       expect(prBoardConfig.getNumber('team.maxPRsPerRepo')).toBe(25);
     });
   });
@@ -156,37 +166,43 @@ describe('Collaboration Plugins Integration', () => {
   describe('Slack Notifications', () => {
     it('should configure Slack scaffolder actions', async () => {
       const slackConfig = config.getConfig('slackScaffolderActions');
-      
+
       expect(slackConfig.getString('api.botToken')).toBe('xoxb-test-token');
       expect(slackConfig.getString('api.signingSecret')).toBe('test-secret');
     });
 
     it('should configure deployment notifications', async () => {
       const slackConfig = config.getConfig('slackScaffolderActions');
-      
-      expect(slackConfig.getBoolean('notifications.deployments.enabled')).toBe(true);
-      expect(slackConfig.getString('notifications.deployments.channels.default')).toBe('#deployments');
+
+      expect(slackConfig.getBoolean('notifications.deployments.enabled')).toBe(
+        true,
+      );
+      expect(
+        slackConfig.getString('notifications.deployments.channels.default'),
+      ).toBe('#deployments');
     });
 
     it('should validate notification configuration', async () => {
       const slackConfig = config.getConfig('slackScaffolderActions');
-      
+
       // Verify required fields for notifications
-      expect(() => slackConfig.getConfig('notifications.deployments')).not.toThrow();
+      expect(() =>
+        slackConfig.getConfig('notifications.deployments'),
+      ).not.toThrow();
     });
   });
 
   describe('Feedback Collection', () => {
     it('should configure feedback plugin correctly', async () => {
       const feedbackConfig = config.getConfig('feedback');
-      
+
       expect(feedbackConfig.getBoolean('collection.enabled')).toBe(true);
       expect(feedbackConfig.getString('storage.backend')).toBe('database');
     });
 
     it('should configure feedback types', async () => {
       const feedbackConfig = config.getConfig('feedback');
-      
+
       const feedbackTypes = feedbackConfig.getConfigArray('collection.types');
       expect(feedbackTypes).toHaveLength(1);
       expect(feedbackTypes[0].getString('name')).toBe('service_feedback');
@@ -195,7 +211,7 @@ describe('Collaboration Plugins Integration', () => {
 
     it('should validate storage configuration', async () => {
       const feedbackConfig = config.getConfig('feedback');
-      
+
       expect(feedbackConfig.getString('storage.backend')).toBe('database');
     });
   });
@@ -203,7 +219,7 @@ describe('Collaboration Plugins Integration', () => {
   describe('Enhanced Jira Dashboards', () => {
     it('should configure dashboard features', async () => {
       const jiraConfig = config.getConfig('jira');
-      
+
       // Test dashboard configuration if it exists
       if (jiraConfig.has('dashboard')) {
         const dashboardConfig = jiraConfig.getConfig('dashboard');
@@ -213,7 +229,7 @@ describe('Collaboration Plugins Integration', () => {
 
     it('should handle sprint and velocity tracking', async () => {
       const jiraConfig = config.getConfig('jira');
-      
+
       // Verify sprint configuration
       if (jiraConfig.has('sprints')) {
         const sprintsConfig = jiraConfig.getConfig('sprints');
@@ -244,7 +260,7 @@ describe('Collaboration Plugins Integration', () => {
   describe('Cost Insights Integration', () => {
     it('should configure cost insights correctly', async () => {
       const costConfig = config.getConfig('costInsights');
-      
+
       expect(costConfig.getBoolean('trends.enabled')).toBe(true);
       expect(costConfig.getString('trends.defaultPeriod')).toBe('30d');
       expect(costConfig.getBoolean('tracking.teamTracking')).toBe(true);
@@ -253,13 +269,13 @@ describe('Collaboration Plugins Integration', () => {
 
     it('should configure AWS provider integration', async () => {
       const costConfig = config.getConfig('costInsights');
-      
+
       expect(costConfig.getBoolean('providers.aws.enabled')).toBe(true);
     });
 
     it('should validate cost tracking configuration', async () => {
       const costConfig = config.getConfig('costInsights');
-      
+
       // Verify tracking configuration
       const trackingConfig = costConfig.getConfig('tracking');
       expect(trackingConfig.getBoolean('teamTracking')).toBe(true);
@@ -279,9 +295,11 @@ describe('Collaboration Plugins Integration', () => {
 
     it('should ensure plugin configurations do not conflict', async () => {
       // Verify that GitHub tokens are consistent across plugins
-      const prBoardToken = config.getString('githubPullRequestsBoard.github.token');
+      const prBoardToken = config.getString(
+        'githubPullRequestsBoard.github.token',
+      );
       expect(prBoardToken).toBe('test-github-token');
-      
+
       // Verify that database configurations are consistent
       const feedbackStorage = config.getString('feedback.storage.backend');
       expect(feedbackStorage).toBe('database');
@@ -291,7 +309,7 @@ describe('Collaboration Plugins Integration', () => {
       // Test that configuration references environment variables correctly
       const jiraConfig = config.getConfig('jira');
       expect(() => jiraConfig.getString('api.baseUrl')).not.toThrow();
-      
+
       const slackConfig = config.getConfig('slackScaffolderActions');
       expect(() => slackConfig.getString('api.botToken')).not.toThrow();
     });
@@ -302,7 +320,7 @@ describe('Collaboration Plugins Integration', () => {
       // Test that Jira and GitHub PR board can coexist
       expect(() => config.getConfig('jira')).not.toThrow();
       expect(() => config.getConfig('githubPullRequestsBoard')).not.toThrow();
-      
+
       // Test that Slack notifications can integrate with other plugins
       expect(() => config.getConfig('slackScaffolderActions')).not.toThrow();
     });
@@ -310,7 +328,9 @@ describe('Collaboration Plugins Integration', () => {
     it('should validate shared configuration values', async () => {
       // Verify that shared values like organization names are consistent
       if (config.has('githubPullRequestsBoard.github.organizations')) {
-        const organizations = config.getStringArray('githubPullRequestsBoard.github.organizations');
+        const organizations = config.getStringArray(
+          'githubPullRequestsBoard.github.organizations',
+        );
         expect(organizations).toContain('test-org');
       }
     });
@@ -319,13 +339,17 @@ describe('Collaboration Plugins Integration', () => {
   describe('Error Handling', () => {
     it('should handle missing configuration gracefully', async () => {
       // Test that missing optional configurations don't break the system
-      expect(() => config.getOptionalString('nonexistent.config')).not.toThrow();
+      expect(() =>
+        config.getOptionalString('nonexistent.config'),
+      ).not.toThrow();
     });
 
     it('should validate required configurations', async () => {
       // Test that required configurations throw appropriate errors when missing
       expect(() => config.getString('jira.api.baseUrl')).not.toThrow();
-      expect(() => config.getString('githubPullRequestsBoard.github.token')).not.toThrow();
+      expect(() =>
+        config.getString('githubPullRequestsBoard.github.token'),
+      ).not.toThrow();
     });
   });
 });

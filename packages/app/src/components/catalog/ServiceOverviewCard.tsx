@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Card,
   CardContent,
@@ -24,7 +23,10 @@ import {
   ANNOTATION_SOURCE_LOCATION,
   Entity,
 } from '@backstage/catalog-model';
-import { ScmIntegrationsApi, scmIntegrationsApiRef } from '@backstage/integration-react';
+import {
+  ScmIntegrationsApi,
+  scmIntegrationsApiRef,
+} from '@backstage/integration-react';
 import { useApi } from '@backstage/core-plugin-api';
 
 const useStyles = makeStyles(theme => ({
@@ -59,10 +61,11 @@ export const ServiceOverviewCard = ({ variant }: ServiceOverviewCardProps) => {
 
   const isGridItem = variant === 'gridItem';
 
-  const getRepositoryUrl = (entity: Entity): string | undefined => {
-    const sourceLocation = entity.metadata.annotations?.[ANNOTATION_SOURCE_LOCATION];
-    const viewUrl = entity.metadata.annotations?.[ANNOTATION_VIEW_URL];
-    const editUrl = entity.metadata.annotations?.[ANNOTATION_EDIT_URL];
+  const getRepositoryUrl = (ent: Entity): string | undefined => {
+    const sourceLocation =
+      ent.metadata.annotations?.[ANNOTATION_SOURCE_LOCATION];
+    const viewUrl = ent.metadata.annotations?.[ANNOTATION_VIEW_URL];
+    const editUrl = ent.metadata.annotations?.[ANNOTATION_EDIT_URL];
 
     if (viewUrl) return viewUrl;
     if (editUrl) return editUrl;
@@ -85,22 +88,22 @@ export const ServiceOverviewCard = ({ variant }: ServiceOverviewCardProps) => {
     return undefined;
   };
 
-  const getOwnerInfo = (entity: Entity) => {
-    const owner = entity.spec?.owner as string;
-    const ownerType = entity.relations?.find(r => r.type === 'ownedBy')?.targetRef;
+  const getOwnerInfo = (ent: Entity) => {
+    const owner = ent.spec?.owner as string;
+    const ownerType = ent.relations?.find(r => r.type === 'ownedBy')?.targetRef;
     return { owner, ownerType };
   };
 
-  const getDependencies = (entity: Entity) => {
-    return entity.relations?.filter(r => r.type === 'dependsOn') || [];
+  const getDependencies = (ent: Entity) => {
+    return ent.relations?.filter(r => r.type === 'dependsOn') || [];
   };
 
-  const getProvidedApis = (entity: Entity) => {
-    return entity.relations?.filter(r => r.type === 'providesApi') || [];
+  const getProvidedApis = (ent: Entity) => {
+    return ent.relations?.filter(r => r.type === 'providesApi') || [];
   };
 
-  const getConsumedApis = (entity: Entity) => {
-    return entity.relations?.filter(r => r.type === 'consumesApi') || [];
+  const getConsumedApis = (ent: Entity) => {
+    return ent.relations?.filter(r => r.type === 'consumesApi') || [];
   };
 
   const repositoryUrl = getRepositoryUrl(entity);
@@ -114,7 +117,9 @@ export const ServiceOverviewCard = ({ variant }: ServiceOverviewCardProps) => {
   const system = entity.spec?.system as string;
 
   const content = (
-    <CardContent className={isGridItem ? classes.gridItemCardContent : undefined}>
+    <CardContent
+      className={isGridItem ? classes.gridItemCardContent : undefined}
+    >
       <Grid container spacing={3}>
         {/* Basic Information */}
         <Grid item xs={12}>
@@ -165,7 +170,11 @@ export const ServiceOverviewCard = ({ variant }: ServiceOverviewCardProps) => {
             </Typography>
             <Typography variant="body1">
               {owner ? (
-                <BackstageLink to={`/catalog/default/${ownerType?.split(':')[0] || 'group'}/${owner}`}>
+                <BackstageLink
+                  to={`/catalog/default/${
+                    ownerType?.split(':')[0] || 'group'
+                  }/${owner}`}
+                >
                   {owner}
                 </BackstageLink>
               ) : (
@@ -286,9 +295,5 @@ export const ServiceOverviewCard = ({ variant }: ServiceOverviewCardProps) => {
     );
   }
 
-  return (
-    <InfoCard title="Service Overview">
-      {content}
-    </InfoCard>
-  );
+  return <InfoCard title="Service Overview">{content}</InfoCard>;
 };

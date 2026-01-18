@@ -29,7 +29,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,7 +93,7 @@ jobs:
     environment:
       name: staging
       url: https://backstage-staging.example.com
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -139,10 +139,10 @@ jobs:
         run: |
           # Wait for service to be ready
           sleep 30
-          
+
           # Check health endpoint
           curl -f https://backstage-staging.example.com/healthcheck || exit 1
-          
+
           # Check catalog health
           curl -f https://backstage-staging.example.com/api/catalog/health || exit 1
 
@@ -161,7 +161,7 @@ jobs:
     environment:
       name: production
       url: https://backstage.example.com
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -190,7 +190,7 @@ jobs:
           kubectl get deployment backstage-production \
             -n backstage-production \
             -o yaml > backup-deployment.yaml
-          
+
           # Backup database (if needed)
           # Add your database backup commands here
 
@@ -217,13 +217,13 @@ jobs:
         run: |
           # Wait for service to be ready
           sleep 30
-          
+
           # Check health endpoint
           curl -f https://backstage.example.com/healthcheck || exit 1
-          
+
           # Check catalog health
           curl -f https://backstage.example.com/api/catalog/health || exit 1
-          
+
           # Check authentication
           curl -f https://backstage.example.com/api/auth/github || exit 1
 
@@ -249,12 +249,12 @@ jobs:
         if: failure()
         run: |
           echo "❌ Deployment failed! Rolling back..."
-          
+
           # Rollback Helm release
           helm rollback backstage-production \
             --namespace backstage-production \
             --wait
-          
+
           # Verify rollback
           kubectl rollout status deployment/backstage-production \
             -n backstage-production
@@ -269,12 +269,12 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: |
             ## Changes in this Release
-            
+
             - Deployed to production
             - Docker image: ghcr.io/${{ github.repository }}:${{ github.sha }}
-            
+
             ## Deployment Details
-            
+
             - Environment: Production
             - Cluster: ${{ env.EKS_CLUSTER_NAME }}-production
             - Region: ${{ env.AWS_REGION }}
@@ -295,7 +295,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-production
     if: success()
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -304,10 +304,10 @@ jobs:
         run: |
           # Add your integration tests here
           echo "Running integration tests..."
-          
+
           # Example: Test catalog API
           curl -f https://backstage.example.com/api/catalog/entities || exit 1
-          
+
           # Example: Test search API
           curl -f https://backstage.example.com/api/search/query?term=test || exit 1
 
@@ -315,7 +315,7 @@ jobs:
         run: |
           # Add your performance tests here
           echo "Running performance tests..."
-          
+
           # Example: Use Apache Bench
           # ab -n 100 -c 10 https://backstage.example.com/
 
@@ -330,7 +330,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-staging, deploy-production]
     if: always()
-    
+
     steps:
       - name: Determine deployment status
         run: |

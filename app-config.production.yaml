@@ -10,7 +10,7 @@ backend:
   baseUrl: https://backstage.${DOMAIN_NAME}
   # Listen on all interfaces in production
   listen: ':7007'
-  
+
   # Production authentication configuration
   auth:
     keys:
@@ -22,7 +22,7 @@ backend:
       algorithm: RS256
       publicKey: ${AUTH_PUBLIC_KEY}
       privateKey: ${AUTH_PRIVATE_KEY}
-  
+
   # Enhanced security headers for production
   csp:
     connect-src: ["'self'", 'https:', 'wss:']
@@ -36,7 +36,7 @@ backend:
     base-uri: ["'self'"]
     form-action: ["'self'"]
     frame-ancestors: ["'none'"]
-  
+
   # Production security headers
   security:
     headers:
@@ -49,7 +49,7 @@ backend:
       xssProtection: '1; mode=block'
       referrerPolicy: 'strict-origin-when-cross-origin'
       permissionsPolicy: 'camera=(), microphone=(), geolocation=()'
-  
+
   cors:
     origin: https://backstage.${DOMAIN_NAME}
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
@@ -64,7 +64,7 @@ backend:
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
       database: ${POSTGRES_DB}
-      ssl: 
+      ssl:
         require: true
         rejectUnauthorized: false
         ca: ${POSTGRES_CA_CERT}
@@ -188,7 +188,7 @@ techdocs:
 catalog:
   # Remove example data in production
   locations: []
-  
+
   # Production catalog processing settings
   processing:
     cache:
@@ -220,7 +220,7 @@ catalog:
         warning: 5000
         critical: 15000
       metrics: true
-  
+
   providers:
     github:
       organization:
@@ -334,7 +334,7 @@ backup:
       bucket: ${BACKUP_S3_BUCKET}
       prefix: 'database-backups/'
       encryption: 'AES256'
-  
+
   # Configuration backup
   configuration:
     enabled: true
@@ -393,7 +393,7 @@ monitoring:
       - name: 'backstage_database_connections'
         help: 'Number of active database connections'
         type: 'gauge'
-  
+
   # Health checks
   healthChecks:
     - name: 'database'
@@ -408,7 +408,7 @@ monitoring:
       endpoint: '/health/argocd'
       timeout: 10000
       interval: 60000
-  
+
   # Alerting
   alerts:
     # Slack notifications

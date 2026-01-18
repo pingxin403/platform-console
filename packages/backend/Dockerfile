@@ -53,8 +53,9 @@ RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid
 COPY --chown=node:node . .
 
 # Build the application with security optimizations
-RUN yarn tsc && \
-    yarn build:backend --config ../../app-config.yaml && \
+# Note: Skip root-level tsc check as it requires all workspace packages
+# The backend build will handle its own TypeScript compilation
+RUN yarn build:backend --config ../../app-config.yaml && \
     # Remove development dependencies and clean cache
     yarn cache clean && \
     # Remove source maps in production for security

@@ -6,18 +6,18 @@ replicaCount: 3
 image:
   repository: ghcr.io/pingxin403/platform-console
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: 'latest'
 
 serviceAccount:
   create: true
   annotations:
     eks.amazonaws.com/role-arn: ${BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION}
-  name: "backstage-production"
+  name: 'backstage-production'
 
 podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "7007"
-  prometheus.io/path: "/metrics"
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '7007'
+  prometheus.io/path: '/metrics'
   container.apparmor.security.beta.kubernetes.io/backstage: runtime/default
   seccomp.security.alpha.kubernetes.io/pod: runtime/default
 
@@ -26,7 +26,7 @@ podSecurityContext:
   runAsUser: 1001
   runAsGroup: 1001
   fsGroup: 1001
-  fsGroupChangePolicy: "OnRootMismatch"
+  fsGroupChangePolicy: 'OnRootMismatch'
   seccompProfile:
     type: RuntimeDefault
 
@@ -46,13 +46,13 @@ service:
   type: ClusterIP
   port: 7007
   annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "7007"
-    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '7007'
+    prometheus.io/path: '/metrics'
 
 ingress:
   enabled: true
-  className: "alb"
+  className: 'alb'
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -101,15 +101,15 @@ autoscaling:
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
 
 # Pod disruption budget for high availability
 podDisruptionBudget:
@@ -154,15 +154,15 @@ networkPolicy:
 
 # Node selector for production workloads
 nodeSelector:
-  node-type: "application"
-  instance-type: "m5.large"
+  node-type: 'application'
+  instance-type: 'm5.large'
 
 # Tolerations for dedicated nodes
 tolerations:
-  - key: "dedicated"
-    operator: "Equal"
-    value: "application"
-    effect: "NoSchedule"
+  - key: 'dedicated'
+    operator: 'Equal'
+    value: 'application'
+    effect: 'NoSchedule'
 
 # Anti-affinity for high availability
 affinity:
@@ -191,10 +191,10 @@ backstage:
     app:
       title: Internal Developer Platform
       baseUrl: https://backstage.example.com
-    
+
     organization:
       name: ${ORGANIZATION_NAME}
-    
+
     backend:
       baseUrl: https://backstage.example.com
       cors:
@@ -202,14 +202,14 @@ backstage:
       auth:
         keys:
           - secret: ${BACKEND_SECRET_PRODUCTION}
-    
+
     auth:
       providers:
         github:
           production:
             clientId: ${AUTH_GITHUB_CLIENT_ID_PRODUCTION}
             clientSecret: ${AUTH_GITHUB_CLIENT_SECRET_PRODUCTION}
-    
+
     integrations:
       github:
         - host: github.com
@@ -242,7 +242,7 @@ env:
   - name: NODE_ENV
     value: production
   - name: NODE_OPTIONS
-    value: "--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete"
+    value: '--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete'
   - name: LOG_LEVEL
     value: info
   - name: TZ
@@ -250,7 +250,7 @@ env:
   - name: POSTGRES_HOST
     value: backstage-production.rds.amazonaws.com
   - name: POSTGRES_PORT
-    value: "5432"
+    value: '5432'
   - name: POSTGRES_USER
     value: backstage
   - name: POSTGRES_PASSWORD
@@ -333,18 +333,18 @@ monitoring:
       app: backstage
       environment: production
       monitoring: prometheus
-  
+
   grafanaDashboard:
     enabled: true
     labels:
-      grafana_dashboard: "1"
+      grafana_dashboard: '1'
       environment: production
 
 # Backup configuration for production
 backup:
   enabled: true
-  schedule: "0 2 * * *"
-  retention: "30d"
+  schedule: '0 2 * * *'
+  retention: '30d'
   storage:
     type: s3
     bucket: backstage-backups-production

@@ -14,30 +14,34 @@ We welcome contributions to improve the platform! This guide will help you get s
 ### Development Setup
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/your-org/platform-console.git
    cd platform-console
    ```
 
 2. **Install Dependencies**
+
    ```bash
    yarn install
    ```
 
 3. **Set Up Environment**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 4. **Start Development Environment**
+
    ```bash
    # Start PostgreSQL and other services
    docker-compose up -d postgres
-   
+
    # Start the backend
    yarn workspace backend start
-   
+
    # In another terminal, start the frontend
    yarn workspace app start
    ```
@@ -61,6 +65,7 @@ We use **GitFlow** with the following branches:
 ### Making Changes
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -68,26 +73,29 @@ We use **GitFlow** with the following branches:
    ```
 
 2. **Make Your Changes**
+
    - Follow the coding standards below
    - Add tests for new functionality
    - Update documentation as needed
 
 3. **Test Your Changes**
+
    ```bash
    # Run all tests
    yarn test
-   
+
    # Run linting
    yarn lint
-   
+
    # Run type checking
    yarn tsc
-   
+
    # Test the build
    yarn build
    ```
 
 4. **Commit Your Changes**
+
    ```bash
    git add .
    git commit -m "feat: add new feature description"
@@ -117,8 +125,8 @@ interface UserService {
 
 // Bad
 const userService: any = {
-  getUser: (id) => fetch(`/users/${id}`),
-  createUser: (data) => fetch('/users', { method: 'POST', body: data })
+  getUser: id => fetch(`/users/${id}`),
+  createUser: data => fetch('/users', { method: 'POST', body: data }),
 };
 ```
 
@@ -174,11 +182,11 @@ export class UserService {
     try {
       this.logger.info(`Fetching user ${id}`);
       const user = await this.userRepository.findById(id);
-      
+
       if (!user) {
         throw new NotFoundError(`User ${id} not found`);
       }
-      
+
       return user;
     } catch (error) {
       this.logger.error(`Failed to fetch user ${id}:`, error);
@@ -276,7 +284,7 @@ describe('User API Integration', () => {
     expect(getResponse.body).toMatchObject({
       id: userId,
       name: 'John Doe',
-      email: 'john@example.com'
+      email: 'john@example.com',
     });
   });
 });
@@ -290,14 +298,14 @@ describe('User API Integration', () => {
 - Document **complex algorithms**
 - Explain **business logic** and **edge cases**
 
-```typescript
+````typescript
 /**
  * Calculates the user's access level based on their role and permissions.
- * 
+ *
  * @param user - The user object containing role and permissions
  * @param resource - The resource being accessed
  * @returns The calculated access level (read, write, admin)
- * 
+ *
  * @example
  * ```typescript
  * const accessLevel = calculateAccessLevel(user, 'user-management');
@@ -307,12 +315,12 @@ describe('User API Integration', () => {
  * ```
  */
 export function calculateAccessLevel(
-  user: User, 
-  resource: string
+  user: User,
+  resource: string,
 ): AccessLevel {
   // Implementation details...
 }
-```
+````
 
 ### API Documentation
 
@@ -341,9 +349,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
               example:
-                id: "123e4567-e89b-12d3-a456-426614174000"
-                name: "John Doe"
-                email: "john@example.com"
+                id: '123e4567-e89b-12d3-a456-426614174000'
+                name: 'John Doe'
+                email: 'john@example.com'
         '404':
           description: User not found
           content:
@@ -357,11 +365,13 @@ paths:
 ### Creating New Plugins
 
 1. **Use the Plugin Template**
+
    ```bash
    yarn create @backstage/plugin --name my-plugin
    ```
 
 2. **Follow Plugin Structure**
+
    ```
    plugins/my-plugin/
    ├── src/
@@ -432,6 +442,7 @@ We use **Semantic Versioning** (SemVer):
 ### Release Steps
 
 1. **Create Release Branch**
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -439,17 +450,20 @@ We use **Semantic Versioning** (SemVer):
    ```
 
 2. **Update Version Numbers**
+
    ```bash
    # Update package.json versions
    yarn version --new-version 1.2.0
    ```
 
 3. **Update Changelog**
+
    ```bash
    # Add release notes to CHANGELOG.md
    ```
 
 4. **Create Release PR**
+
    ```bash
    git push origin release/v1.2.0
    # Create PR to main branch

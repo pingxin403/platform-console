@@ -7,14 +7,24 @@
 import { Config } from '@backstage/config';
 import { Logger } from 'winston';
 import { Entity } from '@backstage/catalog-model';
-import { ArgocdErrorHandler, DeploymentError, ManualSyncOperation } from './error-handler';
+import {
+  ArgocdErrorHandler,
+  DeploymentError,
+  ManualSyncOperation,
+} from './error-handler';
 
 /**
  * Deployment status interface
  */
 export interface DeploymentStatus {
   applicationName: string;
-  health: 'Healthy' | 'Progressing' | 'Degraded' | 'Suspended' | 'Missing' | 'Unknown';
+  health:
+    | 'Healthy'
+    | 'Progressing'
+    | 'Degraded'
+    | 'Suspended'
+    | 'Missing'
+    | 'Unknown';
   sync: 'Synced' | 'OutOfSync' | 'Unknown';
   lastSyncTime?: string;
   environment: string;
@@ -60,7 +70,9 @@ export class ArgocdService {
   private readonly CACHE_TTL = 30000; // 30 seconds
 
   constructor(config: Config, logger: Logger) {
-    this.baseUrl = config.getOptionalString('argocd.baseUrl') || 'https://argocd.company.com';
+    this.baseUrl =
+      config.getOptionalString('argocd.baseUrl') ||
+      'https://argocd.company.com';
     this.token = config.getOptionalString('argocd.token') || 'mock-token';
     this.logger = logger;
     this.errorHandler = new ArgocdErrorHandler(config, logger);
@@ -74,7 +86,9 @@ export class ArgocdService {
     const argocdAppName = annotations['argocd/app-name'];
 
     if (!argocdAppName) {
-      this.logger.debug(`No Argo CD application annotation found for entity: ${entity.metadata.name}`);
+      this.logger.debug(
+        `No Argo CD application annotation found for entity: ${entity.metadata.name}`,
+      );
       return null;
     }
 
@@ -84,7 +98,9 @@ export class ArgocdService {
   /**
    * Get deployment status for multiple environments
    */
-  async getMultiEnvironmentStatus(entity: Entity): Promise<MultiEnvironmentStatus | null> {
+  async getMultiEnvironmentStatus(
+    entity: Entity,
+  ): Promise<MultiEnvironmentStatus | null> {
     const serviceName = entity.metadata.name;
     const annotations = entity.metadata.annotations || {};
     const baseAppName = annotations['argocd/app-name'];
@@ -98,9 +114,9 @@ export class ArgocdService {
     const environmentStatuses: { [environment: string]: DeploymentStatus } = {};
 
     for (const env of environments) {
-      const appName = baseAppName.includes('-') ? 
-        `${baseAppName.split('-')[0]}-${env}` : 
-        `${baseAppName}-${env}`;
+      const appName = baseAppName.includes('-')
+        ? `${baseAppName.split('-')[0]}-${env}`
+        : `${baseAppName}-${env}`;
 
       try {
         const status = await this.getApplicationStatus(appName);
@@ -118,9 +134,14 @@ export class ArgocdService {
     }
 
     // Determine overall health
-    const healthStatuses = Object.values(environmentStatuses).map(s => s.health);
-    const overallHealth = healthStatuses.includes('Degraded') ? 'Degraded' :
-                         healthStatuses.includes('Unknown') ? 'Unknown' : 'Healthy';
+    const healthStatuses = Object.values(environmentStatuses).map(
+      s => s.health,
+    );
+    const overallHealth = healthStatuses.includes('Degraded')
+      ? 'Degraded'
+      : healthStatuses.includes('Unknown')
+      ? 'Unknown'
+      : 'Healthy';
 
     return {
       serviceName,
@@ -132,7 +153,9 @@ export class ArgocdService {
   /**
    * Get application status from Argo CD API
    */
-  async getApplicationStatus(appName: string): Promise<DeploymentStatus | null> {
+  async getApplicationStatus(
+    appName: string,
+  ): Promise<DeploymentStatus | null> {
     try {
       // Check cache first
       const cached = this.getCachedStatus(appName);
@@ -144,18 +167,20 @@ export class ArgocdService {
 
       // Simulate API call to Argo CD
       const status = await this.fetchApplicationStatusFromApi(appName);
-      
+
       if (status) {
         // Cache the result
         this.setCachedStatus(appName, status);
       }
 
       return status;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to get Argo CD status for ${appName}: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to get Argo CD status for ${appName}: ${errorMessage}`,
+      );
+
       // Return error status
       return {
         applicationName: appName,
@@ -172,16 +197,24 @@ export class ArgocdService {
   /**
    * Trigger manual sync for an application
    */
-  async syncApplication(appName: string, options: {
-    prune?: boolean;
-    dryRun?: boolean;
-    force?: boolean;
-    triggeredBy?: string;
-  } = {}): Promise<SyncResult> {
+  async syncApplication(
+    appName: string,
+    options: {
+      prune?: boolean;
+      dryRun?: boolean;
+      force?: boolean;
+      triggeredBy?: string;
+    } = {},
+  ): Promise<SyncResult> {
     try {
       this.logger.info(`Triggering sync for Argo CD application: ${appName}`);
 
-      const { prune = false, dryRun = false, force = false, triggeredBy = 'system' } = options;
+      const {
+        prune = false,
+        dryRun = false,
+        force = false,
+        triggeredBy = 'system',
+      } = options;
       const environment = this.determineEnvironmentFromAppName(appName);
 
       // Create manual sync operation
@@ -194,7 +227,9 @@ export class ArgocdService {
 
       // Invalidate cache to force refresh
       this.invalidateCache(appName);
-      this.logger.info(`Sync operation created: ${operation.syncId} for application: ${appName}`);
+      this.logger.info(
+        `Sync operation created: ${operation.syncId} for application: ${appName}`,
+      );
 
       return {
         success: true,
@@ -202,11 +237,13 @@ export class ArgocdService {
         operation,
         estimatedDuration: 120, // 2 minutes
       };
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to sync Argo CD application ${appName}: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to sync Argo CD application ${appName}: ${errorMessage}`,
+      );
+
       return {
         success: false,
         error: errorMessage,
@@ -217,14 +254,19 @@ export class ArgocdService {
   /**
    * Get sync operation status
    */
-  async getSyncOperationStatus(syncId: string): Promise<ManualSyncOperation | null> {
+  async getSyncOperationStatus(
+    syncId: string,
+  ): Promise<ManualSyncOperation | null> {
     return this.errorHandler.getSyncOperationStatus(syncId);
   }
 
   /**
    * Get sync history for an application
    */
-  async getSyncHistory(appName: string, limit: number = 10): Promise<ManualSyncOperation[]> {
+  async getSyncHistory(
+    appName: string,
+    limit: number = 10,
+  ): Promise<ManualSyncOperation[]> {
     return this.errorHandler.getApplicationSyncHistory(appName, limit);
   }
 
@@ -241,19 +283,18 @@ export class ArgocdService {
         this.errorHandler.parseDeploymentError(
           'Pod CrashLoopBackOff: container failed to start',
           appName,
-          this.determineEnvironmentFromAppName(appName)
+          this.determineEnvironmentFromAppName(appName),
         ),
       ];
 
-      const recoveryActions = mockErrors.flatMap(error => 
-        this.errorHandler.generateRecoveryActions(error)
+      const recoveryActions = mockErrors.flatMap(error =>
+        this.errorHandler.generateRecoveryActions(error),
       );
 
       return {
         errors: mockErrors,
         recoveryActions,
       };
-
     } catch (error) {
       this.logger.error(`Failed to get error details for ${appName}: ${error}`);
       return {
@@ -270,12 +311,13 @@ export class ArgocdService {
     try {
       // In a real implementation, this would check Argo CD RBAC
       // For now, simulate permission check
-      
+
       // Allow sync for service owners (this would be determined by catalog ownership)
       return true; // Simplified for demo
-
     } catch (error) {
-      this.logger.error(`Failed to check sync permissions for ${appName}: ${error}`);
+      this.logger.error(
+        `Failed to check sync permissions for ${appName}: ${error}`,
+      );
       return false;
     }
   }
@@ -297,7 +339,9 @@ export class ArgocdService {
   /**
    * Fetch application status from Argo CD API (simulated)
    */
-  private async fetchApplicationStatusFromApi(appName: string): Promise<DeploymentStatus | null> {
+  private async fetchApplicationStatusFromApi(
+    appName: string,
+  ): Promise<DeploymentStatus | null> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -323,12 +367,12 @@ export class ArgocdService {
           this.errorHandler.parseDeploymentError(
             'Pod CrashLoopBackOff: container failed to start',
             appName,
-            this.determineEnvironmentFromAppName(appName)
+            this.determineEnvironmentFromAppName(appName),
           ),
           this.errorHandler.parseDeploymentError(
             'Service endpoint not ready',
             appName,
-            this.determineEnvironmentFromAppName(appName)
+            this.determineEnvironmentFromAppName(appName),
           ),
         ],
       },
@@ -362,17 +406,22 @@ export class ArgocdService {
   /**
    * Trigger sync via Argo CD API (simulated)
    */
-  private async triggerSyncViaApi(appName: string, options: {
-    prune: boolean;
-    dryRun: boolean;
-    force: boolean;
-  }): Promise<SyncResult> {
+  private async triggerSyncViaApi(
+    appName: string,
+    options: {
+      prune: boolean;
+      dryRun: boolean;
+      force: boolean;
+    },
+  ): Promise<SyncResult> {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 200));
 
     // Simulate sync operation
-    const syncId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+    const syncId = `sync-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     return {
       success: true,
       syncId,
@@ -434,12 +483,11 @@ export class ArgocdService {
     try {
       // Simulate health check
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       return {
         healthy: true,
         version: '2.8.0',
       };
-
     } catch (error) {
       return {
         healthy: false,
@@ -452,7 +500,10 @@ export class ArgocdService {
 /**
  * Factory function to create Argo CD service
  */
-export function createArgocdService(config: Config, logger: Logger): ArgocdService {
+export function createArgocdService(
+  config: Config,
+  logger: Logger,
+): ArgocdService {
   return new ArgocdService(config, logger);
 }
 

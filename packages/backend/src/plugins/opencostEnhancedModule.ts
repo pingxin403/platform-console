@@ -1,6 +1,6 @@
 /**
  * Enhanced OpenCost module with AWS cost correlation and benchmarking
- * 
+ *
  * This module extends the basic OpenCost functionality with:
  * - AWS cost data integration via cost allocation tags
  * - Cost benchmarking functionality for similar services
@@ -68,11 +68,14 @@ class OpenCostEnhancedService {
     private readonly logger: any,
   ) {}
 
-  async getServiceCosts(serviceName: string, timeRange: string = '7d'): Promise<CostData> {
+  async getServiceCosts(
+    serviceName: string,
+    timeRange: string = '7d',
+  ): Promise<CostData> {
     try {
       // Fetch OpenCost data
       const openCostData = await this.fetchOpenCostData(serviceName, timeRange);
-      
+
       // Correlate with AWS costs if enabled
       let awsCorrelation;
       if (this.config.opencost.aws?.enabled) {
@@ -93,7 +96,10 @@ class OpenCostEnhancedService {
         awsCorrelation,
       };
     } catch (error) {
-      this.logger.error(`Failed to get service costs for ${serviceName}:`, error);
+      this.logger.error(
+        `Failed to get service costs for ${serviceName}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -106,16 +112,19 @@ class OpenCostEnhancedService {
     try {
       // Get service metadata to determine category
       const serviceCategory = await this.getServiceCategory(serviceName);
-      
+
       // Get similar services in the same category
-      const similarServices = await this.getSimilarServices(serviceName, serviceCategory);
-      
+      const similarServices = await this.getSimilarServices(
+        serviceName,
+        serviceCategory,
+      );
+
       // Calculate benchmarks
       const benchmarks = await Promise.all(
-        similarServices.map(async (service) => {
+        similarServices.map(async service => {
           const costs = await this.getServiceCosts(service, '30d');
           const resources = await this.getServiceResources(service);
-          
+
           return {
             serviceName: service,
             category: serviceCategory,
@@ -124,7 +133,7 @@ class OpenCostEnhancedService {
             efficiency: this.calculateEfficiency(costs, resources),
             percentile: 0, // Will be calculated after sorting
           };
-        })
+        }),
       );
 
       // Calculate percentiles
@@ -135,15 +144,21 @@ class OpenCostEnhancedService {
 
       return benchmarks;
     } catch (error) {
-      this.logger.error(`Failed to get benchmark data for ${serviceName}:`, error);
+      this.logger.error(
+        `Failed to get benchmark data for ${serviceName}:`,
+        error,
+      );
       return [];
     }
   }
 
-  private async fetchOpenCostData(serviceName: string, timeRange: string): Promise<any> {
+  private async fetchOpenCostData(
+    serviceName: string,
+    timeRange: string,
+  ): Promise<any> {
     const baseUrl = this.config.opencost.baseUrl;
     const url = `${baseUrl}/allocation?window=${timeRange}&aggregate=namespace&filter=namespace:${serviceName}`;
-    
+
     // In a real implementation, this would make an HTTP request to OpenCost API
     // For now, return mock data structure
     return {
@@ -159,7 +174,10 @@ class OpenCostEnhancedService {
     };
   }
 
-  private async correlateAwsCosts(serviceName: string, timeRange: string): Promise<any> {
+  private async correlateAwsCosts(
+    serviceName: string,
+    timeRange: string,
+  ): Promise<any> {
     if (!this.config.opencost.aws?.costExplorer?.enabled) {
       return null;
     }
@@ -168,7 +186,7 @@ class OpenCostEnhancedService {
       // In a real implementation, this would use AWS Cost Explorer API
       // to get costs filtered by cost allocation tags
       const tags = this.config.opencost.aws.costAllocationTags;
-      
+
       // Mock AWS cost correlation
       return {
         ec2Cost: Math.random() * 200,
@@ -177,7 +195,10 @@ class OpenCostEnhancedService {
         rdsCost: Math.random() * 150,
       };
     } catch (error) {
-      this.logger.error(`Failed to correlate AWS costs for ${serviceName}:`, error);
+      this.logger.error(
+        `Failed to correlate AWS costs for ${serviceName}:`,
+        error,
+      );
       return null;
     }
   }
@@ -185,14 +206,27 @@ class OpenCostEnhancedService {
   private async getServiceCategory(serviceName: string): Promise<string> {
     // In a real implementation, this would check service annotations or labels
     // to determine the service category
-    const categories = ['microservice', 'api', 'frontend', 'database', 'worker'];
+    const categories = [
+      'microservice',
+      'api',
+      'frontend',
+      'database',
+      'worker',
+    ];
     return categories[Math.floor(Math.random() * categories.length)];
   }
 
-  private async getSimilarServices(serviceName: string, category: string): Promise<string[]> {
+  private async getSimilarServices(
+    serviceName: string,
+    category: string,
+  ): Promise<string[]> {
     // In a real implementation, this would query the catalog for services
     // with similar characteristics (CPU/memory requests, replicas, etc.)
-    return [`${serviceName}-similar-1`, `${serviceName}-similar-2`, `${serviceName}-similar-3`];
+    return [
+      `${serviceName}-similar-1`,
+      `${serviceName}-similar-2`,
+      `${serviceName}-similar-3`,
+    ];
   }
 
   private async getServiceResources(serviceName: string): Promise<any> {
@@ -207,7 +241,8 @@ class OpenCostEnhancedService {
 
   private calculateEfficiency(costs: CostData, resources: any): number {
     // Simple efficiency calculation: cost per unit of resource
-    const totalResources = resources.cpuRequests + (resources.memoryRequests / 1024);
+    const totalResources =
+      resources.cpuRequests + resources.memoryRequests / 1024;
     return costs.totalCost / totalResources;
   }
 }
@@ -222,18 +257,26 @@ export const opencostEnhancedPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
       },
       async init({ config, logger, httpRouter }) {
-        const openCostConfig = config.get('opencost') as OpenCostEnhancedConfig['opencost'];
-        const service = new OpenCostEnhancedService({ opencost: openCostConfig }, logger);
+        const openCostConfig = config.get(
+          'opencost',
+        ) as OpenCostEnhancedConfig['opencost'];
+        const service = new OpenCostEnhancedService(
+          { opencost: openCostConfig },
+          logger,
+        );
 
         const router = Router();
-        
+
         // Enhanced cost data endpoint with AWS correlation
         router.get('/costs/:serviceName', async (req, res) => {
           try {
             const { serviceName } = req.params;
             const { timeRange = '7d' } = req.query;
-            
-            const costs = await service.getServiceCosts(serviceName, timeRange as string);
+
+            const costs = await service.getServiceCosts(
+              serviceName,
+              timeRange as string,
+            );
             res.json(costs);
           } catch (error) {
             logger.error('Failed to get enhanced cost data:', error);
@@ -245,7 +288,7 @@ export const opencostEnhancedPlugin = createBackendPlugin({
         router.get('/benchmark/:serviceName', async (req, res) => {
           try {
             const { serviceName } = req.params;
-            
+
             const benchmarks = await service.getBenchmarkData(serviceName);
             res.json(benchmarks);
           } catch (error) {
@@ -259,18 +302,32 @@ export const opencostEnhancedPlugin = createBackendPlugin({
           try {
             const { serviceName } = req.params;
             const { period = '30d' } = req.query;
-            
+
             // Get cost data for multiple time periods to calculate trends
-            const currentCosts = await service.getServiceCosts(serviceName, '7d');
-            const previousCosts = await service.getServiceCosts(serviceName, '14d');
-            
+            const currentCosts = await service.getServiceCosts(
+              serviceName,
+              '7d',
+            );
+            const previousCosts = await service.getServiceCosts(
+              serviceName,
+              '14d',
+            );
+
             const trend = {
               current: currentCosts.totalCost,
               previous: previousCosts.totalCost,
-              change: ((currentCosts.totalCost - previousCosts.totalCost) / previousCosts.totalCost) * 100,
-              significant: Math.abs(((currentCosts.totalCost - previousCosts.totalCost) / previousCosts.totalCost) * 100) > 15,
+              change:
+                ((currentCosts.totalCost - previousCosts.totalCost) /
+                  previousCosts.totalCost) *
+                100,
+              significant:
+                Math.abs(
+                  ((currentCosts.totalCost - previousCosts.totalCost) /
+                    previousCosts.totalCost) *
+                    100,
+                ) > 15,
             };
-            
+
             res.json(trend);
           } catch (error) {
             logger.error('Failed to get cost trends:', error);

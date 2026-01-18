@@ -41,6 +41,7 @@
 ### 1. EKS 集群
 
 #### Staging 集群
+
 - [ ] 创建 EKS 集群: `backstage-cluster-staging`
 - [ ] 配置节点组 (t3.medium, 2-5 节点)
 - [ ] 配置 kubectl 访问
@@ -48,6 +49,7 @@
 - [ ] 创建命名空间: `backstage-staging`
 
 #### Production 集群
+
 - [ ] 创建 EKS 集群: `backstage-cluster-production`
 - [ ] 配置节点组 (m5.large, 3-10 节点)
 - [ ] 配置 kubectl 访问
@@ -57,6 +59,7 @@
 ### 2. RDS PostgreSQL 数据库
 
 #### Staging 数据库
+
 - [ ] 创建 RDS 实例: `backstage-staging`
 - [ ] 实例类型: db.t3.medium
 - [ ] 存储: 50GB gp3
@@ -65,6 +68,7 @@
 - [ ] 记录数据库端点和凭证
 
 #### Production 数据库
+
 - [ ] 创建 RDS 实例: `backstage-production`
 - [ ] 实例类型: db.m5.large
 - [ ] 存储: 100GB gp3
@@ -109,30 +113,36 @@
 访问: https://github.com/pingxin403/platform-console/settings/secrets/actions
 
 ### AWS 相关
+
 - [ ] `AWS_ACCESS_KEY_ID`
 - [ ] `AWS_SECRET_ACCESS_KEY`
 - [ ] `AWS_REGION` (us-west-2)
 
 ### Kubernetes 相关
+
 - [ ] `EKS_CLUSTER_NAME` (backstage-cluster)
 - [ ] `BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_STAGING`
 - [ ] `BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION`
 
 ### 证书相关
+
 - [ ] `CERTIFICATE_ARN_STAGING`
 - [ ] `CERTIFICATE_ARN_PRODUCTION`
 - [ ] `WAF_ACL_ARN` (可选)
 
 ### 数据库相关
+
 - [ ] `POSTGRES_PASSWORD_STAGING`
 - [ ] `POSTGRES_PASSWORD_PRODUCTION`
 
 ### Backstage 相关
+
 - [ ] `BACKEND_SECRET_STAGING` (至少 24 个字符)
 - [ ] `BACKEND_SECRET_PRODUCTION` (至少 24 个字符)
 - [ ] `ORGANIZATION_NAME`
 
 ### GitHub 集成
+
 - [ ] `GITHUB_TOKEN`
 - [ ] `GITHUB_ORG`
 - [ ] `AUTH_GITHUB_CLIENT_ID_STAGING`
@@ -141,6 +151,7 @@
 - [ ] `AUTH_GITHUB_CLIENT_SECRET_PRODUCTION`
 
 ### 可选集成
+
 - [ ] `ARGOCD_TOKEN_STAGING` (可选)
 - [ ] `ARGOCD_TOKEN_PRODUCTION` (可选)
 - [ ] `DATADOG_API_KEY` (可选)
@@ -365,22 +376,26 @@ curl https://backstage.example.com/api/catalog/health
 ## ✅ 完成检查
 
 ### 本地开发
+
 - [ ] 本地环境可以正常运行
 - [ ] 所有测试通过
 - [ ] 代码质量检查通过
 
 ### Staging 环境
+
 - [ ] Staging 部署成功
 - [ ] 所有功能正常工作
 - [ ] 性能测试通过
 
 ### Production 环境
+
 - [ ] Production 部署成功
 - [ ] 所有功能正常工作
 - [ ] 监控和告警配置完成
 - [ ] 备份和恢复流程验证
 
 ### 团队准备
+
 - [ ] 团队成员可以访问平台
 - [ ] 文档已分享给团队
 - [ ] 培训已完成
@@ -414,8 +429,8 @@ curl https://backstage.example.com/api/catalog/health
 完成所有检查项后，你的 Internal Developer Platform 就可以投入使用了！
 
 **下一步**:
+
 - 开始使用 Service Catalog 注册服务
 - 使用 Golden Path Templates 创建新项目
 - 探索平台的各种功能
 - 收集团队反馈并持续改进
-

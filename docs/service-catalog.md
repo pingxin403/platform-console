@@ -11,11 +11,13 @@ The catalog automatically discovers and registers services from your GitHub repo
 Services are automatically discovered through:
 
 ### GitHub Integration
+
 - Scans repositories for `catalog-info.yaml` files
 - Registers services, components, and APIs
 - Updates metadata when files change
 
 ### Manual Registration
+
 You can also manually register entities:
 
 1. Navigate to **Catalog** → **Register Entity**
@@ -25,6 +27,7 @@ You can also manually register entities:
 ## Entity Types
 
 ### Components
+
 Software components like services, libraries, and websites.
 
 ```yaml
@@ -43,6 +46,7 @@ spec:
 ```
 
 ### APIs
+
 API definitions and specifications.
 
 ```yaml
@@ -64,6 +68,7 @@ spec:
 ```
 
 ### Resources
+
 Infrastructure resources like databases, queues, and storage.
 
 ```yaml
@@ -83,22 +88,26 @@ spec:
 Each service in the catalog displays:
 
 ### Overview
+
 - **Metadata**: Name, description, owner, lifecycle
 - **Links**: Repository, documentation, monitoring
 - **Dependencies**: Services and resources this component depends on
 - **Dependents**: Services that depend on this component
 
 ### CI/CD Status
+
 - **Build Status**: Latest pipeline results
 - **Deployment Status**: Current deployment state across environments
 - **Release History**: Recent releases and changes
 
 ### Monitoring
+
 - **Health Checks**: Service health and availability
 - **Metrics**: Performance and usage metrics
 - **Alerts**: Active alerts and incidents
 
 ### Documentation
+
 - **TechDocs**: Automatically generated documentation
 - **API Docs**: OpenAPI/GraphQL specifications
 - **Runbooks**: Operational procedures
@@ -120,12 +129,14 @@ graph LR
 ## Search and Filtering
 
 ### Search Features
+
 - **Full-text search** across all entity metadata
 - **Tag-based filtering** by technology, team, or lifecycle
 - **Owner filtering** to find services by team
 - **Type filtering** by component, API, or resource
 
 ### Advanced Filters
+
 - **Lifecycle**: production, experimental, deprecated
 - **Technology**: java, go, react, python
 - **System**: group related components
@@ -134,22 +145,26 @@ graph LR
 ## Best Practices
 
 ### Naming Conventions
+
 - Use **kebab-case** for entity names
 - Include **descriptive names** that indicate purpose
 - Use **consistent prefixes** for related services
 
 ### Metadata Quality
+
 - Provide **clear descriptions** for all entities
 - Set appropriate **lifecycle stages**
 - Define **ownership** for all components
 - Add relevant **tags** for discoverability
 
 ### Dependencies
+
 - Declare **all dependencies** explicitly
 - Use **resource entities** for infrastructure
 - Keep **dependency graphs** up to date
 
 ### Documentation
+
 - Include **README** files in repositories
 - Add **API documentation** for all APIs
 - Maintain **operational runbooks**
@@ -157,18 +172,21 @@ graph LR
 ## Troubleshooting
 
 ### Service Not Appearing
+
 1. Check `catalog-info.yaml` syntax
 2. Verify GitHub permissions
 3. Check catalog processing logs
 4. Manually refresh entity
 
 ### Outdated Information
+
 1. Check last refresh timestamp
 2. Trigger manual refresh
 3. Verify webhook configuration
 4. Check for processing errors
 
 ### Missing Dependencies
+
 1. Ensure dependent services are registered
 2. Check entity names match exactly
 3. Verify dependency declarations

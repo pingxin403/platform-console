@@ -55,16 +55,17 @@ class MockCostDisplayService implements CostDisplayService {
     if (!data) {
       throw new Error(`No cost data found for service: ${serviceName}`);
     }
-    
+
     // Ensure cost breakdown components sum to total (with small tolerance for floating point)
-    const calculatedTotal = data.cpuCost + data.memoryCost + data.storageCost + data.networkCost;
+    const calculatedTotal =
+      data.cpuCost + data.memoryCost + data.storageCost + data.networkCost;
     const tolerance = 0.01;
-    
+
     if (Math.abs(calculatedTotal - data.totalCost) > tolerance) {
       // Adjust total to match components for consistency
       data.totalCost = calculatedTotal;
     }
-    
+
     return data;
   }
 
@@ -73,10 +74,10 @@ class MockCostDisplayService implements CostDisplayService {
     if (!currentData) {
       throw new Error(`No cost data found for service: ${serviceName}`);
     }
-    
+
     // Simulate previous period data (90% to 110% of current for realistic trends)
     const previousCost = currentData.totalCost * (0.9 + Math.random() * 0.2);
-    
+
     // Handle division by zero case
     let change = 0;
     if (previousCost > 0) {
@@ -84,7 +85,7 @@ class MockCostDisplayService implements CostDisplayService {
     } else if (currentData.totalCost > 0) {
       change = 100; // 100% increase from zero
     }
-    
+
     return {
       current: currentData.totalCost,
       previous: previousCost,
@@ -98,7 +99,7 @@ class MockCostDisplayService implements CostDisplayService {
     if (!data) {
       throw new Error(`No cost data found for service: ${serviceName}`);
     }
-    
+
     // Return data with AWS correlation if available
     return data;
   }
@@ -111,7 +112,11 @@ class MockCostDisplayService implements CostDisplayService {
 // Property-based test generators
 const serviceNameArbitrary = fc.stringMatching(/^[a-z][a-z0-9-]*[a-z0-9]$/);
 
-const positiveNumberArbitrary = fc.float({ min: Math.fround(0.01), max: Math.fround(10000), noNaN: true });
+const positiveNumberArbitrary = fc.float({
+  min: Math.fround(0.01),
+  max: Math.fround(10000),
+  noNaN: true,
+});
 
 const awsCorrelationArbitrary = fc.record({
   ec2Cost: positiveNumberArbitrary,
@@ -120,47 +125,60 @@ const awsCorrelationArbitrary = fc.record({
   rdsCost: positiveNumberArbitrary,
 });
 
-const timeRangeArbitrary = fc.record({
-  start: fc.date({ min: new Date('2023-01-01'), max: new Date('2024-06-30') })
-    .filter(d => !isNaN(d.getTime()))
-    .map(d => d.toISOString()),
-  end: fc.date({ min: new Date('2023-06-01'), max: new Date('2024-12-31') })
-    .filter(d => !isNaN(d.getTime()))
-    .map(d => d.toISOString()),
-}).filter(range => {
-  const startDate = new Date(range.start);
-  const endDate = new Date(range.end);
-  return !isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) && startDate < endDate;
-});
+const timeRangeArbitrary = fc
+  .record({
+    start: fc
+      .date({ min: new Date('2023-01-01'), max: new Date('2024-06-30') })
+      .filter(d => !isNaN(d.getTime()))
+      .map(d => d.toISOString()),
+    end: fc
+      .date({ min: new Date('2023-06-01'), max: new Date('2024-12-31') })
+      .filter(d => !isNaN(d.getTime()))
+      .map(d => d.toISOString()),
+  })
+  .filter(range => {
+    const startDate = new Date(range.start);
+    const endDate = new Date(range.end);
+    return (
+      !isNaN(startDate.getTime()) &&
+      !isNaN(endDate.getTime()) &&
+      startDate < endDate
+    );
+  });
 
-const costDataArbitrary = fc.record({
-  serviceName: serviceNameArbitrary,
-  cpuCost: positiveNumberArbitrary,
-  memoryCost: positiveNumberArbitrary,
-  storageCost: positiveNumberArbitrary,
-  networkCost: positiveNumberArbitrary,
-  timeRange: timeRangeArbitrary,
-  awsCorrelation: fc.option(awsCorrelationArbitrary, { nil: undefined }),
-  lastUpdated: fc.date({ min: new Date('2024-01-01'), max: new Date() })
-    .filter(d => !isNaN(d.getTime())),
-}).map(data => ({
-  ...data,
-  totalCost: data.cpuCost + data.memoryCost + data.storageCost + data.networkCost,
-}));
+const costDataArbitrary = fc
+  .record({
+    serviceName: serviceNameArbitrary,
+    cpuCost: positiveNumberArbitrary,
+    memoryCost: positiveNumberArbitrary,
+    storageCost: positiveNumberArbitrary,
+    networkCost: positiveNumberArbitrary,
+    timeRange: timeRangeArbitrary,
+    awsCorrelation: fc.option(awsCorrelationArbitrary, { nil: undefined }),
+    lastUpdated: fc
+      .date({ min: new Date('2024-01-01'), max: new Date() })
+      .filter(d => !isNaN(d.getTime())),
+  })
+  .map(data => ({
+    ...data,
+    totalCost:
+      data.cpuCost + data.memoryCost + data.storageCost + data.networkCost,
+  }));
 
-const serviceWithCostDataArbitrary = fc.array(costDataArbitrary, { minLength: 1, maxLength: 20 })
+const serviceWithCostDataArbitrary = fc
+  .array(costDataArbitrary, { minLength: 1, maxLength: 20 })
   .map(costs => {
     // Ensure unique service names
     const uniqueCosts: CostData[] = [];
     const seenNames = new Set<string>();
-    
+
     for (const cost of costs) {
       if (!seenNames.has(cost.serviceName)) {
         seenNames.add(cost.serviceName);
         uniqueCosts.push(cost);
       }
     }
-    
+
     return uniqueCosts.length > 0 ? uniqueCosts : [costs[0]];
   });
 
@@ -179,19 +197,21 @@ describe('Cost Data Display', () => {
    */
   it('should display monthly Kubernetes costs with complete breakdowns', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceWithCostDataArbitrary, async (costDataList) => {
+      fc.asyncProperty(serviceWithCostDataArbitrary, async costDataList => {
         // Create a fresh service instance for each property test run
         const freshService = new MockCostDisplayService();
-        
+
         // Act: Set up cost data for all services
         for (const costData of costDataList) {
           freshService.setCostData(costData.serviceName, costData);
         }
-        
+
         // Test each service's cost display
         for (const expectedCostData of costDataList) {
-          const displayedCosts = await freshService.displayMonthlyCosts(expectedCostData.serviceName);
-          
+          const displayedCosts = await freshService.displayMonthlyCosts(
+            expectedCostData.serviceName,
+          );
+
           // Assert: All required cost fields should be present and valid
           expect(displayedCosts.serviceName).toBe(expectedCostData.serviceName);
           expect(displayedCosts.totalCost).toBeGreaterThanOrEqual(0);
@@ -199,116 +219,149 @@ describe('Cost Data Display', () => {
           expect(displayedCosts.memoryCost).toBeGreaterThanOrEqual(0);
           expect(displayedCosts.storageCost).toBeGreaterThanOrEqual(0);
           expect(displayedCosts.networkCost).toBeGreaterThanOrEqual(0);
-          
+
           // Assert: Cost breakdown should sum to total cost (with tolerance for floating point)
-          const calculatedTotal = displayedCosts.cpuCost + displayedCosts.memoryCost + 
-                                 displayedCosts.storageCost + displayedCosts.networkCost;
-          expect(Math.abs(calculatedTotal - displayedCosts.totalCost)).toBeLessThanOrEqual(0.01);
-          
+          const calculatedTotal =
+            displayedCosts.cpuCost +
+            displayedCosts.memoryCost +
+            displayedCosts.storageCost +
+            displayedCosts.networkCost;
+          expect(
+            Math.abs(calculatedTotal - displayedCosts.totalCost),
+          ).toBeLessThanOrEqual(0.01);
+
           // Assert: Time range should be valid
           expect(displayedCosts.timeRange).toBeDefined();
           expect(displayedCosts.timeRange.start).toBeDefined();
           expect(displayedCosts.timeRange.end).toBeDefined();
           expect(new Date(displayedCosts.timeRange.start)).toBeInstanceOf(Date);
           expect(new Date(displayedCosts.timeRange.end)).toBeInstanceOf(Date);
-          expect(new Date(displayedCosts.timeRange.start).getTime())
-            .toBeLessThan(new Date(displayedCosts.timeRange.end).getTime());
-          
+          expect(
+            new Date(displayedCosts.timeRange.start).getTime(),
+          ).toBeLessThan(new Date(displayedCosts.timeRange.end).getTime());
+
           // Assert: Last updated timestamp should be present and valid
           expect(displayedCosts.lastUpdated).toBeInstanceOf(Date);
-          expect(displayedCosts.lastUpdated.getTime()).toBeLessThanOrEqual(Date.now());
+          expect(displayedCosts.lastUpdated.getTime()).toBeLessThanOrEqual(
+            Date.now(),
+          );
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should highlight significant cost trend changes', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceWithCostDataArbitrary, async (costDataList) => {
+      fc.asyncProperty(serviceWithCostDataArbitrary, async costDataList => {
         // Create a fresh service instance for each property test run
         const freshService = new MockCostDisplayService();
-        
+
         // Act: Set up cost data for all services
         for (const costData of costDataList) {
           freshService.setCostData(costData.serviceName, costData);
         }
-        
+
         // Test cost trend analysis for each service
         for (const expectedCostData of costDataList) {
-          const costTrend = await freshService.displayCostTrends(expectedCostData.serviceName);
-          
+          const costTrend = await freshService.displayCostTrends(
+            expectedCostData.serviceName,
+          );
+
           // Assert: Trend data should be valid
           expect(costTrend.current).toBeGreaterThanOrEqual(0);
           expect(costTrend.previous).toBeGreaterThanOrEqual(0);
           expect(typeof costTrend.change).toBe('number');
           expect(typeof costTrend.significant).toBe('boolean');
-          
+
           // Assert: Change calculation should be mathematically correct
-          const expectedChange = ((costTrend.current - costTrend.previous) / costTrend.previous) * 100;
-          expect(Math.abs(costTrend.change - expectedChange)).toBeLessThanOrEqual(0.01);
-          
+          const expectedChange =
+            ((costTrend.current - costTrend.previous) / costTrend.previous) *
+            100;
+          expect(
+            Math.abs(costTrend.change - expectedChange),
+          ).toBeLessThanOrEqual(0.01);
+
           // Assert: Significant flag should match the highlighting logic
           const shouldBeSignificant = Math.abs(costTrend.change) > 15;
           expect(costTrend.significant).toBe(shouldBeSignificant);
-          
+
           // Assert: Highlighting function should be consistent
-          const highlightResult = freshService.highlightSignificantChanges(costTrend);
+          const highlightResult =
+            freshService.highlightSignificantChanges(costTrend);
           expect(highlightResult).toBe(costTrend.significant);
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should display AWS resource costs when associated', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceWithCostDataArbitrary, async (costDataList) => {
+      fc.asyncProperty(serviceWithCostDataArbitrary, async costDataList => {
         // Create a fresh service instance for each property test run
         const freshService = new MockCostDisplayService();
-        
+
         // Act: Set up cost data for all services
         for (const costData of costDataList) {
           freshService.setCostData(costData.serviceName, costData);
         }
-        
+
         // Test AWS cost correlation for each service
         for (const expectedCostData of costDataList) {
-          const displayedCosts = await freshService.displayAwsResourceCosts(expectedCostData.serviceName);
-          
+          const displayedCosts = await freshService.displayAwsResourceCosts(
+            expectedCostData.serviceName,
+          );
+
           // Assert: Basic cost data should be present
           expect(displayedCosts.serviceName).toBe(expectedCostData.serviceName);
           expect(displayedCosts.totalCost).toBeGreaterThanOrEqual(0);
-          
+
           // Assert: AWS correlation should match expected data
           if (expectedCostData.awsCorrelation !== undefined) {
             expect(displayedCosts.awsCorrelation).toBeDefined();
-            expect(displayedCosts.awsCorrelation!.ec2Cost).toBeGreaterThanOrEqual(0);
-            expect(displayedCosts.awsCorrelation!.ebsCost).toBeGreaterThanOrEqual(0);
-            expect(displayedCosts.awsCorrelation!.s3Cost).toBeGreaterThanOrEqual(0);
-            expect(displayedCosts.awsCorrelation!.rdsCost).toBeGreaterThanOrEqual(0);
-            
+            expect(
+              displayedCosts.awsCorrelation!.ec2Cost,
+            ).toBeGreaterThanOrEqual(0);
+            expect(
+              displayedCosts.awsCorrelation!.ebsCost,
+            ).toBeGreaterThanOrEqual(0);
+            expect(
+              displayedCosts.awsCorrelation!.s3Cost,
+            ).toBeGreaterThanOrEqual(0);
+            expect(
+              displayedCosts.awsCorrelation!.rdsCost,
+            ).toBeGreaterThanOrEqual(0);
+
             // Assert: AWS costs should be reasonable (not negative or infinite)
-            expect(Number.isFinite(displayedCosts.awsCorrelation!.ec2Cost)).toBe(true);
-            expect(Number.isFinite(displayedCosts.awsCorrelation!.ebsCost)).toBe(true);
-            expect(Number.isFinite(displayedCosts.awsCorrelation!.s3Cost)).toBe(true);
-            expect(Number.isFinite(displayedCosts.awsCorrelation!.rdsCost)).toBe(true);
+            expect(
+              Number.isFinite(displayedCosts.awsCorrelation!.ec2Cost),
+            ).toBe(true);
+            expect(
+              Number.isFinite(displayedCosts.awsCorrelation!.ebsCost),
+            ).toBe(true);
+            expect(Number.isFinite(displayedCosts.awsCorrelation!.s3Cost)).toBe(
+              true,
+            );
+            expect(
+              Number.isFinite(displayedCosts.awsCorrelation!.rdsCost),
+            ).toBe(true);
           } else {
             // If no AWS correlation in input, it should be undefined
             expect(displayedCosts.awsCorrelation).toBeUndefined();
           }
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should handle services with zero costs gracefully', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceNameArbitrary, async (serviceName) => {
+      fc.asyncProperty(serviceNameArbitrary, async serviceName => {
         // Create a fresh service instance for each property test run
         const freshService = new MockCostDisplayService();
-        
+
         // Create cost data with zero costs
         const zeroCostData: CostData = {
           serviceName,
@@ -323,50 +376,58 @@ describe('Cost Data Display', () => {
           },
           lastUpdated: new Date(),
         };
-        
+
         // Act: Set up zero cost data
         freshService.setCostData(serviceName, zeroCostData);
-        
-        const displayedCosts = await freshService.displayMonthlyCosts(serviceName);
+
+        const displayedCosts = await freshService.displayMonthlyCosts(
+          serviceName,
+        );
         const costTrend = await freshService.displayCostTrends(serviceName);
-        
+
         // Assert: Zero costs should be handled properly
         expect(displayedCosts.totalCost).toBe(0);
         expect(displayedCosts.cpuCost).toBe(0);
         expect(displayedCosts.memoryCost).toBe(0);
         expect(displayedCosts.storageCost).toBe(0);
         expect(displayedCosts.networkCost).toBe(0);
-        
+
         // Assert: Trend calculation should handle zero costs without errors
         expect(typeof costTrend.current).toBe('number');
         expect(typeof costTrend.previous).toBe('number');
         expect(typeof costTrend.change).toBe('number');
         expect(typeof costTrend.significant).toBe('boolean');
-        
+
         // Assert: No division by zero or NaN values
         expect(Number.isFinite(costTrend.change)).toBe(true);
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should maintain data consistency across multiple cost queries', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceWithCostDataArbitrary, async (costDataList) => {
+      fc.asyncProperty(serviceWithCostDataArbitrary, async costDataList => {
         // Create a fresh service instance for each property test run
         const freshService = new MockCostDisplayService();
-        
+
         // Act: Set up cost data for all services
         for (const costData of costDataList) {
           freshService.setCostData(costData.serviceName, costData);
         }
-        
+
         // Test consistency by querying the same service multiple times
         for (const expectedCostData of costDataList) {
-          const firstQuery = await freshService.displayMonthlyCosts(expectedCostData.serviceName);
-          const secondQuery = await freshService.displayMonthlyCosts(expectedCostData.serviceName);
-          const awsQuery = await freshService.displayAwsResourceCosts(expectedCostData.serviceName);
-          
+          const firstQuery = await freshService.displayMonthlyCosts(
+            expectedCostData.serviceName,
+          );
+          const secondQuery = await freshService.displayMonthlyCosts(
+            expectedCostData.serviceName,
+          );
+          const awsQuery = await freshService.displayAwsResourceCosts(
+            expectedCostData.serviceName,
+          );
+
           // Assert: Multiple queries should return consistent data
           expect(firstQuery.serviceName).toBe(secondQuery.serviceName);
           expect(firstQuery.totalCost).toBe(secondQuery.totalCost);
@@ -374,7 +435,7 @@ describe('Cost Data Display', () => {
           expect(firstQuery.memoryCost).toBe(secondQuery.memoryCost);
           expect(firstQuery.storageCost).toBe(secondQuery.storageCost);
           expect(firstQuery.networkCost).toBe(secondQuery.networkCost);
-          
+
           // Assert: AWS query should return same base cost data
           expect(awsQuery.serviceName).toBe(firstQuery.serviceName);
           expect(awsQuery.totalCost).toBe(firstQuery.totalCost);
@@ -382,7 +443,7 @@ describe('Cost Data Display', () => {
           expect(awsQuery.memoryCost).toBe(firstQuery.memoryCost);
           expect(awsQuery.storageCost).toBe(firstQuery.storageCost);
           expect(awsQuery.networkCost).toBe(firstQuery.networkCost);
-          
+
           // Assert: Time ranges should be consistent
           expect(firstQuery.timeRange.start).toBe(secondQuery.timeRange.start);
           expect(firstQuery.timeRange.end).toBe(secondQuery.timeRange.end);
@@ -390,7 +451,7 @@ describe('Cost Data Display', () => {
           expect(awsQuery.timeRange.end).toBe(firstQuery.timeRange.end);
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

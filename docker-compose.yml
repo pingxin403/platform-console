@@ -9,11 +9,11 @@ services:
       POSTGRES_PASSWORD: backstage123
       POSTGRES_DB: backstage
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U backstage"]
+      test: ['CMD-SHELL', 'pg_isready -U backstage']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -36,7 +36,7 @@ services:
       AUTH_GITHUB_CLIENT_ID: ${AUTH_GITHUB_CLIENT_ID}
       AUTH_GITHUB_CLIENT_SECRET: ${AUTH_GITHUB_CLIENT_SECRET}
     ports:
-      - "7007:7007"
+      - '7007:7007'
     depends_on:
       postgres:
         condition: service_healthy

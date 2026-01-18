@@ -12,10 +12,19 @@ import { z } from 'zod';
 // Input schema for the catalog registration action
 const inputSchema = z.object({
   repoContentsUrl: z.string().describe('Repository contents URL'),
-  catalogInfoPath: z.string().default('/catalog-info.yaml').describe('Path to catalog-info.yaml file'),
-  waitForRegistration: z.boolean().default(true).describe('Wait for entity to be fully processed'),
+  catalogInfoPath: z
+    .string()
+    .default('/catalog-info.yaml')
+    .describe('Path to catalog-info.yaml file'),
+  waitForRegistration: z
+    .boolean()
+    .default(true)
+    .describe('Wait for entity to be fully processed'),
   maxWaitTime: z.number().default(300).describe('Maximum wait time in seconds'),
-  validateEntity: z.boolean().default(true).describe('Validate entity before registration'),
+  validateEntity: z
+    .boolean()
+    .default(true)
+    .describe('Validate entity before registration'),
 });
 
 // Output schema for the action
@@ -35,12 +44,15 @@ export interface CatalogRegisterActionOptions {
 /**
  * Creates a custom Scaffolder action for automatic catalog registration
  */
-export function createCatalogRegisterAction(options: CatalogRegisterActionOptions) {
+export function createCatalogRegisterAction(
+  options: CatalogRegisterActionOptions,
+) {
   const { catalogApi, logger, catalogBaseUrl } = options;
 
   return createTemplateAction<typeof inputSchema, typeof outputSchema>({
     id: 'catalog:register:auto',
-    description: 'Automatically register a service in the Backstage catalog with validation and monitoring',
+    description:
+      'Automatically register a service in the Backstage catalog with validation and monitoring',
     schema: {
       input: inputSchema,
       output: outputSchema,
@@ -57,7 +69,9 @@ export function createCatalogRegisterAction(options: CatalogRegisterActionOption
       const catalogInfoUrl = `${repoContentsUrl}${catalogInfoPath}`;
       const registrationTime = new Date().toISOString();
 
-      ctx.logger.info(`Starting automatic catalog registration for: ${catalogInfoUrl}`);
+      ctx.logger.info(
+        `Starting automatic catalog registration for: ${catalogInfoUrl}`,
+      );
 
       try {
         // Validate entity before registration if requested
@@ -71,19 +85,33 @@ export function createCatalogRegisterAction(options: CatalogRegisterActionOption
           target: catalogInfoUrl,
         });
 
-        if (!registrationResult.entities || registrationResult.entities.length === 0) {
-          throw new Error('No entities were registered from the catalog-info.yaml file');
+        if (
+          !registrationResult.entities ||
+          registrationResult.entities.length === 0
+        ) {
+          throw new Error(
+            'No entities were registered from the catalog-info.yaml file',
+          );
         }
 
         const entity = registrationResult.entities[0];
-        const entityRef = `${entity.kind}:${entity.metadata.namespace || 'default'}/${entity.metadata.name}`;
-        const entityUrl = `${catalogBaseUrl}/catalog/${entity.kind}/${entity.metadata.namespace || 'default'}/${entity.metadata.name}`;
+        const entityRef = `${entity.kind}:${
+          entity.metadata.namespace || 'default'
+        }/${entity.metadata.name}`;
+        const entityUrl = `${catalogBaseUrl}/catalog/${entity.kind}/${
+          entity.metadata.namespace || 'default'
+        }/${entity.metadata.name}`;
 
         ctx.logger.info(`Entity registered successfully: ${entityRef}`);
 
         // Wait for entity to be fully processed if requested
         if (waitForRegistration) {
-          await waitForEntityProcessing(catalogApi, entityRef, maxWaitTime, ctx.logger);
+          await waitForEntityProcessing(
+            catalogApi,
+            entityRef,
+            maxWaitTime,
+            ctx.logger,
+          );
         }
 
         // Verify registration was successful
@@ -94,11 +122,14 @@ export function createCatalogRegisterAction(options: CatalogRegisterActionOption
         ctx.output('entityUrl', entityUrl);
         ctx.output('registrationTime', registrationTime);
 
-        ctx.logger.info(`Automatic catalog registration completed successfully for: ${entityRef}`);
-
+        ctx.logger.info(
+          `Automatic catalog registration completed successfully for: ${entityRef}`,
+        );
       } catch (error) {
         if (error instanceof Error) {
-          throw new Error(`Failed to register service in catalog: ${error.message}`);
+          throw new Error(
+            `Failed to register service in catalog: ${error.message}`,
+          );
         }
         throw error;
       }
@@ -109,22 +140,27 @@ export function createCatalogRegisterAction(options: CatalogRegisterActionOption
 /**
  * Validate catalog entity before registration
  */
-async function validateCatalogEntity(catalogInfoUrl: string, logger: Logger): Promise<void> {
+async function validateCatalogEntity(
+  catalogInfoUrl: string,
+  logger: Logger,
+): Promise<void> {
   logger.info(`Validating catalog entity at: ${catalogInfoUrl}`);
 
   try {
     // Fetch the catalog-info.yaml file
     const response = await fetch(catalogInfoUrl);
     if (!response.ok) {
-      throw new Error(`Failed to fetch catalog-info.yaml: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch catalog-info.yaml: ${response.status} ${response.statusText}`,
+      );
     }
 
     const catalogContent = await response.text();
-    
+
     // Basic YAML validation
     const yaml = require('yaml');
     let parsedEntity: any;
-    
+
     try {
       parsedEntity = yaml.parse(catalogContent);
     } catch (yamlError) {
@@ -132,7 +168,9 @@ async function validateCatalogEntity(catalogInfoUrl: string, logger: Logger): Pr
     }
 
     // Handle multiple documents in YAML
-    const entities = Array.isArray(parsedEntity) ? parsedEntity : [parsedEntity];
+    const entities = Array.isArray(parsedEntity)
+      ? parsedEntity
+      : [parsedEntity];
 
     // Validate each entity
     for (const entity of entities) {
@@ -140,7 +178,6 @@ async function validateCatalogEntity(catalogInfoUrl: string, logger: Logger): Pr
     }
 
     logger.info('Catalog entity validation passed');
-
   } catch (error) {
     logger.error(`Catalog entity validation failed: ${error}`);
     throw error;
@@ -174,19 +211,34 @@ function validateEntityStructure(entity: any): void {
 
   // Validate apiVersion format
   if (!entity.apiVersion.includes('backstage.io')) {
-    throw new Error(`Invalid apiVersion: ${entity.apiVersion}. Must be a Backstage API version`);
+    throw new Error(
+      `Invalid apiVersion: ${entity.apiVersion}. Must be a Backstage API version`,
+    );
   }
 
   // Validate kind
-  const validKinds = ['Component', 'API', 'Resource', 'System', 'Domain', 'Location', 'User', 'Group'];
+  const validKinds = [
+    'Component',
+    'API',
+    'Resource',
+    'System',
+    'Domain',
+    'Location',
+    'User',
+    'Group',
+  ];
   if (!validKinds.includes(entity.kind)) {
-    throw new Error(`Invalid kind: ${entity.kind}. Must be one of: ${validKinds.join(', ')}`);
+    throw new Error(
+      `Invalid kind: ${entity.kind}. Must be one of: ${validKinds.join(', ')}`,
+    );
   }
 
   // Validate metadata.name format
   const namePattern = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
   if (!namePattern.test(entity.metadata.name)) {
-    throw new Error(`Invalid metadata.name format: ${entity.metadata.name}. Must be lowercase alphanumeric with hyphens or underscores`);
+    throw new Error(
+      `Invalid metadata.name format: ${entity.metadata.name}. Must be lowercase alphanumeric with hyphens or underscores`,
+    );
   }
 
   // Component-specific validations
@@ -234,7 +286,7 @@ async function waitForEntityProcessing(
   catalogApi: CatalogApi,
   entityRef: string,
   maxWaitTime: number,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   logger.info(`Waiting for entity to be processed: ${entityRef}`);
 
@@ -245,11 +297,14 @@ async function waitForEntityProcessing(
     try {
       // Try to fetch the entity
       const entity = await catalogApi.getEntityByRef(entityRef);
-      
+
       if (entity) {
         // Check if entity is fully processed (no processing errors)
-        const hasProcessingErrors = entity.metadata.annotations?.['backstage.io/managed-by-location-processing-error'];
-        
+        const hasProcessingErrors =
+          entity.metadata.annotations?.[
+            'backstage.io/managed-by-location-processing-error'
+          ];
+
         if (!hasProcessingErrors) {
           logger.info(`Entity fully processed: ${entityRef}`);
           return;
@@ -263,7 +318,9 @@ async function waitForEntityProcessing(
     await new Promise(resolve => setTimeout(resolve, pollInterval));
   }
 
-  logger.warn(`Entity processing timeout after ${maxWaitTime}s, but registration may still succeed`);
+  logger.warn(
+    `Entity processing timeout after ${maxWaitTime}s, but registration may still succeed`,
+  );
 }
 
 /**
@@ -272,32 +329,42 @@ async function waitForEntityProcessing(
 async function verifyEntityRegistration(
   catalogApi: CatalogApi,
   entityRef: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   try {
     const entity = await catalogApi.getEntityByRef(entityRef);
-    
+
     if (!entity) {
       throw new Error(`Entity not found after registration: ${entityRef}`);
     }
 
     // Check for processing errors
-    const processingError = entity.metadata.annotations?.['backstage.io/managed-by-location-processing-error'];
+    const processingError =
+      entity.metadata.annotations?.[
+        'backstage.io/managed-by-location-processing-error'
+      ];
     if (processingError) {
-      logger.warn(`Entity registered with processing errors: ${processingError}`);
+      logger.warn(
+        `Entity registered with processing errors: ${processingError}`,
+      );
     }
 
     // Check entity status
     const entityStatus = entity.status;
     if (entityStatus?.items) {
-      const errorItems = entityStatus.items.filter(item => item.level === 'error');
+      const errorItems = entityStatus.items.filter(
+        item => item.level === 'error',
+      );
       if (errorItems.length > 0) {
-        logger.warn(`Entity has status errors: ${errorItems.map(item => item.message).join(', ')}`);
+        logger.warn(
+          `Entity has status errors: ${errorItems
+            .map(item => item.message)
+            .join(', ')}`,
+        );
       }
     }
 
     logger.info(`Entity registration verified: ${entityRef}`);
-
   } catch (error) {
     logger.error(`Failed to verify entity registration: ${error}`);
     throw error;
@@ -311,7 +378,7 @@ export class AutomaticServiceRegistration {
   constructor(
     private catalogApi: CatalogApi,
     private logger: Logger,
-    private catalogBaseUrl: string
+    private catalogBaseUrl: string,
   ) {}
 
   /**
@@ -328,9 +395,16 @@ export class AutomaticServiceRegistration {
     entityUrl: string;
     registrationTime: string;
   }> {
-    const { repoContentsUrl, catalogInfoPath = '/catalog-info.yaml', projectName, templateType } = config;
-    
-    this.logger.info(`Starting automatic service registration for project: ${projectName}`);
+    const {
+      repoContentsUrl,
+      catalogInfoPath = '/catalog-info.yaml',
+      projectName,
+      templateType,
+    } = config;
+
+    this.logger.info(
+      `Starting automatic service registration for project: ${projectName}`,
+    );
 
     try {
       // Validate the catalog entity
@@ -343,22 +417,36 @@ export class AutomaticServiceRegistration {
         target: catalogInfoUrl,
       });
 
-      if (!registrationResult.entities || registrationResult.entities.length === 0) {
+      if (
+        !registrationResult.entities ||
+        registrationResult.entities.length === 0
+      ) {
         throw new Error('No entities were registered');
       }
 
       const entity = registrationResult.entities[0];
-      const entityRef = `${entity.kind}:${entity.metadata.namespace || 'default'}/${entity.metadata.name}`;
-      const entityUrl = `${this.catalogBaseUrl}/catalog/${entity.kind}/${entity.metadata.namespace || 'default'}/${entity.metadata.name}`;
+      const entityRef = `${entity.kind}:${
+        entity.metadata.namespace || 'default'
+      }/${entity.metadata.name}`;
+      const entityUrl = `${this.catalogBaseUrl}/catalog/${entity.kind}/${
+        entity.metadata.namespace || 'default'
+      }/${entity.metadata.name}`;
       const registrationTime = new Date().toISOString();
 
       // Wait for processing
-      await waitForEntityProcessing(this.catalogApi, entityRef, 300, this.logger);
+      await waitForEntityProcessing(
+        this.catalogApi,
+        entityRef,
+        300,
+        this.logger,
+      );
 
       // Verify registration
       await verifyEntityRegistration(this.catalogApi, entityRef, this.logger);
 
-      this.logger.info(`Service registration completed successfully: ${entityRef}`);
+      this.logger.info(
+        `Service registration completed successfully: ${entityRef}`,
+      );
 
       return {
         entityRef,
@@ -366,7 +454,6 @@ export class AutomaticServiceRegistration {
         entityUrl,
         registrationTime,
       };
-
     } catch (error) {
       this.logger.error(`Automatic service registration failed: ${error}`);
       throw error;
@@ -378,7 +465,9 @@ export class AutomaticServiceRegistration {
    */
   async isServiceRegistered(serviceName: string): Promise<boolean> {
     try {
-      const entity = await this.catalogApi.getEntityByRef(`Component:default/${serviceName}`);
+      const entity = await this.catalogApi.getEntityByRef(
+        `Component:default/${serviceName}`,
+      );
       return !!entity;
     } catch (error) {
       return false;
@@ -396,7 +485,7 @@ export class AutomaticServiceRegistration {
   }> {
     try {
       const entity = await this.catalogApi.getEntityByRef(entityRef);
-      
+
       if (!entity) {
         return {
           registered: false,
@@ -405,9 +494,13 @@ export class AutomaticServiceRegistration {
         };
       }
 
-      const processingError = entity.metadata.annotations?.['backstage.io/managed-by-location-processing-error'];
-      const statusErrors = entity.status?.items?.filter(item => item.level === 'error') || [];
-      
+      const processingError =
+        entity.metadata.annotations?.[
+          'backstage.io/managed-by-location-processing-error'
+        ];
+      const statusErrors =
+        entity.status?.items?.filter(item => item.level === 'error') || [];
+
       const errors: string[] = [];
       if (processingError) {
         errors.push(processingError);
@@ -418,9 +511,11 @@ export class AutomaticServiceRegistration {
         registered: true,
         hasErrors: errors.length > 0,
         errors,
-        lastUpdated: entity.metadata.annotations?.['backstage.io/managed-by-location-last-updated'],
+        lastUpdated:
+          entity.metadata.annotations?.[
+            'backstage.io/managed-by-location-last-updated'
+          ],
       };
-
     } catch (error) {
       return {
         registered: false,
