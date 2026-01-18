@@ -47,10 +47,12 @@ jobs:
       - name: Install build dependencies for native modules
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 make g++
+          sudo apt-get install -y python3 python3-pip make g++ build-essential
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
 
       - name: Run ESLint
         run: yarn lint:all
@@ -97,10 +99,12 @@ jobs:
       - name: Install build dependencies for native modules
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 make g++
+          sudo apt-get install -y python3 python3-pip make g++ build-essential
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
 
       - name: Run tests with coverage
         run: yarn test:all
@@ -143,10 +147,12 @@ jobs:
       - name: Install build dependencies for native modules
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 make g++
+          sudo apt-get install -y python3 python3-pip make g++ build-essential
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
 
       - name: Build all packages
         run: yarn build:all
@@ -198,10 +204,12 @@ jobs:
       - name: Install build dependencies for native modules
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 make g++
+          sudo apt-get install -y python3 python3-pip make g++ build-essential
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: yarn install --immutable --inline-builds
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -260,9 +268,11 @@ jobs:
         run: |
           corepack enable
           sudo apt-get update
-          sudo apt-get install -y python3 make g++
-          yarn install --immutable
+          sudo apt-get install -y python3 python3-pip make g++ build-essential
+          yarn install --immutable --inline-builds
           yarn npm audit --all --recursive || true
+        env:
+          YARN_ENABLE_HARDENED_MODE: false
 
   # Job 6: Docker Build (only on main branch)
   docker:
