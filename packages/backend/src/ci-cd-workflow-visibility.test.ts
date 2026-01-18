@@ -1,6 +1,6 @@
 /**
  * Integration tests for CI/CD workflow visibility
- * 
+ *
  * Tests GitHub Actions integration, PR workflow, statistics collection,
  * and changelog generation functionality.
  */
@@ -95,7 +95,9 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
 
       // Verify re-trigger capability is available and functional
       expect(mockRetriggerResponse.success).toBe(true);
-      expect(mockRetriggerResponse.message).toContain('re-triggered successfully');
+      expect(mockRetriggerResponse.message).toContain(
+        're-triggered successfully',
+      );
     });
 
     it('should integrate build status with service catalog', async () => {
@@ -186,7 +188,7 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
         averageDuration: 420000, // 7 minutes in milliseconds
         failureRate: 0.08,
         trendsData: [
-          { date: '2024-01-01', successRate: 0.90, avgDuration: 450000 },
+          { date: '2024-01-01', successRate: 0.9, avgDuration: 450000 },
           { date: '2024-01-02', successRate: 0.94, avgDuration: 400000 },
           { date: '2024-01-03', successRate: 0.92, avgDuration: 420000 },
         ],
@@ -197,7 +199,9 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
       expect(buildStatistics.successRate).toBeLessThanOrEqual(1);
       expect(buildStatistics.averageDuration).toBeGreaterThan(0);
       expect(buildStatistics.trendsData).toHaveLength(3);
-      expect(buildStatistics.successRate + buildStatistics.failureRate).toBeCloseTo(1);
+      expect(
+        buildStatistics.successRate + buildStatistics.failureRate,
+      ).toBeCloseTo(1);
     });
 
     it('should provide trend analysis and performance benchmarking', async () => {
@@ -209,15 +213,23 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
         benchmarkComparison: {
           industry: 0.88,
           team: 0.92,
-          organization: 0.90,
+          organization: 0.9,
         },
       };
 
       // Verify trend analysis
-      expect(['improving', 'declining', 'stable']).toContain(trendAnalysis.performanceTrend);
-      expect(['increasing', 'decreasing', 'stable']).toContain(trendAnalysis.durationTrend);
-      expect(['improving', 'declining', 'stable']).toContain(trendAnalysis.successRateTrend);
-      expect(trendAnalysis.benchmarkComparison.team).toBeGreaterThan(trendAnalysis.benchmarkComparison.industry);
+      expect(['improving', 'declining', 'stable']).toContain(
+        trendAnalysis.performanceTrend,
+      );
+      expect(['increasing', 'decreasing', 'stable']).toContain(
+        trendAnalysis.durationTrend,
+      );
+      expect(['improving', 'declining', 'stable']).toContain(
+        trendAnalysis.successRateTrend,
+      );
+      expect(trendAnalysis.benchmarkComparison.team).toBeGreaterThan(
+        trendAnalysis.benchmarkComparison.industry,
+      );
     });
   });
 
@@ -266,7 +278,9 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
       expect(versionHistory.currentVersion).toMatch(/^v\d+\.\d+\.\d+$/);
       expect(versionHistory.previousVersions).toHaveLength(3);
       expect(versionHistory.totalReleases).toBeGreaterThan(0);
-      expect(['weekly', 'bi-weekly', 'monthly']).toContain(versionHistory.releaseFrequency);
+      expect(['weekly', 'bi-weekly', 'monthly']).toContain(
+        versionHistory.releaseFrequency,
+      );
     });
   });
 
@@ -351,7 +365,9 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
 
       // Verify repository insights
       expect(repositoryInsights.contributors).toHaveLength(3);
-      expect(repositoryInsights.contributors[0].contributions).toBeGreaterThan(0);
+      expect(repositoryInsights.contributors[0].contributions).toBeGreaterThan(
+        0,
+      );
       expect(Object.keys(repositoryInsights.languages)).toContain('TypeScript');
       expect(repositoryInsights.activity.commits).toBeGreaterThan(0);
     });
@@ -370,7 +386,9 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
       // Verify productivity metrics
       expect(productivityMetrics.codeChurn).toBeLessThan(1);
       expect(productivityMetrics.reviewCoverage).toBeLessThanOrEqual(1);
-      expect(['daily', 'weekly', 'monthly']).toContain(productivityMetrics.deploymentFrequency);
+      expect(['daily', 'weekly', 'monthly']).toContain(
+        productivityMetrics.deploymentFrequency,
+      );
       expect(productivityMetrics.leadTime).toBeGreaterThan(0);
       expect(productivityMetrics.changeFailureRate).toBeLessThan(1);
       expect(productivityMetrics.recoveryTime).toBeGreaterThan(0);
@@ -382,7 +400,8 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
       // Test rate limit handling
       const rateLimitResponse = {
         message: 'API rate limit exceeded',
-        documentation_url: 'https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting',
+        documentation_url:
+          'https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting',
       };
 
       // Verify graceful degradation
@@ -433,8 +452,12 @@ describe('CI/CD Workflow Visibility Integration Tests', () => {
 
       // Verify data consistency
       expect(githubActionsData.repository).toBe(pullRequestData.repository);
-      expect(githubActionsData.lastWorkflowRun.commit).toBe(pullRequestData.lastMergedPR.mergeCommit);
-      expect(githubActionsData.lastWorkflowRun.branch).toBe(pullRequestData.lastMergedPR.targetBranch);
+      expect(githubActionsData.lastWorkflowRun.commit).toBe(
+        pullRequestData.lastMergedPR.mergeCommit,
+      );
+      expect(githubActionsData.lastWorkflowRun.branch).toBe(
+        pullRequestData.lastMergedPR.targetBranch,
+      );
     });
 
     it('should synchronize real-time updates across all CI/CD plugins', async () => {

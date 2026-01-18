@@ -25,7 +25,7 @@ const requiredFiles = [
   'k8s/helm/backstage/values.yaml',
   'k8s/aws/eks-cluster.yaml',
   'k8s/aws/deploy.sh',
-  '.env.example'
+  '.env.example',
 ];
 
 console.log('📁 Checking required files...');
@@ -42,9 +42,15 @@ requiredFiles.forEach(file => {
 console.log('\n⚙️  Checking app-config.yaml structure...');
 try {
   const appConfig = yaml.load(fs.readFileSync('app-config.yaml', 'utf8'));
-  
+
   // Check required sections
-  const requiredSections = ['app', 'backend', 'auth', 'integrations', 'catalog'];
+  const requiredSections = [
+    'app',
+    'backend',
+    'auth',
+    'integrations',
+    'catalog',
+  ];
   requiredSections.forEach(section => {
     if (appConfig[section]) {
       console.log(`  ✅ ${section} section present`);
@@ -81,7 +87,6 @@ try {
       warnings.push('GitHub OAuth should be configured for production');
     }
   }
-
 } catch (error) {
   console.log('  ❌ Error reading app-config.yaml');
   errors.push(`Error reading app-config.yaml: ${error.message}`);
@@ -90,14 +95,16 @@ try {
 // Check backend dependencies
 console.log('\n📦 Checking backend dependencies...');
 try {
-  const backendPackage = JSON.parse(fs.readFileSync('packages/backend/package.json', 'utf8'));
-  
+  const backendPackage = JSON.parse(
+    fs.readFileSync('packages/backend/package.json', 'utf8'),
+  );
+
   const requiredDeps = [
     '@backstage/plugin-auth-backend-module-github-provider',
     'pg',
     '@backstage/plugin-catalog-backend',
     '@backstage/plugin-scaffolder-backend',
-    '@backstage/plugin-techdocs-backend'
+    '@backstage/plugin-techdocs-backend',
   ];
 
   requiredDeps.forEach(dep => {
@@ -108,7 +115,6 @@ try {
       errors.push(`Missing backend dependency: ${dep}`);
     }
   });
-
 } catch (error) {
   console.log('  ❌ Error reading backend package.json');
   errors.push(`Error reading backend package.json: ${error.message}`);
@@ -117,8 +123,10 @@ try {
 // Check Helm chart structure
 console.log('\n⎈ Checking Helm chart structure...');
 try {
-  const chartYaml = yaml.load(fs.readFileSync('k8s/helm/backstage/Chart.yaml', 'utf8'));
-  
+  const chartYaml = yaml.load(
+    fs.readFileSync('k8s/helm/backstage/Chart.yaml', 'utf8'),
+  );
+
   if (chartYaml.name === 'backstage') {
     console.log('  ✅ Chart name is correct');
   } else {
@@ -126,13 +134,15 @@ try {
     errors.push('Helm chart name should be "backstage"');
   }
 
-  if (chartYaml.dependencies && chartYaml.dependencies.some(dep => dep.name === 'postgresql')) {
+  if (
+    chartYaml.dependencies &&
+    chartYaml.dependencies.some(dep => dep.name === 'postgresql')
+  ) {
     console.log('  ✅ PostgreSQL dependency configured');
   } else {
     console.log('  ❌ PostgreSQL dependency missing');
     errors.push('PostgreSQL dependency not configured in Helm chart');
   }
-
 } catch (error) {
   console.log('  ❌ Error reading Helm Chart.yaml');
   errors.push(`Error reading Helm Chart.yaml: ${error.message}`);
@@ -142,7 +152,7 @@ try {
 console.log('\n🔐 Checking environment configuration...');
 try {
   const envExample = fs.readFileSync('.env.example', 'utf8');
-  
+
   const requiredEnvVars = [
     'BACKEND_SECRET',
     'POSTGRES_HOST',
@@ -151,7 +161,7 @@ try {
     'POSTGRES_DB',
     'GITHUB_TOKEN',
     'AUTH_GITHUB_CLIENT_ID',
-    'AUTH_GITHUB_CLIENT_SECRET'
+    'AUTH_GITHUB_CLIENT_SECRET',
   ];
 
   requiredEnvVars.forEach(envVar => {
@@ -162,7 +172,6 @@ try {
       errors.push(`Missing environment variable in .env.example: ${envVar}`);
     }
   });
-
 } catch (error) {
   console.log('  ❌ Error reading .env.example');
   errors.push(`Error reading .env.example: ${error.message}`);
@@ -173,12 +182,14 @@ console.log('\n🚀 Checking deployment configuration...');
 try {
   const deployScript = 'k8s/aws/deploy.sh';
   const stats = fs.statSync(deployScript);
-  
+
   if (stats.mode & parseInt('111', 8)) {
     console.log('  ✅ Deploy script is executable');
   } else {
     console.log('  ⚠️  Deploy script is not executable');
-    warnings.push('Deploy script should be executable (chmod +x k8s/aws/deploy.sh)');
+    warnings.push(
+      'Deploy script should be executable (chmod +x k8s/aws/deploy.sh)',
+    );
   }
 } catch (error) {
   console.log('  ❌ Error checking deploy script');

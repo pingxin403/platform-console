@@ -20,12 +20,14 @@ This guide will help you get started with the Internal Developer Platform.
 
 1. Navigate to **Create** → **Choose a template**
 2. Select the appropriate template for your technology stack:
+
    - **Java Service**: Spring Boot microservice with best practices
    - **Go Service**: Go HTTP service with observability
    - **React App**: Frontend application with CI/CD
    - **React Native App**: Mobile application template
 
 3. Fill in the required information:
+
    - **Name**: Your service name (kebab-case)
    - **Description**: Brief description of the service
    - **Owner**: Your team name
@@ -36,6 +38,7 @@ This guide will help you get started with the Internal Developer Platform.
 ### What Gets Created
 
 The template will create:
+
 - ✅ GitHub repository with complete project structure
 - ✅ CI/CD pipeline with GitHub Actions
 - ✅ Dockerfile and Kubernetes manifests
@@ -48,21 +51,25 @@ The template will create:
 After creation, your service will appear in the **Service Catalog** with:
 
 ### Overview Tab
+
 - Service metadata and ownership
 - Repository links and documentation
 - Dependency graph and relationships
 
 ### CI/CD Tab
+
 - Build pipeline status and history
 - Deployment status across environments
 - Manual deployment triggers
 
 ### Monitoring Tab
+
 - Datadog dashboards and metrics
 - Sentry error tracking
 - Performance monitoring
 
 ### API Tab
+
 - OpenAPI/GraphQL documentation
 - Interactive API explorer
 - SDK generation links
@@ -78,6 +85,7 @@ After creation, your service will appear in the **Service Catalog** with:
 ## Common Tasks
 
 ### Adding Dependencies
+
 Update your service's `catalog-info.yaml` to declare dependencies:
 
 ```yaml
@@ -88,9 +96,11 @@ spec:
 ```
 
 ### Updating Documentation
+
 Add Markdown files to your `/docs` directory. They'll automatically appear in TechDocs.
 
 ### Configuring Alerts
+
 Use the Datadog integration to set up monitoring and alerting for your service.
 
 ## Getting Help

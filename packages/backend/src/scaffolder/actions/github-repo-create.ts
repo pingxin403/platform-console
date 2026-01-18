@@ -13,16 +13,32 @@ import { z } from 'zod';
 
 // Input schema for the GitHub repository creation action
 const inputSchema = z.object({
-  repoUrl: z.string().describe('Repository URL in the format github.com?owner=<owner>&repo=<repo>'),
+  repoUrl: z
+    .string()
+    .describe(
+      'Repository URL in the format github.com?owner=<owner>&repo=<repo>',
+    ),
   description: z.string().describe('Repository description'),
-  visibility: z.enum(['public', 'private']).default('private').describe('Repository visibility'),
+  visibility: z
+    .enum(['public', 'private'])
+    .default('private')
+    .describe('Repository visibility'),
   defaultBranch: z.string().default('main').describe('Default branch name'),
   topics: z.array(z.string()).optional().describe('Repository topics/tags'),
-  gitCommitMessage: z.string().default('Initial commit').describe('Initial commit message'),
+  gitCommitMessage: z
+    .string()
+    .default('Initial commit')
+    .describe('Initial commit message'),
   gitAuthorName: z.string().optional().describe('Git author name'),
   gitAuthorEmail: z.string().optional().describe('Git author email'),
-  catalogInfoPath: z.string().default('/catalog-info.yaml').describe('Path to catalog-info.yaml file'),
-  autoRegister: z.boolean().default(true).describe('Automatically register service in catalog'),
+  catalogInfoPath: z
+    .string()
+    .default('/catalog-info.yaml')
+    .describe('Path to catalog-info.yaml file'),
+  autoRegister: z
+    .boolean()
+    .default(true)
+    .describe('Automatically register service in catalog'),
 });
 
 // Output schema for the action
@@ -30,7 +46,10 @@ const outputSchema = z.object({
   remoteUrl: z.string().describe('Remote repository URL'),
   repoContentsUrl: z.string().describe('Repository contents URL'),
   cloneUrl: z.string().describe('Repository clone URL'),
-  catalogEntityRef: z.string().optional().describe('Catalog entity reference if auto-registered'),
+  catalogEntityRef: z
+    .string()
+    .optional()
+    .describe('Catalog entity reference if auto-registered'),
 });
 
 export interface GitHubRepoCreateActionOptions {
@@ -43,12 +62,15 @@ export interface GitHubRepoCreateActionOptions {
 /**
  * Creates a custom Scaffolder action for GitHub repository creation with automatic service registration
  */
-export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOptions) {
+export function createGitHubRepoCreateAction(
+  options: GitHubRepoCreateActionOptions,
+) {
   const { integrations, catalogApi, config, logger } = options;
 
   return createTemplateAction<typeof inputSchema, typeof outputSchema>({
     id: 'github:repo:create',
-    description: 'Create a GitHub repository and automatically register the service in the catalog',
+    description:
+      'Create a GitHub repository and automatically register the service in the catalog',
     schema: {
       input: inputSchema,
       output: outputSchema,
@@ -69,9 +91,11 @@ export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOpti
 
       // Parse repository URL
       const { owner, repo } = parseRepoUrl(repoUrl);
-      
+
       // Get GitHub integration
-      const integration = integrations.github.byUrl(`https://github.com/${owner}/${repo}`);
+      const integration = integrations.github.byUrl(
+        `https://github.com/${owner}/${repo}`,
+      );
       if (!integration) {
         throw new Error(`No GitHub integration found for ${owner}/${repo}`);
       }
@@ -111,11 +135,18 @@ export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOpti
         }
 
         // Initialize repository with content from workspace
-        await initializeRepositoryContent(ctx, octokit, owner, repo, defaultBranch, {
-          gitCommitMessage,
-          gitAuthorName,
-          gitAuthorEmail,
-        });
+        await initializeRepositoryContent(
+          ctx,
+          octokit,
+          owner,
+          repo,
+          defaultBranch,
+          {
+            gitCommitMessage,
+            gitAuthorName,
+            gitAuthorEmail,
+          },
+        );
 
         let catalogEntityRef: string | undefined;
 
@@ -126,11 +157,15 @@ export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOpti
               catalogApi,
               repoContentsUrl,
               catalogInfoPath,
-              logger
+              logger,
             );
-            ctx.logger.info(`Service automatically registered in catalog: ${catalogEntityRef}`);
+            ctx.logger.info(
+              `Service automatically registered in catalog: ${catalogEntityRef}`,
+            );
           } catch (error) {
-            ctx.logger.warn(`Failed to auto-register service in catalog: ${error}`);
+            ctx.logger.warn(
+              `Failed to auto-register service in catalog: ${error}`,
+            );
             // Don't fail the entire action if catalog registration fails
           }
         }
@@ -144,10 +179,11 @@ export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOpti
         if (catalogEntityRef) {
           ctx.output('catalogEntityRef', catalogEntityRef);
         }
-
       } catch (error) {
         if (error instanceof Error) {
-          throw new Error(`Failed to create GitHub repository: ${error.message}`);
+          throw new Error(
+            `Failed to create GitHub repository: ${error.message}`,
+          );
         }
         throw error;
       }
@@ -161,14 +197,16 @@ export function createGitHubRepoCreateAction(options: GitHubRepoCreateActionOpti
 function parseRepoUrl(repoUrl: string): { owner: string; repo: string } {
   const url = new URL(repoUrl);
   const searchParams = new URLSearchParams(url.search);
-  
+
   const owner = searchParams.get('owner');
   const repo = searchParams.get('repo');
-  
+
   if (!owner || !repo) {
-    throw new Error(`Invalid repository URL format: ${repoUrl}. Expected format: github.com?owner=<owner>&repo=<repo>`);
+    throw new Error(
+      `Invalid repository URL format: ${repoUrl}. Expected format: github.com?owner=<owner>&repo=<repo>`,
+    );
   }
-  
+
   return { owner, repo };
 }
 
@@ -185,13 +223,15 @@ async function initializeRepositoryContent(
     gitCommitMessage: string;
     gitAuthorName?: string;
     gitAuthorEmail?: string;
-  }
+  },
 ) {
   const { gitCommitMessage, gitAuthorName, gitAuthorEmail } = gitConfig;
 
   // Get all files from the workspace
-  const workspaceFiles = await ctx.workspacePath ? getWorkspaceFiles(ctx.workspacePath) : [];
-  
+  const workspaceFiles = (await ctx.workspacePath)
+    ? getWorkspaceFiles(ctx.workspacePath)
+    : [];
+
   if (workspaceFiles.length === 0) {
     ctx.logger.warn('No files found in workspace to commit');
     return;
@@ -199,7 +239,7 @@ async function initializeRepositoryContent(
 
   // Create blobs for all files
   const blobs: Array<{ path: string; sha: string; mode: string }> = [];
-  
+
   for (const file of workspaceFiles) {
     const content = await file.content();
     const blobResponse = await octokit.rest.git.createBlob({
@@ -208,7 +248,7 @@ async function initializeRepositoryContent(
       content: Buffer.from(content).toString('base64'),
       encoding: 'base64',
     });
-    
+
     blobs.push({
       path: file.path,
       sha: blobResponse.data.sha,
@@ -234,10 +274,13 @@ async function initializeRepositoryContent(
     repo,
     message: gitCommitMessage,
     tree: treeResponse.data.sha,
-    author: gitAuthorName && gitAuthorEmail ? {
-      name: gitAuthorName,
-      email: gitAuthorEmail,
-    } : undefined,
+    author:
+      gitAuthorName && gitAuthorEmail
+        ? {
+            name: gitAuthorName,
+            email: gitAuthorEmail,
+          }
+        : undefined,
   });
 
   // Update reference to point to the new commit
@@ -254,21 +297,23 @@ async function initializeRepositoryContent(
 /**
  * Get all files from workspace
  */
-async function getWorkspaceFiles(workspacePath: string): Promise<Array<{ path: string; content: () => Promise<string> }>> {
+async function getWorkspaceFiles(
+  workspacePath: string,
+): Promise<Array<{ path: string; content: () => Promise<string> }>> {
   // This is a simplified implementation
   // In a real implementation, you would recursively read all files from the workspace
   const fs = require('fs').promises;
   const path = require('path');
-  
+
   const files: Array<{ path: string; content: () => Promise<string> }> = [];
-  
+
   async function readDirectory(dirPath: string, relativePath: string = '') {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
       const relativeFilePath = path.join(relativePath, entry.name);
-      
+
       if (entry.isDirectory()) {
         await readDirectory(fullPath, relativeFilePath);
       } else {
@@ -279,7 +324,7 @@ async function getWorkspaceFiles(workspacePath: string): Promise<Array<{ path: s
       }
     }
   }
-  
+
   await readDirectory(workspacePath);
   return files;
 }
@@ -291,10 +336,10 @@ async function registerServiceInCatalog(
   catalogApi: CatalogApi,
   repoContentsUrl: string,
   catalogInfoPath: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<string> {
   const catalogFileUrl = `${repoContentsUrl}${catalogInfoPath}`;
-  
+
   try {
     // Register the entity in the catalog
     const registrationResult = await catalogApi.addLocation({
@@ -306,9 +351,8 @@ async function registerServiceInCatalog(
       const entityRef = registrationResult.entities[0].metadata.name;
       logger.info(`Successfully registered entity: ${entityRef}`);
       return entityRef;
-    } 
-      throw new Error('No entities were registered');
-    
+    }
+    throw new Error('No entities were registered');
   } catch (error) {
     logger.error(`Failed to register service in catalog: ${error}`);
     throw error;
@@ -323,12 +367,12 @@ async function setupCatalogWebhook(
   owner: string,
   repo: string,
   config: Config,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   try {
     const webhookUrl = config.getOptionalString('catalog.webhook.url');
     const webhookSecret = config.getOptionalString('catalog.webhook.secret');
-    
+
     if (!webhookUrl) {
       logger.info('No webhook URL configured, skipping webhook setup');
       return;
@@ -346,7 +390,9 @@ async function setupCatalogWebhook(
       active: true,
     });
 
-    logger.info(`Webhook configured for automatic catalog updates: ${webhookUrl}`);
+    logger.info(
+      `Webhook configured for automatic catalog updates: ${webhookUrl}`,
+    );
   } catch (error) {
     logger.warn(`Failed to set up webhook: ${error}`);
     // Don't fail the action if webhook setup fails

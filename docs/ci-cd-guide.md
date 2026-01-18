@@ -22,6 +22,7 @@
 项目包含两个主要的 GitHub Actions 工作流：
 
 1. **`.github/workflows/ci.yml`** - 持续集成
+
    - 代码检查（Lint）
    - 类型检查（TypeScript）
    - 单元测试
@@ -64,6 +65,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 yarn lint:all
 yarn prettier:check
@@ -82,6 +84,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 # 启动 PostgreSQL
 docker-compose up postgres -d
@@ -100,6 +103,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 yarn build:all
 ```
@@ -115,6 +119,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 yarn test:e2e
 ```
@@ -130,6 +135,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 # 安装 Trivy
 brew install trivy
@@ -152,6 +158,7 @@ jobs:
 ```
 
 **本地运行**:
+
 ```bash
 docker build -t backstage:local -f packages/backend/Dockerfile .
 ```
@@ -215,6 +222,7 @@ jobs:
 ```
 
 **镜像标签策略**:
+
 - `main` 分支 → `latest`, `main-<sha>`
 - `v1.2.3` 标签 → `v1.2.3`, `1.2`, `latest`
 - 其他分支 → `<branch>-<sha>`
@@ -232,6 +240,7 @@ jobs:
 ```
 
 **Staging 环境**:
+
 - URL: https://backstage-staging.example.com
 - Kubernetes 命名空间: `backstage-staging`
 - 自动部署: Push 到 `main` 分支
@@ -250,6 +259,7 @@ jobs:
 ```
 
 **Production 环境**:
+
 - URL: https://backstage.example.com
 - Kubernetes 命名空间: `backstage-production`
 - 触发条件: 创建 `v*` 标签或手动触发
@@ -280,6 +290,7 @@ AWS_SECRET_ACCESS_KEY=...
 ```
 
 **创建方法**:
+
 1. 在 AWS IAM 中创建用户
 2. 附加策略: `AmazonEKSClusterPolicy`, `AmazonEC2ContainerRegistryPowerUser`
 3. 创建访问密钥
@@ -311,6 +322,7 @@ DATADOG_API_KEY=...
 以下是需要在 GitHub 仓库中配置的所有 Secrets：
 
 #### AWS 相关
+
 ```
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
@@ -318,6 +330,7 @@ AWS_REGION=us-west-2
 ```
 
 #### Kubernetes 相关
+
 ```
 EKS_CLUSTER_NAME=backstage-cluster
 BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_STAGING=arn:aws:iam::...
@@ -325,6 +338,7 @@ BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION=arn:aws:iam::...
 ```
 
 #### 证书相关
+
 ```
 CERTIFICATE_ARN_STAGING=arn:aws:acm::...
 CERTIFICATE_ARN_PRODUCTION=arn:aws:acm::...
@@ -332,12 +346,14 @@ WAF_ACL_ARN=arn:aws:wafv2::...
 ```
 
 #### 数据库相关
+
 ```
 POSTGRES_PASSWORD_STAGING=...
 POSTGRES_PASSWORD_PRODUCTION=...
 ```
 
 #### Backstage 相关
+
 ```
 BACKEND_SECRET_STAGING=... (至少 24 个字符)
 BACKEND_SECRET_PRODUCTION=... (至少 24 个字符)
@@ -345,6 +361,7 @@ ORGANIZATION_NAME=Your Organization
 ```
 
 #### GitHub 集成
+
 ```
 GITHUB_TOKEN=ghp_...
 GITHUB_ORG=your-github-org
@@ -355,6 +372,7 @@ AUTH_GITHUB_CLIENT_SECRET_PRODUCTION=...
 ```
 
 #### 可选集成
+
 ```
 ARGOCD_TOKEN_STAGING=...
 ARGOCD_TOKEN_PRODUCTION=...
@@ -373,6 +391,7 @@ CODECOV_TOKEN=...
 **用途**: 测试和验证新功能
 
 **配置**:
+
 - Kubernetes 集群: `backstage-cluster-staging`
 - 命名空间: `backstage-staging`
 - URL: https://backstage-staging.example.com
@@ -380,6 +399,7 @@ CODECOV_TOKEN=...
 - 资源限制: 较小（节省成本）
 
 **Helm Values** (`k8s/helm/backstage/values-staging.yaml`):
+
 ```yaml
 replicaCount: 2
 
@@ -407,6 +427,7 @@ database:
 **用途**: 生产环境，服务真实用户
 
 **配置**:
+
 - Kubernetes 集群: `backstage-cluster-production`
 - 命名空间: `backstage-production`
 - URL: https://backstage.example.com
@@ -415,6 +436,7 @@ database:
 - 高可用: 多副本 + 自动扩展
 
 **Helm Values** (`k8s/helm/backstage/values-production.yaml`):
+
 ```yaml
 replicaCount: 3
 
@@ -600,6 +622,7 @@ main (生产分支)
 ```
 
 **工作流**:
+
 1. 从 `main` 创建功能分支
 2. 开发和测试
 3. 创建 Pull Request
@@ -625,6 +648,7 @@ v2.0.0 - 重大变更
 ```
 
 **创建版本**:
+
 ```bash
 # 更新 package.json 版本
 yarn version --new-version 1.1.0
@@ -648,6 +672,7 @@ values-production.yaml # Production 配置
 ```
 
 **敏感信息管理**:
+
 - 使用 GitHub Secrets 存储敏感信息
 - 使用 AWS Secrets Manager 或 Vault
 - 不要在代码中硬编码密钥
@@ -655,6 +680,7 @@ values-production.yaml # Production 配置
 ### 4. 测试策略
 
 **测试金字塔**:
+
 ```
        /\
       /E2E\        少量端到端测试
@@ -666,6 +692,7 @@ values-production.yaml # Production 配置
 ```
 
 **CI 中的测试**:
+
 - 每次 PR: 单元测试 + Lint
 - 合并到 main: 单元测试 + 集成测试
 - 部署前: E2E 测试
@@ -674,18 +701,21 @@ values-production.yaml # Production 配置
 ### 5. 部署策略
 
 **蓝绿部署**（推荐）:
+
 - 保持两个相同的生产环境
 - 新版本部署到"绿"环境
 - 验证后切换流量
 - 出问题快速切回"蓝"环境
 
 **金丝雀部署**:
+
 - 先部署到少量实例
 - 监控指标
 - 逐步增加流量
 - 发现问题立即回滚
 
 **滚动更新**（当前使用）:
+
 - Kubernetes 默认策略
 - 逐个替换 Pod
 - 零停机时间
@@ -693,6 +723,7 @@ values-production.yaml # Production 配置
 ### 6. 监控和告警
 
 **关键指标**:
+
 - 部署成功率
 - 部署时间
 - 错误率
@@ -700,6 +731,7 @@ values-production.yaml # Production 配置
 - 资源使用率
 
 **告警设置**:
+
 - 部署失败 → 立即通知
 - 错误率上升 → 警告
 - 响应时间慢 → 警告
@@ -708,6 +740,7 @@ values-production.yaml # Production 配置
 ### 7. 文档和沟通
 
 **部署清单**:
+
 - [ ] 代码审查通过
 - [ ] 所有测试通过
 - [ ] 更新 CHANGELOG
@@ -716,6 +749,7 @@ values-production.yaml # Production 配置
 - [ ] 准备回滚计划
 
 **部署通知**:
+
 - Slack 通知团队
 - 更新状态页面
 - 记录部署日志

@@ -95,28 +95,28 @@ spec:
             find: '# ${{ parameters.name }}'
             replaceWith: |
               # ${{ parameters.name }}
-              
+
               ${{ parameters.description }}
-              
+
               ## Quick Start
-              
+
               ```bash
               # Build the application
               ./mvnw clean compile
-              
+
               # Run tests
               ./mvnw test
-              
+
               # Run the application
               ./mvnw spring-boot:run
               ```
-              
+
               ## Configuration
-              
+
               The service runs on port ${{ parameters.port }} by default.
-              
+
               ## Owner
-              
+
               This service is owned by: ${{ parameters.owner }}
 
     - id: publish

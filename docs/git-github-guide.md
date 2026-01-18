@@ -252,23 +252,28 @@ git push origin feature/new-feature
 
 ```markdown
 ## 描述
+
 简要描述这个 PR 的目的和实现的功能。
 
 ## 相关 Issue
+
 Closes #123
 
 ## 变更类型
+
 - [ ] Bug 修复
 - [x] 新功能
 - [ ] 重大变更
 - [ ] 文档更新
 
 ## 测试
+
 - [x] 单元测试通过
 - [x] 集成测试通过
 - [ ] 手动测试完成
 
 ## 检查清单
+
 - [x] 代码遵循项目规范
 - [x] 已添加必要的测试
 - [x] 已更新相关文档
@@ -301,9 +306,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -335,6 +340,7 @@ jobs:
 当搜索包含特殊字符的服务名称时，搜索功能返回空结果。
 
 **重现步骤**:
+
 1. 访问搜索页面
 2. 输入 "service-name@v1"
 3. 点击搜索
@@ -346,13 +352,16 @@ jobs:
 返回空结果
 
 **环境**:
+
 - 浏览器: Chrome 120
 - 操作系统: macOS 14
 - 版本: v1.0.0
 
 **相关日志**:
 ```
+
 Error: Invalid search query
+
 ```
 
 #### Issue 标签
@@ -384,6 +393,7 @@ Error: Invalid search query
 项目使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
 
 ```
+
 <type>(<scope>): <subject>
 
 <body>

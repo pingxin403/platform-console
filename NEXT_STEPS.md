@@ -5,6 +5,7 @@
 ### ✅ 已完成的工作
 
 #### 1. 核心平台开发 (Tasks 1-16)
+
 - ✅ Backstage 应用初始化和核心基础设施
 - ✅ Service Catalog 与 GitHub 集成
 - ✅ Golden Path 模板和脚手架
@@ -17,6 +18,7 @@
 - ✅ 生产最佳实践和安全加固
 
 #### 2. 文档和指南
+
 - ✅ 项目概览文档 (`docs/project-overview.md`)
 - ✅ Git & GitHub 使用指南 (`docs/git-github-guide.md`)
 - ✅ 本地开发指南 (`docs/local-development.md`)
@@ -25,6 +27,7 @@
 - ✅ 设置检查清单 (`SETUP_CHECKLIST.md`)
 
 #### 3. CI/CD 配置
+
 - ✅ GitHub Actions CI 工作流 (`.github/workflows/ci.yml`)
   - Lint 和类型检查
   - 单元测试
@@ -40,6 +43,7 @@
   - 自动回滚
 
 #### 4. Kubernetes 配置
+
 - ✅ Helm Chart 基础配置 (`k8s/helm/backstage/values.yaml`)
 - ✅ Staging 环境配置 (`k8s/helm/backstage/values-staging.yaml`)
 - ✅ Production 环境配置 (`k8s/helm/backstage/values-production.yaml`)
@@ -119,6 +123,7 @@ yarn build:all
 ### 1. AWS 基础设施准备
 
 #### 必需资源
+
 - [ ] EKS 集群（Staging 和 Production）
 - [ ] RDS PostgreSQL 数据库（Staging 和 Production）
 - [ ] S3 存储桶（TechDocs 和备份）
@@ -135,12 +140,13 @@ yarn build:all
 需要配置的 Secrets（详细列表见 [CI/CD 指南](docs/ci-cd-guide.md#配置-github-secrets)）：
 
 **必需的 Secrets**:
+
 - AWS 凭证 (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
 - Kubernetes 配置 (EKS_CLUSTER_NAME, Service Account Role ARNs)
 - 证书 ARN (CERTIFICATE_ARN_STAGING, CERTIFICATE_ARN_PRODUCTION)
 - 数据库密码 (POSTGRES_PASSWORD_STAGING, POSTGRES_PASSWORD_PRODUCTION)
-- Backstage 配置 (BACKEND_SECRET_*, ORGANIZATION_NAME)
-- GitHub 集成 (GITHUB_TOKEN, AUTH_GITHUB_CLIENT_ID_*, etc.)
+- Backstage 配置 (BACKEND*SECRET*\*, ORGANIZATION_NAME)
+- GitHub 集成 (GITHUB*TOKEN, AUTH_GITHUB_CLIENT_ID*\*, etc.)
 
 ### 3. Kubernetes Secrets 创建
 
@@ -183,6 +189,7 @@ kubectl create secret generic backstage-secrets-production \
 **查看**: [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)
 
 这个检查清单包含：
+
 - ✅ 前置准备
 - ✅ AWS 基础设施设置
 - ✅ GitHub Secrets 配置
@@ -199,12 +206,14 @@ kubectl create secret generic backstage-secrets-production \
 ### 阶段 1: 本地验证（1-2 天）
 
 1. **设置本地开发环境**
+
    - 安装必需软件
    - 配置环境变量
    - 启动本地应用
    - 验证核心功能
 
 2. **运行测试和检查**
+
    - 运行单元测试
    - 运行 Lint 检查
    - 运行类型检查
@@ -217,6 +226,7 @@ kubectl create secret generic backstage-secrets-production \
 ### 阶段 2: AWS 基础设施准备（2-3 天）
 
 1. **创建 Staging 环境**
+
    - 创建 EKS 集群
    - 创建 RDS 数据库
    - 创建 S3 存储桶
@@ -235,14 +245,17 @@ kubectl create secret generic backstage-secrets-production \
 ### 阶段 3: 配置和部署（1-2 天）
 
 1. **配置 GitHub Secrets**
+
    - 添加所有必需的 Secrets
    - 验证 Secrets 配置正确
 
 2. **创建 Kubernetes Secrets**
+
    - 在 Staging 集群创建 Secrets
    - 在 Production 集群创建 Secrets
 
 3. **部署到 Staging**
+
    - 触发 GitHub Actions 部署
    - 监控部署进度
    - 验证部署成功
@@ -258,11 +271,13 @@ kubectl create secret generic backstage-secrets-production \
 ### 阶段 4: 监控和优化（持续）
 
 1. **设置监控**
+
    - 配置 Prometheus 和 Grafana
    - 设置告警规则
    - 配置日志聚合
 
 2. **团队培训**
+
    - 分享文档
    - 演示平台功能
    - 收集反馈
@@ -277,16 +292,19 @@ kubectl create secret generic backstage-secrets-production \
 ## 📚 重要文档链接
 
 ### 开发相关
+
 - [项目概览](docs/project-overview.md) - 了解项目结构和 Spec 方法论
 - [本地开发指南](docs/local-development.md) - 设置本地开发环境
 - [Git & GitHub 使用指南](docs/git-github-guide.md) - Git 工作流和最佳实践
 
 ### 部署相关
+
 - [部署指南](docs/deployment.md) - AWS EKS 部署详细步骤
 - [CI/CD 指南](docs/ci-cd-guide.md) - GitHub Actions 配置和使用
 - [设置检查清单](SETUP_CHECKLIST.md) - 完整的设置检查清单
 
 ### 配置文件
+
 - [CI 工作流](.github/workflows/ci.yml) - 持续集成配置
 - [CD 工作流](.github/workflows/cd.yml) - 持续部署配置
 - [Helm Values - Staging](k8s/helm/backstage/values-staging.yaml) - Staging 环境配置
@@ -299,11 +317,13 @@ kubectl create secret generic backstage-secrets-production \
 ### 常见问题
 
 1. **本地环境无法启动**
+
    - 检查 Docker 是否运行
    - 检查端口是否被占用
    - 查看 [本地开发指南 - 常见问题](docs/local-development.md#常见问题)
 
 2. **GitHub Actions 失败**
+
    - 检查 Secrets 是否配置正确
    - 查看工作流日志
    - 查看 [CI/CD 指南 - 故障排查](docs/ci-cd-guide.md#故障排查)
@@ -335,4 +355,3 @@ kubectl create secret generic backstage-secrets-production \
 **下一步**: 按照推荐的执行顺序，从本地验证开始，逐步完成部署！
 
 祝你部署顺利！🚀
-

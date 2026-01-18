@@ -1,6 +1,6 @@
 /**
  * Enhanced OpenCost Page with AWS cost correlation and benchmarking
- * 
+ *
  * This component extends the basic OpenCost functionality with:
  * - AWS cost data integration and correlation
  * - Cost benchmarking across similar services
@@ -8,7 +8,7 @@
  * - Daily cost data updates with complete breakdowns
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Grid,
   Card,
@@ -28,12 +28,10 @@ import {
   Paper,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import {
-  TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Assessment as AssessmentIcon,
-  CloudQueue as CloudIcon,
-} from '@material-ui/icons';
+import TrendingUpIcon from '@material-ui/icons/TrendingUp';
+import TrendingDownIcon from '@material-ui/icons/TrendingDown';
+import AssessmentIcon from '@material-ui/icons/Assessment';
+import CloudIcon from '@material-ui/icons/CloudQueue';
 import {
   Page,
   Header,
@@ -132,7 +130,7 @@ const CostBreakdownCard: React.FC<{ costData: CostData }> = ({ costData }) => {
             </Box>
           </Grid>
         </Grid>
-        
+
         {costData.awsCorrelation && (
           <Box mt={3}>
             <Typography variant="h6" gutterBottom>
@@ -188,7 +186,10 @@ const CostBreakdownCard: React.FC<{ costData: CostData }> = ({ costData }) => {
   );
 };
 
-const CostTrendCard: React.FC<{ trend: CostTrend; serviceName: string }> = ({ trend, serviceName }) => {
+const CostTrendCard: React.FC<{ trend: CostTrend; serviceName: string }> = ({
+  trend,
+  serviceName,
+}) => {
   const isIncrease = trend.change > 0;
   const TrendIcon = isIncrease ? TrendingUpIcon : TrendingDownIcon;
   const trendColor = isIncrease ? 'error' : 'success';
@@ -202,7 +203,8 @@ const CostTrendCard: React.FC<{ trend: CostTrend; serviceName: string }> = ({ tr
         <Box display="flex" alignItems="center" mb={2}>
           <TrendIcon color={trendColor} style={{ marginRight: 8 }} />
           <Typography variant="h4" color={trendColor}>
-            {trend.change > 0 ? '+' : ''}{trend.change.toFixed(1)}%
+            {trend.change > 0 ? '+' : ''}
+            {trend.change.toFixed(1)}%
           </Typography>
           {trend.significant && (
             <Chip
@@ -214,11 +216,13 @@ const CostTrendCard: React.FC<{ trend: CostTrend; serviceName: string }> = ({ tr
           )}
         </Box>
         <Typography variant="body2" color="textSecondary">
-          Current: ${trend.current.toFixed(2)} | Previous: ${trend.previous.toFixed(2)}
+          Current: ${trend.current.toFixed(2)} | Previous: $
+          {trend.previous.toFixed(2)}
         </Typography>
         {trend.significant && (
           <Alert severity="warning" style={{ marginTop: 16 }}>
-            Cost change exceeds 15% threshold. Review resource usage and optimization opportunities.
+            Cost change exceeds 15% threshold. Review resource usage and
+            optimization opportunities.
           </Alert>
         )}
       </CardContent>
@@ -226,12 +230,12 @@ const CostTrendCard: React.FC<{ trend: CostTrend; serviceName: string }> = ({ tr
   );
 };
 
-const BenchmarkTable: React.FC<{ benchmarks: BenchmarkData[]; serviceName: string }> = ({ 
-  benchmarks, 
-  serviceName 
-}) => {
+const BenchmarkTable: React.FC<{
+  benchmarks: BenchmarkData[];
+  serviceName: string;
+}> = ({ benchmarks, serviceName }) => {
   const currentService = benchmarks.find(b => b.serviceName === serviceName);
-  
+
   return (
     <Card>
       <CardContent>
@@ -242,7 +246,8 @@ const BenchmarkTable: React.FC<{ benchmarks: BenchmarkData[]; serviceName: strin
         {currentService && (
           <Box mb={2}>
             <Alert severity="info">
-              Your service is in the {currentService.percentile.toFixed(0)}th percentile for cost efficiency
+              Your service is in the {currentService.percentile.toFixed(0)}th
+              percentile for cost efficiency
             </Alert>
           </Box>
         )}
@@ -259,24 +264,40 @@ const BenchmarkTable: React.FC<{ benchmarks: BenchmarkData[]; serviceName: strin
               </TableRow>
             </TableHead>
             <TableBody>
-              {benchmarks.map((benchmark) => (
-                <TableRow 
+              {benchmarks.map(benchmark => (
+                <TableRow
                   key={benchmark.serviceName}
-                  style={{ 
-                    backgroundColor: benchmark.serviceName === serviceName ? '#f5f5f5' : 'inherit' 
+                  style={{
+                    backgroundColor:
+                      benchmark.serviceName === serviceName
+                        ? '#f5f5f5'
+                        : 'inherit',
                   }}
                 >
                   <TableCell>
                     {benchmark.serviceName}
                     {benchmark.serviceName === serviceName && (
-                      <Chip label="You" size="small" color="primary" style={{ marginLeft: 8 }} />
+                      <Chip
+                        label="You"
+                        size="small"
+                        color="primary"
+                        style={{ marginLeft: 8 }}
+                      />
                     )}
                   </TableCell>
                   <TableCell>{benchmark.category}</TableCell>
-                  <TableCell align="right">${benchmark.costPerCpu.toFixed(2)}</TableCell>
-                  <TableCell align="right">${benchmark.costPerMemory.toFixed(4)}</TableCell>
-                  <TableCell align="right">{benchmark.efficiency.toFixed(2)}</TableCell>
-                  <TableCell align="right">{benchmark.percentile.toFixed(0)}%</TableCell>
+                  <TableCell align="right">
+                    ${benchmark.costPerCpu.toFixed(2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    ${benchmark.costPerMemory.toFixed(4)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {benchmark.efficiency.toFixed(2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {benchmark.percentile.toFixed(0)}%
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -294,7 +315,7 @@ export const EnhancedOpenCostPage: React.FC = () => {
   const [trend, setTrend] = useState<CostTrend | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const config = useApi(configApiRef);
   const backendUrl = config.getString('backend.baseUrl');
 
@@ -308,15 +329,19 @@ export const EnhancedOpenCostPage: React.FC = () => {
         setError(null);
 
         // Fetch enhanced cost data
-        const costResponse = await fetch(`${backendUrl}/api/opencost-enhanced/costs/${serviceName}`);
+        const costResponse = await fetch(
+          `${backendUrl}/api/opencost-enhanced/costs/${serviceName}`,
+        );
         if (!costResponse.ok) {
           throw new Error('Failed to fetch cost data');
         }
-        const costData = await costResponse.json();
-        setCostData(costData);
+        const fetchedCostData = await costResponse.json();
+        setCostData(fetchedCostData);
 
         // Fetch benchmark data
-        const benchmarkResponse = await fetch(`${backendUrl}/api/opencost-enhanced/benchmark/${serviceName}`);
+        const benchmarkResponse = await fetch(
+          `${backendUrl}/api/opencost-enhanced/benchmark/${serviceName}`,
+        );
         if (!benchmarkResponse.ok) {
           throw new Error('Failed to fetch benchmark data');
         }
@@ -324,13 +349,14 @@ export const EnhancedOpenCostPage: React.FC = () => {
         setBenchmarks(benchmarkData);
 
         // Fetch trend data
-        const trendResponse = await fetch(`${backendUrl}/api/opencost-enhanced/trends/${serviceName}`);
+        const trendResponse = await fetch(
+          `${backendUrl}/api/opencost-enhanced/trends/${serviceName}`,
+        );
         if (!trendResponse.ok) {
           throw new Error('Failed to fetch trend data');
         }
         const trendData = await trendResponse.json();
         setTrend(trendData);
-
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
@@ -348,7 +374,10 @@ export const EnhancedOpenCostPage: React.FC = () => {
   if (loading) {
     return (
       <Page themeId="tool">
-        <Header title="Cost Visibility" subtitle="Kubernetes and AWS cost analysis">
+        <Header
+          title="Cost Visibility"
+          subtitle="Kubernetes and AWS cost analysis"
+        >
           <HeaderLabel label="Owner" value="Platform Team" />
           <HeaderLabel label="Lifecycle" value="Production" />
         </Header>
@@ -362,7 +391,10 @@ export const EnhancedOpenCostPage: React.FC = () => {
   if (error) {
     return (
       <Page themeId="tool">
-        <Header title="Cost Visibility" subtitle="Kubernetes and AWS cost analysis">
+        <Header
+          title="Cost Visibility"
+          subtitle="Kubernetes and AWS cost analysis"
+        >
           <HeaderLabel label="Owner" value="Platform Team" />
           <HeaderLabel label="Lifecycle" value="Production" />
         </Header>
@@ -375,19 +407,27 @@ export const EnhancedOpenCostPage: React.FC = () => {
 
   return (
     <Page themeId="tool">
-      <Header title="Cost Visibility" subtitle="Kubernetes and AWS cost analysis with benchmarking">
+      <Header
+        title="Cost Visibility"
+        subtitle="Kubernetes and AWS cost analysis with benchmarking"
+      >
         <HeaderLabel label="Owner" value="Platform Team" />
         <HeaderLabel label="Lifecycle" value="Production" />
         <SupportButton>
-          Enhanced OpenCost integration with AWS cost correlation and benchmarking capabilities.
+          Enhanced OpenCost integration with AWS cost correlation and
+          benchmarking capabilities.
         </SupportButton>
       </Header>
       <Content>
-        <Tabs value={tabValue} onChange={handleTabChange} indicatorColor="primary">
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          indicatorColor="primary"
+        >
           <Tab label="Enhanced Cost View" />
           <Tab label="Standard OpenCost" />
         </Tabs>
-        
+
         {tabValue === 0 && (
           <Box mt={3}>
             <Grid container spacing={3}>
@@ -396,22 +436,25 @@ export const EnhancedOpenCostPage: React.FC = () => {
                   <CostBreakdownCard costData={costData} />
                 </Grid>
               )}
-              
+
               {trend && (
                 <Grid item xs={12} md={6}>
                   <CostTrendCard trend={trend} serviceName={serviceName} />
                 </Grid>
               )}
-              
+
               {benchmarks.length > 0 && (
                 <Grid item xs={12}>
-                  <BenchmarkTable benchmarks={benchmarks} serviceName={serviceName} />
+                  <BenchmarkTable
+                    benchmarks={benchmarks}
+                    serviceName={serviceName}
+                  />
                 </Grid>
               )}
             </Grid>
           </Box>
         )}
-        
+
         {tabValue === 1 && (
           <Box mt={3}>
             <BaseOpenCostPage />

@@ -28,20 +28,19 @@ console.log('└── docker-compose.yml       # Local development\n');
 console.log('⚙️  Configuration Overview:');
 try {
   const config = yaml.load(fs.readFileSync('app-config.yaml', 'utf8'));
-  
+
   console.log(`📱 App Title: ${config.app.title}`);
   console.log(`🏢 Organization: ${config.organization.name}`);
   console.log(`🔗 Base URL: ${config.app.baseUrl}`);
   console.log(`🗄️  Database: ${config.backend.database.client}`);
-  
+
   if (config.auth.providers.github) {
     console.log('🔐 GitHub OAuth: ✅ Configured');
   }
-  
+
   if (config.integrations.github) {
     console.log('🔗 GitHub Integration: ✅ Configured');
   }
-  
 } catch (error) {
   console.log('❌ Error reading configuration');
 }
@@ -78,10 +77,14 @@ console.log('5. Start implementing additional tasks');
 
 // Show task progress
 console.log('\n📊 Implementation Progress:');
-console.log('✅ Task 1: Initialize Backstage application and core infrastructure');
+console.log(
+  '✅ Task 1: Initialize Backstage application and core infrastructure',
+);
 console.log('⏳ Task 2: Implement Service Catalog with GitHub integration');
 console.log('⏳ Task 3: Develop Golden Path templates and scaffolder');
 console.log('⏳ Task 4-21: Additional platform features...');
 
 console.log('\n🎉 Demo completed! The foundation is ready for development.');
-console.log('💡 Tip: Run "node scripts/verify-setup.js" to validate configuration');
+console.log(
+  '💡 Tip: Run "node scripts/verify-setup.js" to validate configuration',
+);

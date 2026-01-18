@@ -171,9 +171,20 @@ search:
       # Enable catalog entity search
       enabled: true
       # Index all entity types
-      entityTypes: ['Component', 'API', 'Resource', 'System', 'Domain', 'Location', 'User', 'Group']
+      entityTypes:
+        [
+          'Component',
+          'API',
+          'Resource',
+          'System',
+          'Domain',
+          'Location',
+          'User',
+          'Group',
+        ]
       # Search fields
-      fields: ['metadata.name', 'metadata.description', 'metadata.tags', 'spec.owner']
+      fields:
+        ['metadata.name', 'metadata.description', 'metadata.tags', 'spec.owner']
     # TechDocs search collator
     techdocs:
       # Enable documentation search
@@ -203,7 +214,7 @@ proxy:
   #   '/test':
   #     target: 'https://example.com'
   #     changeOrigin: true
-  
+
   # Datadog API proxy for secure API calls
   endpoints:
     '/datadog/api':
@@ -212,28 +223,28 @@ proxy:
       headers:
         DD-API-KEY: ${DATADOG_API_KEY}
         DD-APPLICATION-KEY: ${DATADOG_APP_KEY}
-    
+
     # Sentry API proxy for secure API calls
     '/sentry/api':
       target: 'https://sentry.io/api/0'
       changeOrigin: true
       headers:
         Authorization: 'Bearer ${SENTRY_TOKEN}'
-    
+
     # Prometheus API proxy for secure API calls
     '/prometheus/api':
       target: ${PROMETHEUS_URL}
       changeOrigin: true
       # headers:
       #   Authorization: 'Basic ${PROMETHEUS_AUTH_TOKEN}'
-    
+
     # Grafana API proxy for secure API calls
     '/grafana/api':
       target: ${GRAFANA_URL}
       changeOrigin: true
       headers:
         Authorization: 'Bearer ${GRAFANA_TOKEN}'
-    
+
     # GitHub API proxy for CI/CD statistics
     '/github':
       target: 'https://api.github.com'
@@ -241,7 +252,7 @@ proxy:
       headers:
         Authorization: 'token ${GITHUB_TOKEN}'
         Accept: 'application/vnd.github.v3+json'
-    
+
     # Jaeger API proxy for distributed tracing
     '/jaeger/api':
       target: ${JAEGER_URL:-http://localhost:16686}
@@ -249,35 +260,35 @@ proxy:
       # Optional authentication headers
       # headers:
       #   Authorization: 'Basic ${JAEGER_AUTH_TOKEN}'
-    
+
     # Vault API proxy for secrets management
     '/vault/api':
       target: ${VAULT_URL:-http://localhost:8200}
       changeOrigin: true
       headers:
         X-Vault-Token: ${VAULT_TOKEN}
-    
+
     # Nexus Repository Manager API proxy for artifact management
     '/nexus/api':
       target: ${NEXUS_URL:-http://localhost:8081}
       changeOrigin: true
       headers:
         Authorization: 'Basic ${NEXUS_AUTH_TOKEN}'
-    
+
     # Argo CD API proxy for GitOps cluster management
     '/argocd/api':
       target: ${ARGOCD_API_URL}
       changeOrigin: true
       headers:
         Authorization: 'Bearer ${ARGOCD_TOKEN}'
-    
+
     # Kiali API proxy for service mesh observability
     '/kiali/api':
       target: ${KIALI_URL:-http://localhost:20001}
       changeOrigin: true
       headers:
         Authorization: 'Basic ${KIALI_AUTH_TOKEN}'
-    
+
     # OpenCost API proxy for Kubernetes cost data
     '/opencost':
       target: ${OPENCOST_URL:-http://opencost-svc.opencost:9003}
@@ -285,7 +296,7 @@ proxy:
       # Optional authentication headers if OpenCost requires them
       # headers:
       #   Authorization: 'Bearer ${OPENCOST_TOKEN}'
-    
+
     # OpsLevel API proxy for service maturity tracking
     '/opslevel/api':
       target: ${OPSLEVEL_BASE_URL:-https://app.opslevel.com}
@@ -699,7 +710,20 @@ todo:
     # Supported comment types
     commentTypes: ['TODO', 'FIXME', 'HACK', 'BUG', 'NOTE']
     # File extensions to scan
-    fileExtensions: ['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.h']
+    fileExtensions:
+      [
+        '.ts',
+        '.tsx',
+        '.js',
+        '.jsx',
+        '.py',
+        '.java',
+        '.go',
+        '.rs',
+        '.cpp',
+        '.c',
+        '.h',
+      ]
   # Code quality metrics and improvement tracking
   metrics:
     # Enable code quality tracking
@@ -1314,7 +1338,8 @@ s3Viewer:
     # Maximum file size for preview (in bytes)
     maxPreviewSize: 10485760 # 10MB
     # Supported preview file types
-    previewTypes: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'txt', 'md', 'json', 'yaml', 'yml']
+    previewTypes:
+      ['jpg', 'jpeg', 'png', 'gif', 'svg', 'txt', 'md', 'json', 'yaml', 'yml']
   # Permissions configuration
   permissions:
     # Enable bucket listing
@@ -1330,7 +1355,7 @@ opencost:
   baseUrl: http://localhost:7007/api/proxy/opencost
   # Alternative: Direct access if OpenCost API is reachable from browser
   # baseUrl: ${OPENCOST_URL:-http://localhost:9003}
-  
+
   # Cost data configuration
   costs:
     # Default time range for cost queries
@@ -1345,7 +1370,7 @@ opencost:
       default: 'namespace'
       # Available aggregation levels
       levels: ['cluster', 'namespace', 'deployment', 'service', 'pod']
-  
+
   # Cost trend analysis configuration
   trends:
     # Enable cost trend analysis
@@ -1354,7 +1379,7 @@ opencost:
     significantChangeThreshold: 15
     # Comparison periods for trend analysis
     comparisonPeriods: ['1d', '7d', '30d']
-  
+
   # Cost benchmarking configuration
   benchmarking:
     # Enable cost benchmarking across similar services
@@ -1363,7 +1388,7 @@ opencost:
     similarityFactors: ['cpu_requests', 'memory_requests', 'replicas']
     # Benchmarking categories
     categories: ['microservice', 'api', 'frontend', 'database', 'worker']
-  
+
   # AWS cost correlation configuration
   aws:
     # Enable AWS cost correlation
@@ -1371,7 +1396,7 @@ opencost:
     # AWS cost allocation tags for correlation
     costAllocationTags:
       - 'service'
-      - 'environment' 
+      - 'environment'
       - 'team'
       - 'cost-center'
     # AWS Cost Explorer integration
@@ -1386,7 +1411,7 @@ opencost:
         granularity: 'DAILY'
         # Default metrics to retrieve
         metrics: ['BlendedCost', 'UnblendedCost', 'UsageQuantity']
-  
+
   # Data freshness and update configuration
   data:
     # Cost data update frequency
@@ -1401,7 +1426,7 @@ opencost:
       maxAge: '24h'
       # Show data freshness indicators in UI
       showIndicators: true
-  
+
   # UI configuration
   ui:
     # Enable monthly cost breakdowns
@@ -1443,7 +1468,7 @@ ragAi:
       # AWS credentials (uses default chain if not specified)
       # accessKeyId: ${AWS_ACCESS_KEY_ID}
       # secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
-  
+
   # Embeddings configuration for RAG
   embeddings:
     # Embeddings provider
@@ -1462,7 +1487,7 @@ ragAi:
       region: ${AWS_REGION:-us-east-1}
       # Bedrock embeddings model ID
       modelId: 'amazon.titan-embed-text-v1'
-  
+
   # Vector storage configuration
   storage:
     # Use PostgreSQL with pgVector extension
@@ -1479,7 +1504,7 @@ ragAi:
         type: 'ivfflat'
         # Number of lists for IVF index
         lists: 100
-  
+
   # Data ingestion configuration
   ingestion:
     # Enable automatic ingestion from catalog
@@ -1507,7 +1532,7 @@ ragAi:
       extensions: ['.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.go']
       # Maximum file size to ingest (bytes)
       maxFileSize: 100000
-  
+
   # Query configuration
   query:
     # Default number of context documents to retrieve
@@ -1518,7 +1543,7 @@ ragAi:
     maxContextLength: 4000
     # Enable query rewriting for better results
     queryRewriting: true
-  
+
   # Prompt templates configuration
   prompts:
     # System prompt template
@@ -1527,36 +1552,36 @@ ragAi:
       You have access to information about services, APIs, documentation, and development practices.
       Provide helpful, accurate, and contextual responses based on the provided context.
       If you don't have enough information to answer a question, say so clearly.
-    
+
     # User query template with context
     userWithContext: |
       Context information:
       {context}
-      
+
       Question: {question}
-      
+
       Please provide a helpful answer based on the context above. If the context doesn't contain relevant information, please say so.
-    
+
     # User query template without context
     userWithoutContext: |
       Question: {question}
-      
+
       Please provide a helpful answer based on your knowledge of software development and DevOps practices.
-  
+
   # Security and filtering configuration
   security:
     # Enable content filtering for sensitive information
     contentFiltering: true
     # Patterns to filter from responses
     filterPatterns:
-      - 'AKIA[0-9A-Z]{16}'  # AWS Access Keys
+      - 'AKIA[0-9A-Z]{16}' # AWS Access Keys
       - 'sk-[a-zA-Z0-9]{48}' # OpenAI API Keys
       - '(?i)(password|secret|token|key)\s*[:=]\s*[^\s]+'
     # Enable audit logging for AI interactions
     auditLogging: true
     # Maximum query length
     maxQueryLength: 1000
-  
+
   # Performance configuration
   performance:
     # Cache configuration for AI responses
@@ -1574,7 +1599,7 @@ ragAi:
       requestsPerMinute: 10
       # Burst allowance
       burstSize: 5
-  
+
   # UI configuration
   ui:
     # Enable AI assistant in entity pages
@@ -1583,10 +1608,10 @@ ragAi:
     standalonePage: true
     # Default suggestions for users
     suggestions:
-      - "How do I deploy my service?"
-      - "What are the monitoring best practices?"
-      - "How do I create a new API?"
-      - "What is the incident response process?"
+      - 'How do I deploy my service?'
+      - 'What are the monitoring best practices?'
+      - 'How do I create a new API?'
+      - 'What is the incident response process?'
     # Enable conversation history
     conversationHistory: true
     # Maximum conversation history length
@@ -1600,7 +1625,7 @@ opslevel:
     baseUrl: ${OPSLEVEL_BASE_URL:-https://app.opslevel.com}
     # OpsLevel API token (requires administrator permissions)
     token: ${OPSLEVEL_API_TOKEN}
-  
+
   # Service maturity configuration
   maturity:
     # Enable service maturity rubrics and automated quality checks
@@ -1610,7 +1635,7 @@ opslevel:
       defaultRubric: 'production-readiness'
       # Show rubric progress on entity pages
       showProgress: true
-    
+
     # Checks configuration for service quality measurement
     checks:
       enabled: true
@@ -1619,8 +1644,15 @@ opslevel:
       # Enable automated quality checks
       automated: true
       # Check categories to display
-      categories: ['security', 'reliability', 'performance', 'documentation', 'observability']
-    
+      categories:
+        [
+          'security',
+          'reliability',
+          'performance',
+          'documentation',
+          'observability',
+        ]
+
     # Production readiness dashboards and improvement tracking
     dashboards:
       enabled: true
@@ -1630,7 +1662,7 @@ opslevel:
       showImprovementTracking: true
       # Enable maturity trends
       showTrends: true
-  
+
   # Data synchronization configuration
   sync:
     # Enable automatic data sync from Backstage to OpsLevel
@@ -1647,7 +1679,7 @@ opslevel:
       - 'spec.owner'
       - 'spec.type'
       - 'spec.lifecycle'
-  
+
   # UI configuration
   ui:
     # Enable maturity tab on entity pages
@@ -1667,7 +1699,7 @@ openDora:
     baseUrl: ${OPENDORA_API_URL:-http://localhost:8080}
     # Optional authentication
     # token: ${OPENDORA_API_TOKEN}
-  
+
   # DORA metrics configuration
   metrics:
     # Deployment frequency tracking
@@ -1677,7 +1709,7 @@ openDora:
       periods: ['daily', 'weekly', 'monthly']
       # Default period
       defaultPeriod: 'weekly'
-    
+
     # Lead time for changes tracking
     leadTime:
       enabled: true
@@ -1687,7 +1719,7 @@ openDora:
       periods: ['daily', 'weekly', 'monthly']
       # Default period
       defaultPeriod: 'weekly'
-    
+
     # Change failure rate tracking
     changeFailureRate:
       enabled: true
@@ -1697,7 +1729,7 @@ openDora:
       periods: ['daily', 'weekly', 'monthly']
       # Default period
       defaultPeriod: 'weekly'
-    
+
     # Mean time to recovery tracking
     meanTimeToRecovery:
       enabled: true
@@ -1707,7 +1739,7 @@ openDora:
       periods: ['daily', 'weekly', 'monthly']
       # Default period
       defaultPeriod: 'weekly'
-  
+
   # Team and service-level DORA dashboards
   dashboards:
     # Enable team-level dashboards
@@ -1718,7 +1750,7 @@ openDora:
     organizationLevel: true
     # Default dashboard view
     defaultView: 'team'
-  
+
   # Benchmarking configuration
   benchmarking:
     # Enable DORA benchmarking
@@ -1729,7 +1761,7 @@ openDora:
     showComparisons: true
     # Industry benchmarks
     industryBenchmarks: true
-  
+
   # Data sources configuration
   dataSources:
     # GitHub integration for deployment and commit data
@@ -1738,9 +1770,9 @@ openDora:
       # GitHub token for API access
       token: ${GITHUB_TOKEN}
       # Organizations to track
-      organizations: 
+      organizations:
         - ${GITHUB_ORG}
-    
+
     # Argo CD integration for deployment data
     argocd:
       enabled: true
@@ -1748,7 +1780,7 @@ openDora:
       apiUrl: ${ARGOCD_API_URL}
       # Argo CD token
       token: ${ARGOCD_TOKEN}
-    
+
     # Jira integration for incident tracking
     jira:
       enabled: ${JIRA_INTEGRATION_ENABLED:-false}
@@ -1758,18 +1790,18 @@ openDora:
       username: ${JIRA_USERNAME}
       apiToken: ${JIRA_API_TOKEN}
       # Project keys for incident tracking
-      projectKeys: 
+      projectKeys:
         - ${JIRA_PROJECT_KEYS}
-    
+
     # PagerDuty integration for incident tracking
     pagerduty:
       enabled: ${PAGERDUTY_INTEGRATION_ENABLED:-false}
       # PagerDuty API token
       token: ${PAGERDUTY_API_TOKEN}
       # Service IDs to track
-      serviceIds: 
+      serviceIds:
         - ${PAGERDUTY_SERVICE_IDS}
-  
+
   # UI configuration
   ui:
     # Enable DORA metrics on entity pages
@@ -1793,17 +1825,18 @@ cortex:
     baseUrl: ${CORTEX_BASE_URL:-https://api.getcortexapp.com}
     # Cortex API token
     token: ${CORTEX_API_TOKEN}
-  
+
   # Engineering effectiveness metrics configuration
   metrics:
     # Developer experience metrics and team performance tracking
     developerExperience:
       enabled: true
       # Metrics to track
-      trackingMetrics: ['deployment_frequency', 'lead_time', 'mttr', 'change_failure_rate']
+      trackingMetrics:
+        ['deployment_frequency', 'lead_time', 'mttr', 'change_failure_rate']
       # Team performance indicators
       teamMetrics: ['velocity', 'quality', 'satisfaction']
-    
+
     # Service quality and operational excellence scorecards
     serviceQuality:
       enabled: true
@@ -1817,15 +1850,20 @@ cortex:
         performance: 25
         security: 25
         maintainability: 20
-    
+
     # Custom scorecards configuration
     customScorecards:
       enabled: true
       # Allow custom scorecard creation
       allowCustom: true
       # Predefined scorecard templates
-      templates: ['production-readiness', 'security-compliance', 'operational-excellence']
-  
+      templates:
+        [
+          'production-readiness',
+          'security-compliance',
+          'operational-excellence',
+        ]
+
   # Scorecards configuration
   scorecards:
     # Enable service quality scorecards
@@ -1838,7 +1876,7 @@ cortex:
     custom: true
     # Default scorecard for new services
     defaultScorecard: 'production-readiness'
-  
+
   # Data synchronization configuration
   sync:
     # Enable automatic data sync from Backstage to Cortex
@@ -1857,7 +1895,7 @@ cortex:
       - 'spec.owner'
       - 'spec.type'
       - 'spec.lifecycle'
-  
+
   # UI configuration
   ui:
     # Enable Cortex scorecards on entity pages
@@ -1881,7 +1919,7 @@ firehydrant:
     baseUrl: ${FIREHYDRANT_BASE_URL:-https://api.firehydrant.io}
     # FireHydrant API token
     token: ${FIREHYDRANT_API_TOKEN}
-  
+
   # Incident management configuration
   incidents:
     # Enable real-time incident visibility and management
@@ -1889,12 +1927,13 @@ firehydrant:
     # Service-specific incident tracking
     serviceSpecificTracking: true
     # Incident status tracking
-    statusTracking: ['open', 'investigating', 'identified', 'monitoring', 'resolved']
+    statusTracking:
+      ['open', 'investigating', 'identified', 'monitoring', 'resolved']
     # Incident severity levels
     severityLevels: ['sev1', 'sev2', 'sev3', 'sev4']
     # Default incident view
     defaultView: 'active'
-  
+
   # Reliability metrics configuration
   reliability:
     # Enable reliability metrics tracking
@@ -1905,7 +1944,7 @@ firehydrant:
     periods: ['7d', '30d', '90d']
     # Default period
     defaultPeriod: '30d'
-  
+
   # Incident response workflows configuration
   workflows:
     # Enable incident response workflows
@@ -1916,7 +1955,7 @@ firehydrant:
     runbooks: true
     # Communication channels
     communicationChannels: ['slack', 'email', 'webhook']
-  
+
   # Post-mortem integration configuration
   postMortems:
     # Enable post-mortem integration
@@ -1927,7 +1966,7 @@ firehydrant:
     templates: ['incident-review', 'root-cause-analysis', 'action-items']
     # Follow-up tracking
     followUpTracking: true
-  
+
   # Service mapping configuration
   services:
     # Enable service mapping to FireHydrant services
@@ -1938,7 +1977,7 @@ firehydrant:
     annotation: 'firehydrant.io/service-id'
     # Default service mapping
     defaultMapping: 'backstage-entity-name'
-  
+
   # UI configuration
   ui:
     # Enable FireHydrant integration on entity pages
@@ -1982,7 +2021,7 @@ kubernetesGptAnalyzer:
       region: ${AWS_REGION:-us-east-1}
       # Bedrock model ID
       modelId: 'anthropic.claude-3-sonnet-20240229-v1:0'
-  
+
   # Kubernetes integration configuration
   kubernetes:
     # Enable automatic Kubernetes issue detection
@@ -1996,10 +2035,11 @@ kubernetesGptAnalyzer:
         url: ${K8S_STAGING_CLUSTER_URL}
         token: ${K8S_STAGING_SERVICE_ACCOUNT_TOKEN}
     # Resource types to analyze
-    resourceTypes: ['pods', 'deployments', 'services', 'ingresses', 'configmaps', 'secrets']
+    resourceTypes:
+      ['pods', 'deployments', 'services', 'ingresses', 'configmaps', 'secrets']
     # Namespaces to monitor
     namespaces: ['default', 'kube-system', 'production', 'staging']
-  
+
   # Analysis configuration
   analysis:
     # Enable root cause analysis
@@ -2014,20 +2054,21 @@ kubernetesGptAnalyzer:
     includeHistoricalData: true
     # Historical data retention (days)
     historicalDataRetention: 30
-  
+
   # Troubleshooting configuration
   troubleshooting:
     # Enable automatic issue categorization
     autoCategorization: true
     # Issue categories
-    categories: ['resource-issues', 'networking', 'storage', 'security', 'performance']
+    categories:
+      ['resource-issues', 'networking', 'storage', 'security', 'performance']
     # Severity levels
     severityLevels: ['critical', 'high', 'medium', 'low']
     # Enable suggested fixes
     suggestedFixes: true
     # Enable runbook generation
     runbookGeneration: true
-  
+
   # Monitoring integration
   monitoring:
     # Enable integration with monitoring systems
@@ -2051,7 +2092,7 @@ kubernetesGptAnalyzer:
         enabled: true
         apiKey: ${DATADOG_API_KEY}
         appKey: ${DATADOG_APP_KEY}
-  
+
   # UI configuration
   ui:
     # Enable Kubernetes AI analysis on entity pages
@@ -2085,7 +2126,7 @@ jira:
     #   privateKey: ${JIRA_OAUTH_PRIVATE_KEY}
     #   accessToken: ${JIRA_OAUTH_ACCESS_TOKEN}
     #   tokenSecret: ${JIRA_OAUTH_TOKEN_SECRET}
-  
+
   # Issue tracking configuration
   issues:
     # Enable issue display and project progress tracking on entity pages
@@ -2098,13 +2139,13 @@ jira:
     statuses: ['To Do', 'In Progress', 'In Review', 'Done']
     # Maximum number of issues to display
     maxResults: 50
-  
+
   # Project tracking configuration
   projects:
     # Enable project progress tracking
     progressTracking: true
     # Project keys to track (leave empty to track all accessible projects)
-    projectKeys: 
+    projectKeys:
       - ${JIRA_PROJECT_KEYS}
     # Show project statistics
     showStatistics: true
@@ -2112,7 +2153,7 @@ jira:
     showSprints: true
     # Show version information
     showVersions: true
-  
+
   # Team workload visibility configuration
   team:
     # Enable team workload visibility
@@ -2123,7 +2164,7 @@ jira:
     calculationMethod: 'story_points'
     # Time period for workload calculation
     timePeriod: 'current_sprint'
-  
+
   # Sprint planning integration configuration
   sprints:
     # Enable sprint planning integration
@@ -2140,7 +2181,7 @@ jira:
       defaultBoardId: ${JIRA_DEFAULT_BOARD_ID}
       # Show board configuration
       showConfiguration: true
-  
+
   # Service mapping configuration
   services:
     # Enable service mapping to Jira projects
@@ -2151,7 +2192,7 @@ jira:
     defaultMapping: 'backstage-entity-name'
     # Component mapping to Jira components
     componentMapping: true
-  
+
   # UI configuration
   ui:
     # Show Jira issues in catalog
@@ -2175,18 +2216,18 @@ jira:
         template: |
           h3. Description
           Brief description of the bug
-          
+
           h3. Steps to Reproduce
           1. Step 1
           2. Step 2
           3. Step 3
-          
+
           h3. Expected Result
           What should happen
-          
+
           h3. Actual Result
           What actually happens
-          
+
           h3. Environment
           - Service: {{service}}
           - Environment: {{environment}}
@@ -2195,12 +2236,12 @@ jira:
         template: |
           h3. User Story
           As a {{user_type}}, I want {{functionality}} so that {{benefit}}.
-          
+
           h3. Acceptance Criteria
           - [ ] Criterion 1
           - [ ] Criterion 2
           - [ ] Criterion 3
-          
+
           h3. Additional Context
           Any additional context or requirements
 
@@ -2220,7 +2261,7 @@ jira:
       showCapacity: true
       # Sprint dashboard refresh interval (seconds)
       refreshInterval: 300
-    
+
     # Burndown charts configuration
     burndown:
       # Enable burndown charts
@@ -2233,7 +2274,7 @@ jira:
       showIdealLine: true
       # Show scope changes
       showScopeChanges: true
-    
+
     # Team velocity metrics configuration
     velocity:
       # Enable team velocity tracking
@@ -2246,7 +2287,7 @@ jira:
       showTrends: true
       # Show velocity predictions
       showPredictions: true
-    
+
     # Advanced project tracking features
     tracking:
       # Enable advanced project tracking
@@ -2264,7 +2305,7 @@ jira:
       milestones: true
       # Dependency tracking
       dependencies: true
-    
+
     # Dashboard widgets configuration
     widgets:
       # Available dashboard widgets
@@ -2311,7 +2352,7 @@ jira:
           position: { x: 4, y: 10, w: 4, h: 4 }
         - widget: 'blocked_issues'
           position: { x: 8, y: 10, w: 4, h: 4 }
-    
+
     # Integration with existing Jira workflows and reporting
     integration:
       # Enable integration with existing workflows
@@ -2346,20 +2387,21 @@ shortcut:
     baseUrl: 'https://api.app.shortcut.com'
     # Shortcut API token
     token: ${SHORTCUT_API_TOKEN}
-  
+
   # Story and epic tracking configuration
   stories:
     # Enable story and epic tracking
     enabled: true
     # Story states to track
-    states: ['Unstarted', 'Started', 'Finished', 'Delivered', 'Accepted', 'Rejected']
+    states:
+      ['Unstarted', 'Started', 'Finished', 'Delivered', 'Accepted', 'Rejected']
     # Story types to display
     types: ['feature', 'bug', 'chore']
     # Maximum number of stories to display
     maxResults: 100
     # Default story filter
     defaultFilter: 'owner:me state:!Accepted state:!Rejected'
-  
+
   # Team workflow visibility configuration
   workflow:
     # Enable team workflow visibility
@@ -2398,10 +2440,11 @@ shortcut:
       # Enable workflow metrics
       enabled: true
       # Metrics to track
-      trackingMetrics: ['cycle_time', 'lead_time', 'throughput', 'work_in_progress']
+      trackingMetrics:
+        ['cycle_time', 'lead_time', 'throughput', 'work_in_progress']
       # Time periods for metrics
       periods: ['7d', '30d', '90d']
-  
+
   # Project progress tracking configuration
   projects:
     # Enable project progress tracking
@@ -2416,7 +2459,7 @@ shortcut:
     showObjectives: true
     # Project progress calculation method
     progressCalculation: 'story_points'
-  
+
   # Integration with development workflows and releases
   integration:
     # Enable integration with development workflows
@@ -2443,7 +2486,7 @@ shortcut:
       generateNotes: true
       # Release deployment tracking
       deploymentTracking: true
-  
+
   # Service mapping configuration
   services:
     # Enable service mapping to Shortcut projects
@@ -2454,7 +2497,7 @@ shortcut:
     defaultMapping: 'backstage-entity-name'
     # Component mapping to Shortcut labels
     labelMapping: true
-  
+
   # Iterations and milestones configuration
   iterations:
     # Enable iteration tracking
@@ -2477,7 +2520,7 @@ shortcut:
       storyEstimation: true
       # Commitment tracking
       commitmentTracking: true
-  
+
   # Labels and categories configuration
   labels:
     # Enable label management
@@ -2510,7 +2553,7 @@ shortcut:
           label: 'bug'
         - pattern: 'priority:critical'
           label: 'critical'
-  
+
   # Notifications configuration
   notifications:
     # Enable Shortcut notifications
@@ -2537,22 +2580,22 @@ shortcut:
       templates:
         story_completed: |
           :white_check_mark: *Story Completed*
-          
+
           *Story:* {{story_name}}
           *Type:* {{story_type}}
           *Owner:* {{owner}}
           *Project:* {{project}}
-          
+
           <{{story_url}}|View Story>
         epic_completed: |
           :trophy: *Epic Completed*
-          
+
           *Epic:* {{epic_name}}
           *Project:* {{project}}
           *Stories Completed:* {{completed_stories}}/{{total_stories}}
-          
+
           <{{epic_url}}|View Epic>
-  
+
   # UI configuration
   ui:
     # Enable Shortcut integration on entity pages
@@ -2580,18 +2623,18 @@ shortcut:
         template: |
           ## Description
           Brief description of the bug
-          
+
           ## Steps to Reproduce
           1. Step 1
           2. Step 2
           3. Step 3
-          
+
           ## Expected Behavior
           What should happen
-          
+
           ## Actual Behavior
           What actually happens
-          
+
           ## Environment
           - Service: {{service}}
           - Environment: {{environment}}
@@ -2600,12 +2643,12 @@ shortcut:
         template: |
           ## User Story
           As a {{user_type}}, I want {{functionality}} so that {{benefit}}.
-          
+
           ## Acceptance Criteria
           - [ ] Criterion 1
           - [ ] Criterion 2
           - [ ] Criterion 3
-          
+
           ## Additional Context
           Any additional context or requirements
     # Dashboard configuration
@@ -2613,7 +2656,13 @@ shortcut:
       # Enable dashboard widgets
       enabled: true
       # Available widgets
-      widgets: ['story_progress', 'epic_progress', 'team_velocity', 'iteration_burndown']
+      widgets:
+        [
+          'story_progress',
+          'epic_progress',
+          'team_velocity',
+          'iteration_burndown',
+        ]
       # Default dashboard layout
       defaultLayout: 'grid'
       # Refresh interval (seconds)
@@ -2627,23 +2676,33 @@ buildkite:
     baseUrl: 'https://api.buildkite.com/v2'
     # Buildkite API token (requires read_builds, read_build_logs, write_builds scopes)
     token: ${BUILDKITE_API_TOKEN}
-  
+
   # Build pipeline visibility and control configuration
   pipelines:
     # Enable build pipeline visibility
     enabled: true
     # Organizations to track
-    organizations: 
+    organizations:
       - ${BUILDKITE_ORG}
     # Pipelines to track (leave empty to track all accessible pipelines)
     pipelineNames: []
     # Build states to display
-    buildStates: ['running', 'scheduled', 'passed', 'failed', 'blocked', 'canceled', 'skipped', 'not_run']
+    buildStates:
+      [
+        'running',
+        'scheduled',
+        'passed',
+        'failed',
+        'blocked',
+        'canceled',
+        'skipped',
+        'not_run',
+      ]
     # Maximum number of builds to display per pipeline
     maxBuildsPerPipeline: 25
     # Default build filter
     defaultFilter: 'state[]=running&state[]=scheduled&state[]=passed&state[]=failed'
-  
+
   # Build status display configuration
   status:
     # Enable build status display
@@ -2660,7 +2719,7 @@ buildkite:
     showMessage: true
     # Status refresh interval (seconds)
     refreshInterval: 30
-  
+
   # Build retriggering capabilities
   retriggering:
     # Enable build retriggering
@@ -2675,7 +2734,7 @@ buildkite:
     allowedUsers: []
     # Teams allowed to retrigger builds
     allowedTeams: []
-  
+
   # Real-time step inspection configuration
   steps:
     # Enable real-time step inspection
@@ -2692,7 +2751,7 @@ buildkite:
     logStreaming: true
     # Maximum log lines to display
     maxLogLines: 1000
-  
+
   # Integration with existing Buildkite infrastructure
   integration:
     # Enable integration with existing infrastructure
@@ -2706,8 +2765,16 @@ buildkite:
       # Webhook secret for verification
       secret: ${BUILDKITE_WEBHOOK_SECRET}
       # Events to subscribe to
-      events: ['build.scheduled', 'build.running', 'build.finished', 'job.scheduled', 'job.started', 'job.finished']
-    
+      events:
+        [
+          'build.scheduled',
+          'build.running',
+          'build.finished',
+          'job.scheduled',
+          'job.started',
+          'job.finished',
+        ]
+
     # Agent integration
     agents:
       # Show agent information
@@ -2716,7 +2783,7 @@ buildkite:
       showQueues: true
       # Show agent utilization
       showUtilization: true
-    
+
     # Artifact management
     artifacts:
       # Enable artifact management
@@ -2727,7 +2794,7 @@ buildkite:
       enableDownload: true
       # Artifact retention policy display
       showRetentionPolicy: true
-  
+
   # Service mapping configuration
   services:
     # Enable service mapping to Buildkite pipelines
@@ -2738,7 +2805,7 @@ buildkite:
     defaultMapping: 'backstage-entity-name'
     # Organization mapping
     organizationMapping: 'backstage-entity-namespace'
-  
+
   # Build metrics and analytics
   metrics:
     # Enable build metrics tracking
@@ -2764,10 +2831,10 @@ buildkite:
       showComparisons: true
       # Performance thresholds
       thresholds:
-        build_duration: 600  # 10 minutes
-        queue_time: 300      # 5 minutes
-        success_rate: 0.95   # 95%
-  
+        build_duration: 600 # 10 minutes
+        queue_time: 300 # 5 minutes
+        success_rate: 0.95 # 95%
+
   # Notifications configuration
   notifications:
     # Enable Buildkite notifications
@@ -2792,25 +2859,25 @@ buildkite:
       templates:
         build_failed: |
           :x: *Build Failed*
-          
+
           *Pipeline:* {{pipeline}}
           *Branch:* {{branch}}
           *Commit:* {{commit}}
           *Author:* {{author}}
           *Duration:* {{duration}}
-          
+
           <{{build_url}}|View Build> | <{{logs_url}}|View Logs>
         build_passed_after_failure: |
           :white_check_mark: *Build Fixed*
-          
+
           *Pipeline:* {{pipeline}}
           *Branch:* {{branch}}
           *Commit:* {{commit}}
           *Author:* {{author}}
           *Duration:* {{duration}}
-          
+
           <{{build_url}}|View Build>
-  
+
   # Security configuration
   security:
     # Enable security features
@@ -2832,7 +2899,7 @@ buildkite:
       requireAuth: true
       # Role-based access control
       rbac: true
-  
+
   # UI configuration
   ui:
     # Enable Buildkite integration on entity pages
@@ -2880,7 +2947,7 @@ costInsights:
     baseUrl: ${COST_INSIGHTS_API_URL:-http://localhost:7007/api/cost-insights}
     # Optional authentication
     # token: ${COST_INSIGHTS_API_TOKEN}
-  
+
   # Daily cost trends and optimization configuration
   trends:
     # Enable daily cost trends
@@ -2895,7 +2962,7 @@ costInsights:
     showForecasting: true
     # Forecasting period (days)
     forecastingPeriod: 30
-  
+
   # Cost tracking by team and catalog entity configuration
   tracking:
     # Enable cost tracking by team
@@ -2935,7 +3002,7 @@ costInsights:
         - pattern: 'environment:*'
           attribute: 'environment'
           method: 'direct'
-  
+
   # Business metrics comparison configuration
   metrics:
     # Enable business metrics comparison
@@ -2974,7 +3041,7 @@ costInsights:
         cost_per_user: 5.0
         cost_per_transaction: 0.10
         revenue_to_cost_ratio: 3.0
-  
+
   # Actionable cost alerts configuration
   alerts:
     # Enable cost alerts
@@ -3017,24 +3084,24 @@ costInsights:
     templates:
       budget_exceeded: |
         :warning: *Budget Alert*
-        
+
         *Team:* {{team}}
         *Budget:* ${{budget}}
         *Current Spend:* ${{current_spend}} ({{percentage}}%)
         *Period:* {{period}}
-        
+
         <{{dashboard_url}}|View Cost Dashboard>
       anomaly_detected: |
         :rotating_light: *Cost Anomaly Detected*
-        
+
         *Service:* {{service}}
         *Current Cost:* ${{current_cost}}
         *Expected Cost:* ${{expected_cost}}
         *Increase:* {{increase_percent}}%
         *Date:* {{date}}
-        
+
         <{{dashboard_url}}|Investigate>
-  
+
   # Cloud provider integrations
   providers:
     # AWS integration
@@ -3060,7 +3127,7 @@ costInsights:
         s3Prefix: 'billing-reports/'
         # Report format
         reportFormat: 'csv'
-    
+
     # Google Cloud integration
     gcp:
       enabled: ${GCP_COST_INSIGHTS_ENABLED:-false}
@@ -3072,7 +3139,7 @@ costInsights:
         billingAccountId: ${GCP_BILLING_ACCOUNT_ID}
         # BigQuery dataset for billing export
         bigQueryDataset: ${GCP_BILLING_DATASET}
-    
+
     # Azure integration
     azure:
       enabled: ${AZURE_COST_INSIGHTS_ENABLED:-false}
@@ -3084,7 +3151,7 @@ costInsights:
         resourceGroup: ${AZURE_RESOURCE_GROUP}
         # Management group (optional)
         managementGroup: ${AZURE_MANAGEMENT_GROUP}
-  
+
   # Data sources configuration
   dataSources:
     # Primary data source
@@ -3107,7 +3174,7 @@ costInsights:
       archive: true
       # Compression for archived data
       compression: true
-  
+
   # UI configuration
   ui:
     # Enable Cost Insights on entity pages
@@ -3131,7 +3198,14 @@ costInsights:
       # Enable dashboard widgets
       enabled: true
       # Available widgets
-      widgets: ['cost_overview', 'cost_trends', 'top_services', 'budget_status', 'optimization_opportunities']
+      widgets:
+        [
+          'cost_overview',
+          'cost_trends',
+          'top_services',
+          'budget_status',
+          'optimization_opportunities',
+        ]
       # Default dashboard layout
       defaultLayout: 'grid'
       # Refresh interval (seconds)
@@ -3154,11 +3228,11 @@ githubPullRequestsBoard:
     # GitHub token for API access
     token: ${GITHUB_TOKEN}
     # GitHub organizations to track
-    organizations: 
+    organizations:
       - ${GITHUB_ORG}
     # Repositories to track (leave empty to track all accessible repositories)
     repositories: []
-  
+
   # Team PR visibility configuration
   team:
     # Enable team-wide PR tracking
@@ -3171,7 +3245,7 @@ githubPullRequestsBoard:
     states: ['open', 'closed', 'merged']
     # Maximum number of PRs to display per repository
     maxPRsPerRepo: 25
-  
+
   # Review workflow optimization configuration
   workflow:
     # Enable review workflow optimization
@@ -3192,7 +3266,7 @@ githubPullRequestsBoard:
       showDeploymentStatus: true
       # Show security checks
       showSecurityChecks: true
-  
+
   # PR metrics and team collaboration insights configuration
   metrics:
     # Enable PR metrics tracking
@@ -3216,7 +3290,7 @@ githubPullRequestsBoard:
       crossTeamCollaboration: true
       # Show knowledge sharing metrics
       knowledgeSharing: true
-  
+
   # PR board configuration
   board:
     # Board columns configuration
@@ -3240,7 +3314,7 @@ githubPullRequestsBoard:
     refreshInterval: 300
     # Enable drag and drop (if supported)
     enableDragDrop: false
-  
+
   # Filters configuration
   filters:
     # Default filters
@@ -3263,7 +3337,7 @@ githubPullRequestsBoard:
         filter: 'mentions:@me'
       - name: 'Team PRs'
         filter: 'team:${GITHUB_TEAM}'
-  
+
   # Notifications configuration
   notifications:
     # Enable PR notifications
@@ -3289,7 +3363,7 @@ githubPullRequestsBoard:
         'frontend-*': '#frontend-team'
         'backend-*': '#backend-team'
         'infrastructure-*': '#platform-team'
-  
+
   # UI configuration
   ui:
     # Enable PR board on entity pages
@@ -3323,7 +3397,7 @@ slackScaffolderActions:
     appToken: ${SLACK_APP_TOKEN}
     # Slack signing secret for webhook verification
     signingSecret: ${SLACK_SIGNING_SECRET}
-  
+
   # Workflow notifications configuration
   notifications:
     # Enable automated Slack notifications for deployments and incidents
@@ -3341,36 +3415,36 @@ slackScaffolderActions:
       templates:
         success: |
           :white_check_mark: *Deployment Successful*
-          
+
           *Service:* {{service}}
           *Environment:* {{environment}}
           *Version:* {{version}}
           *Deployed by:* {{deployer}}
           *Time:* {{timestamp}}
-          
+
           <{{argocd_url}}|View in Argo CD> | <{{service_url}}|View Service>
         failure: |
           :x: *Deployment Failed*
-          
+
           *Service:* {{service}}
           *Environment:* {{environment}}
           *Version:* {{version}}
           *Deployed by:* {{deployer}}
           *Error:* {{error}}
           *Time:* {{timestamp}}
-          
+
           <{{argocd_url}}|View in Argo CD> | <{{logs_url}}|View Logs>
         started: |
           :rocket: *Deployment Started*
-          
+
           *Service:* {{service}}
           *Environment:* {{environment}}
           *Version:* {{version}}
           *Deployed by:* {{deployer}}
           *Time:* {{timestamp}}
-          
+
           <{{argocd_url}}|View Progress>
-    
+
     # Incident notifications
     incidents:
       enabled: true
@@ -3387,41 +3461,41 @@ slackScaffolderActions:
       templates:
         created: |
           :rotating_light: *Incident Created*
-          
+
           *Title:* {{title}}
           *Severity:* {{severity}}
           *Service:* {{service}}
           *Created by:* {{creator}}
           *Time:* {{timestamp}}
-          
+
           *Description:* {{description}}
-          
+
           <{{incident_url}}|View Incident> | <{{runbook_url}}|View Runbook>
         resolved: |
           :white_check_mark: *Incident Resolved*
-          
+
           *Title:* {{title}}
           *Service:* {{service}}
           *Duration:* {{duration}}
           *Resolved by:* {{resolver}}
           *Time:* {{timestamp}}
-          
+
           *Resolution:* {{resolution}}
-          
+
           <{{incident_url}}|View Incident> | <{{postmortem_url}}|View Post-mortem>
         escalated: |
           :warning: *Incident Escalated*
-          
+
           *Title:* {{title}}
           *Severity:* {{severity}} → {{new_severity}}
           *Service:* {{service}}
           *Escalated by:* {{escalator}}
           *Time:* {{timestamp}}
-          
+
           *Reason:* {{escalation_reason}}
-          
+
           <{{incident_url}}|View Incident>
-  
+
   # Team communication integration configuration
   communication:
     # Enable team communication integration with platform events
@@ -3454,7 +3528,7 @@ slackScaffolderActions:
         - 'vulnerability_detected'
         - 'security_scan_failed'
         - 'compliance_violation'
-    
+
     # Event routing configuration
     routing:
       # Route events to specific channels based on service or team
@@ -3475,7 +3549,7 @@ slackScaffolderActions:
           channel: '#security-alerts'
       # Default channel for unmatched events
       defaultChannel: '#general-notifications'
-  
+
   # Scaffolder action configuration
   actions:
     # Available Slack actions in scaffolder templates
@@ -3499,7 +3573,7 @@ slackScaffolderActions:
             type: 'string'
             description: 'Emoji icon for the message'
             required: false
-      
+
       - name: 'slack:thread'
         description: 'Send a threaded reply to a Slack message'
         parameters:
@@ -3515,7 +3589,7 @@ slackScaffolderActions:
             type: 'string'
             description: 'Reply message content'
             required: true
-      
+
       - name: 'slack:file'
         description: 'Upload a file to a Slack channel'
         parameters:
@@ -3535,7 +3609,7 @@ slackScaffolderActions:
             type: 'string'
             description: 'File comment'
             required: false
-      
+
       - name: 'slack:workflow'
         description: 'Trigger a Slack workflow'
         parameters:
@@ -3547,7 +3621,7 @@ slackScaffolderActions:
             type: 'object'
             description: 'Workflow input parameters'
             required: false
-  
+
   # User and channel management
   management:
     # Enable user lookup and channel management
@@ -3571,7 +3645,7 @@ slackScaffolderActions:
         - 'read'
         - 'write'
         - 'history'
-  
+
   # Rate limiting and error handling
   limits:
     # Rate limiting configuration
@@ -3597,19 +3671,19 @@ slackScaffolderActions:
       # Error notification template
       errorTemplate: |
         :warning: *Notification Delivery Failed*
-        
+
         *Original Channel:* {{original_channel}}
         *Error:* {{error}}
         *Message:* {{original_message}}
         *Time:* {{timestamp}}
-  
+
   # Security configuration
   security:
     # Enable message content filtering
     contentFiltering: true
     # Patterns to filter from messages
     filterPatterns:
-      - 'AKIA[0-9A-Z]{16}'  # AWS Access Keys
+      - 'AKIA[0-9A-Z]{16}' # AWS Access Keys
       - 'sk-[a-zA-Z0-9]{48}' # OpenAI API Keys
       - '(?i)(password|secret|token|key)\s*[:=]\s*[^\s]+'
     # Enable audit logging for Slack interactions
@@ -3638,7 +3712,14 @@ feedback:
           - name: 'category'
             type: 'select'
             label: 'Feedback Category'
-            options: ['bug', 'feature_request', 'improvement', 'documentation', 'performance']
+            options:
+              [
+                'bug',
+                'feature_request',
+                'improvement',
+                'documentation',
+                'performance',
+              ]
             required: true
           - name: 'rating'
             type: 'rating'
@@ -3654,7 +3735,7 @@ feedback:
             type: 'email'
             label: 'Contact Email'
             required: false
-      
+
       - name: 'platform_feedback'
         title: 'Platform Feedback'
         description: 'Feedback about the developer platform'
@@ -3662,12 +3743,28 @@ feedback:
           - name: 'area'
             type: 'select'
             label: 'Platform Area'
-            options: ['catalog', 'scaffolder', 'techdocs', 'search', 'monitoring', 'cost_visibility', 'ai_assistant']
+            options:
+              [
+                'catalog',
+                'scaffolder',
+                'techdocs',
+                'search',
+                'monitoring',
+                'cost_visibility',
+                'ai_assistant',
+              ]
             required: true
           - name: 'type'
             type: 'select'
             label: 'Feedback Type'
-            options: ['bug', 'feature_request', 'improvement', 'usability', 'performance']
+            options:
+              [
+                'bug',
+                'feature_request',
+                'improvement',
+                'usability',
+                'performance',
+              ]
             required: true
           - name: 'priority'
             type: 'select'
@@ -3692,7 +3789,7 @@ feedback:
             type: 'email'
             label: 'Contact Email'
             required: false
-      
+
       - name: 'feature_request'
         title: 'Feature Request'
         description: 'Request a new feature or enhancement'
@@ -3704,7 +3801,16 @@ feedback:
           - name: 'category'
             type: 'select'
             label: 'Category'
-            options: ['catalog', 'scaffolder', 'monitoring', 'documentation', 'ai_features', 'integrations', 'ui_ux']
+            options:
+              [
+                'catalog',
+                'scaffolder',
+                'monitoring',
+                'documentation',
+                'ai_features',
+                'integrations',
+                'ui_ux',
+              ]
             required: true
           - name: 'priority'
             type: 'select'
@@ -3727,7 +3833,7 @@ feedback:
             type: 'email'
             label: 'Contact Email'
             required: true
-  
+
   # Feedback analysis configuration
   analysis:
     # Enable feedback-driven improvement tracking and prioritization
@@ -3743,7 +3849,7 @@ feedback:
         openai:
           apiKey: ${OPENAI_API_KEY}
           model: 'gpt-3.5-turbo'
-      
+
       # Category analysis
       categorization:
         enabled: true
@@ -3751,7 +3857,7 @@ feedback:
         autoCategorize: true
         # Category confidence threshold
         confidenceThreshold: 0.7
-      
+
       # Trend analysis
       trends:
         enabled: true
@@ -3759,7 +3865,7 @@ feedback:
         periods: ['7d', '30d', '90d']
         # Trend metrics
         metrics: ['volume', 'sentiment', 'categories', 'ratings']
-      
+
       # Priority scoring
       prioritization:
         enabled: true
@@ -3772,7 +3878,7 @@ feedback:
           sentiment: 0.1
         # Priority levels
         levels: ['low', 'medium', 'high', 'critical']
-  
+
   # Feedback routing and notifications
   routing:
     # Enable automatic routing of feedback to appropriate teams
@@ -3805,7 +3911,7 @@ feedback:
     default:
       assignee: 'platform-team'
       channel: '#general-feedback'
-  
+
   # Integration configuration
   integrations:
     # Jira integration for feedback tracking
@@ -3825,7 +3931,7 @@ feedback:
         medium: 'Medium'
         high: 'High'
         critical: 'Highest'
-    
+
     # Slack integration for feedback notifications
     slack:
       enabled: true
@@ -3835,32 +3941,32 @@ feedback:
       templates:
         new_feedback: |
           :speech_balloon: *New Feedback Received*
-          
+
           *Type:* {{type}}
           *Category:* {{category}}
           *Rating:* {{rating}}/5
           *Priority:* {{priority}}
-          
+
           *Description:* {{description}}
-          
+
           *Submitted by:* {{user}}
           *Time:* {{timestamp}}
-          
+
           <{{feedback_url}}|View Feedback>
         high_priority: |
           :warning: *High Priority Feedback*
-          
+
           *Type:* {{type}}
           *Category:* {{category}}
           *Priority:* {{priority}}
-          
+
           *Description:* {{description}}
-          
+
           *Submitted by:* {{user}}
           *Time:* {{timestamp}}
-          
+
           <{{feedback_url}}|View Feedback> - Requires immediate attention!
-    
+
     # Email integration for feedback notifications
     email:
       enabled: ${EMAIL_NOTIFICATIONS_ENABLED:-false}
@@ -3876,22 +3982,22 @@ feedback:
       templates:
         feedback_received: |
           Subject: New Feedback: {{type}} - {{category}}
-          
+
           A new feedback has been submitted:
-          
+
           Type: {{type}}
           Category: {{category}}
           Rating: {{rating}}/5
           Priority: {{priority}}
-          
+
           Description:
           {{description}}
-          
+
           Submitted by: {{user}}
           Time: {{timestamp}}
-          
+
           View feedback: {{feedback_url}}
-  
+
   # Storage configuration
   storage:
     # Storage backend (database, file, s3)
@@ -3921,7 +4027,7 @@ feedback:
       region: ${AWS_REGION:-us-east-1}
       # S3 key prefix
       prefix: 'feedback/'
-  
+
   # UI configuration
   ui:
     # Enable feedback collection on entity pages
@@ -3973,7 +4079,7 @@ devpod:
     baseUrl: ${DEVPOD_API_URL:-http://localhost:8080}
     # Optional authentication
     # token: ${DEVPOD_API_TOKEN}
-  
+
   # Development environment provisioning configuration
   provisioning:
     # Enable development environment provisioning
@@ -4040,7 +4146,7 @@ devpod:
           - 'redhat.java'
           - 'vscjava.vscode-java-pack'
           - 'vscjava.vscode-spring-boot-dashboard'
-  
+
   # Development environment access configuration
   access:
     # Enable development environment access
@@ -4077,7 +4183,7 @@ devpod:
       port: 8081
       # Terminal shell
       shell: '/bin/bash'
-  
+
   # Integration with existing development workflows
   integration:
     # Enable integration with development workflows
@@ -4100,7 +4206,7 @@ devpod:
       autoSetup: true
       # Service annotation for DevPod configuration
       annotation: 'devpod.io/template'
-  
+
   # Environment lifecycle management
   lifecycle:
     # Enable environment lifecycle management
@@ -4121,7 +4227,7 @@ devpod:
       frequency: 'daily'
       # Backup retention (days)
       retention: 30
-  
+
   # UI configuration
   ui:
     # Enable DevPod integration on entity pages
@@ -4147,7 +4253,7 @@ devContainers:
     baseUrl: ${DEV_CONTAINERS_API_URL:-http://localhost:8080}
     # Optional authentication
     # token: ${DEV_CONTAINERS_API_TOKEN}
-  
+
   # Containerized development environment launching configuration
   launching:
     # Enable containerized development environment launching
@@ -4196,7 +4302,7 @@ devContainers:
         cpu: '2'
         # Shared memory size
         shmSize: '1Gi'
-  
+
   # Development environment standardization configuration
   standardization:
     # Enable development environment standardization
@@ -4247,7 +4353,8 @@ devContainers:
           - 'vscjava.vscode-spring-boot-dashboard'
         settings:
           'java.home': '/usr/lib/jvm/msopenjdk-current'
-          'java.configuration.runtimes': [{ 'name': 'JavaSE-17', 'path': '/usr/lib/jvm/msopenjdk-current' }]
+          'java.configuration.runtimes':
+            [{ 'name': 'JavaSE-17', 'path': '/usr/lib/jvm/msopenjdk-current' }]
     # Enforcement policies
     enforcement:
       # Require standard configurations
@@ -4262,7 +4369,7 @@ devContainers:
         securityScanning: true
         # Require resource limits
         resourceLimits: true
-  
+
   # Development environment sharing configuration
   sharing:
     # Enable development environment sharing
@@ -4297,7 +4404,7 @@ devContainers:
       provider: 'github'
       # Repository template
       template: '${GITHUB_ORG}/devcontainer-templates'
-  
+
   # VS Code integration configuration
   vscode:
     # Enable VS Code integration
@@ -4330,7 +4437,7 @@ devContainers:
       method: 'github'
       # Settings repository
       repository: '${GITHUB_ORG}/vscode-settings'
-  
+
   # Service integration configuration
   services:
     # Enable service integration
@@ -4343,7 +4450,7 @@ devContainers:
     sources: ['.devcontainer/devcontainer.json', '.devcontainer.json']
     # Default configuration generation
     generateDefault: true
-  
+
   # Security configuration
   security:
     # Enable security features
@@ -4375,7 +4482,7 @@ devContainers:
       allowedHosts: ['github.com', 'registry-1.docker.io', 'mcr.microsoft.com']
       # Block privileged containers
       blockPrivileged: true
-  
+
   # UI configuration
   ui:
     # Enable Dev Containers integration on entity pages
@@ -4408,7 +4515,7 @@ googleCalendar:
       clientId: ${GOOGLE_OAUTH_CLIENT_ID}
       clientSecret: ${GOOGLE_OAUTH_CLIENT_SECRET}
       redirectUri: ${GOOGLE_OAUTH_REDIRECT_URI}
-  
+
   # Team schedule and availability visibility configuration
   schedule:
     # Enable team schedule visibility
@@ -4435,7 +4542,7 @@ googleCalendar:
       frequency: 15
       # Sync direction (read, write, bidirectional)
       direction: 'read'
-  
+
   # Meeting and availability integration configuration
   meetings:
     # Enable meeting integration
@@ -4460,7 +4567,7 @@ googleCalendar:
       showInTeamPages: true
       # Availability time slots (minutes)
       timeSlots: 30
-  
+
   # Calendar-based team coordination configuration
   coordination:
     # Enable calendar-based coordination
@@ -4483,7 +4590,7 @@ googleCalendar:
       showTeamEvents: true
       # Dashboard refresh interval (minutes)
       refreshInterval: 5
-  
+
   # Calendar-based planning features configuration
   planning:
     # Enable calendar-based planning
@@ -4526,7 +4633,7 @@ googleCalendar:
           duration: 90
           recurring: 'biweekly'
           attendees: 'team'
-  
+
   # Team integration configuration
   teams:
     # Enable team integration
@@ -4549,7 +4656,7 @@ googleCalendar:
       showPersonal: false
       # Show work calendars only
       workOnly: true
-  
+
   # Notifications configuration
   notifications:
     # Enable calendar notifications
@@ -4579,23 +4686,23 @@ googleCalendar:
       templates:
         meeting_starting: |
           :calendar: *Meeting Starting Soon*
-          
+
           *Meeting:* {{meeting_title}}
           *Time:* {{meeting_time}}
           *Duration:* {{meeting_duration}}
           *Attendees:* {{attendees}}
-          
+
           <{{meeting_url}}|Join Meeting>
         team_event_created: |
           :spiral_calendar_pad: *New Team Event*
-          
+
           *Event:* {{event_title}}
           *Date:* {{event_date}}
           *Time:* {{event_time}}
           *Organizer:* {{organizer}}
-          
+
           <{{event_url}}|View Event>
-  
+
   # Privacy and security configuration
   privacy:
     # Enable privacy features
@@ -4624,7 +4731,7 @@ googleCalendar:
       logAccess: true
       # Log data changes
       logChanges: true
-  
+
   # UI configuration
   ui:
     # Enable Google Calendar integration on team pages
