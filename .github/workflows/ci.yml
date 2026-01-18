@@ -17,8 +17,11 @@ permissions:
   actions: read
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '20'
   YARN_VERSION: '4.4.1'
+  # Force use of prebuilt binaries for native modules
+  npm_config_build_from_source: 'false'
+  SKIP_SASS_BINARY_DOWNLOAD_FOR_CI: 'true'
 
 jobs:
   # Job 1: Lint and Type Check

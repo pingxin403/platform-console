@@ -258,12 +258,9 @@ const SyncDialog: React.FC<SyncDialogProps> = ({
   );
 };
 
-export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({
-  variant,
-}) => {
+export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = () => {
   const classes = useStyles();
   const { entity } = useEntity();
-  const config = useApi(configApiRef);
 
   const [deploymentStatus, setDeploymentStatus] =
     useState<MultiEnvironmentStatus | null>(null);
@@ -364,7 +361,7 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({
     }
   };
 
-  const handleSync = async (environment: string, options: SyncOptions) => {
+  const handleSync = async (_environment: string, _options: SyncOptions) => {
     try {
       setSyncing(true);
 
