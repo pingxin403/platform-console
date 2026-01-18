@@ -236,7 +236,7 @@ jobs:
       - name: Run npm audit
         run: |
           corepack enable
-          yarn install --immutable
+          yarn install --immutable --mode=skip-build
           yarn npm audit --all --recursive || true
 
   # Job 6: Docker Build (only on main branch)
