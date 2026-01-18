@@ -1,0 +1,352 @@
+# Production environment values for Backstage
+# This file overrides values.yaml for the production environment
+
+replicaCount: 3
+
+image:
+  repository: ghcr.io/pingxin403/platform-console
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ${BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION}
+  name: "backstage-production"
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "7007"
+  prometheus.io/path: "/metrics"
+  container.apparmor.security.beta.kubernetes.io/backstage: runtime/default
+  seccomp.security.alpha.kubernetes.io/pod: runtime/default
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  port: 7007
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7007"
+    prometheus.io/path: "/metrics"
+
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: ${CERTIFICATE_ARN_PRODUCTION}
+    alb.ingress.kubernetes.io/wafv2-acl-arn: ${WAF_ACL_ARN}
+    alb.ingress.kubernetes.io/actions.ssl-redirect: |
+      {
+        "Type": "redirect",
+        "RedirectConfig": {
+          "Protocol": "HTTPS",
+          "Port": "443",
+          "StatusCode": "HTTP_301"
+        }
+      }
+  hosts:
+    - host: backstage.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
+
+# Production resource limits
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+    ephemeral-storage: 2Gi
+  requests:
+    cpu: 1000m
+    memory: 1Gi
+    ephemeral-storage: 1Gi
+
+# Horizontal Pod Autoscaler for production
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Network policy for enhanced security
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 7007
+  egress:
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+# Node selector for production workloads
+nodeSelector:
+  node-type: "application"
+  instance-type: "m5.large"
+
+# Tolerations for dedicated nodes
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "application"
+    effect: "NoSchedule"
+
+# Anti-affinity for high availability
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - backstage
+        topologyKey: kubernetes.io/hostname
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
+
+# Backstage configuration for production
+backstage:
+  logLevel: info
+  config:
+    app:
+      title: Internal Developer Platform
+      baseUrl: https://backstage.example.com
+    
+    organization:
+      name: ${ORGANIZATION_NAME}
+    
+    backend:
+      baseUrl: https://backstage.example.com
+      cors:
+        origin: https://backstage.example.com
+      auth:
+        keys:
+          - secret: ${BACKEND_SECRET_PRODUCTION}
+    
+    auth:
+      providers:
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID_PRODUCTION}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET_PRODUCTION}
+    
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+  secrets:
+    backendSecret: ${BACKEND_SECRET_PRODUCTION}
+    githubClientId: ${AUTH_GITHUB_CLIENT_ID_PRODUCTION}
+    githubClientSecret: ${AUTH_GITHUB_CLIENT_SECRET_PRODUCTION}
+    githubToken: ${GITHUB_TOKEN}
+    argoCdToken: ${ARGOCD_TOKEN_PRODUCTION}
+    datadogApiKey: ${DATADOG_API_KEY}
+    datadogAppKey: ${DATADOG_APP_KEY}
+
+# PostgreSQL configuration for production
+postgresql:
+  enabled: false
+
+# External PostgreSQL for production (RDS with Multi-AZ)
+externalPostgresql:
+  host: backstage-production.rds.amazonaws.com
+  port: 5432
+  username: backstage
+  password: ${POSTGRES_PASSWORD_PRODUCTION}
+  database: backstage_production
+  ssl: require
+
+# Environment variables for production
+env:
+  - name: NODE_ENV
+    value: production
+  - name: NODE_OPTIONS
+    value: "--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete"
+  - name: LOG_LEVEL
+    value: info
+  - name: TZ
+    value: UTC
+  - name: POSTGRES_HOST
+    value: backstage-production.rds.amazonaws.com
+  - name: POSTGRES_PORT
+    value: "5432"
+  - name: POSTGRES_USER
+    value: backstage
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: backstage-postgres-production
+        key: password
+  - name: POSTGRES_DB
+    value: backstage_production
+  - name: POSTGRES_SSL
+    value: require
+  - name: BACKEND_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: backend-secret
+  - name: AUTH_GITHUB_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: github-client-id
+  - name: AUTH_GITHUB_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: github-client-secret
+  - name: GITHUB_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: github-token
+  - name: GITHUB_ORG
+    value: ${GITHUB_ORG}
+  - name: AWS_REGION
+    value: us-west-2
+  - name: TECHDOCS_S3_BUCKET_NAME
+    value: backstage-techdocs-production
+  - name: KUBERNETES_API_URL
+    value: https://kubernetes.default.svc
+  - name: ARGOCD_API_URL
+    value: https://argocd.example.com
+  - name: ARGOCD_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: argocd-token
+        optional: true
+  - name: DATADOG_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: datadog-api-key
+        optional: true
+  - name: DATADOG_APP_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets-production
+        key: datadog-app-key
+        optional: true
+  - name: AUTH_PUBLIC_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-auth-keys-production
+        key: public-key
+  - name: AUTH_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: backstage-auth-keys-production
+        key: private-key
+  - name: AUTH_TOKEN_ISSUER
+    value: https://backstage.example.com
+
+# Monitoring configuration
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+    labels:
+      app: backstage
+      environment: production
+      monitoring: prometheus
+  
+  grafanaDashboard:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+      environment: production
+
+# Backup configuration for production
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"
+  storage:
+    type: s3
+    bucket: backstage-backups-production
+    prefix: backstage-production/
+    encryption: AES256

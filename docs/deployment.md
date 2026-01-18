@@ -1,348 +1,602 @@
-# Deployment Guide
+# 部署指南
 
-This guide covers deploying services created with the Internal Developer Platform.
+本指南介绍如何将 Internal Developer Platform 部署到 AWS EKS 环境。
 
-## Deployment Overview
+## 目录
 
-The platform uses GitOps principles with Argo CD for automated deployments across multiple environments.
+1. [部署架构](#部署架构)
+2. [前置要求](#前置要求)
+3. [AWS 基础设施准备](#aws-基础设施准备)
+4. [配置 GitHub Secrets](#配置-github-secrets)
+5. [首次部署](#首次部署)
+6. [验证部署](#验证部署)
+7. [故障排查](#故障排查)
 
-### Deployment Flow
+---
 
-```mermaid
-graph LR
-    A[Developer] --> B[Git Push]
-    B --> C[GitHub Actions]
-    C --> D[Build & Test]
-    D --> E[Container Registry]
-    E --> F[Update Manifests]
-    F --> G[Argo CD]
-    G --> H[Kubernetes Cluster]
+## 部署架构
+
+### 整体架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         GitHub                               │
+│  ┌──────────────┐         ┌──────────────┐                 │
+│  │  Source Code │────────▶│ GitHub Actions│                 │
+│  └──────────────┘         └───────┬──────┘                 │
+└────────────────────────────────────┼──────────────────────────┘
+                                     │
+                                     │ CI/CD Pipeline
+                                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      AWS Cloud                               │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              Amazon EKS Cluster                       │  │
+│  │                                                        │  │
+│  │  ┌─────────────────┐      ┌─────────────────┐       │  │
+│  │  │   Staging       │      │   Production    │       │  │
+│  │  │   Namespace     │      │   Namespace     │       │  │
+│  │  │                 │      │                 │       │  │
+│  │  │  ┌───────────┐  │      │  ┌───────────┐ │       │  │
+│  │  │  │ Backstage │  │      │  │ Backstage │ │       │  │
+│  │  │  │   Pods    │  │      │  │   Pods    │ │       │  │
+│  │  │  │  (2-5)    │  │      │  │  (3-10)   │ │       │  │
+│  │  │  └───────────┘  │      │  └───────────┘ │       │  │
+│  │  └─────────────────┘      └─────────────────┘       │  │
+│  │                                                        │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+│  ┌──────────────────┐      ┌──────────────────┐           │
+│  │  RDS PostgreSQL  │      │  S3 Buckets      │           │
+│  │  - Staging       │      │  - TechDocs      │           │
+│  │  - Production    │      │  - Backups       │           │
+│  └──────────────────┘      └──────────────────┘           │
+│                                                              │
+│  ┌──────────────────┐      ┌──────────────────┐           │
+│  │  ALB Ingress     │      │  Secrets Manager │           │
+│  │  - SSL/TLS       │      │  - Credentials   │           │
+│  │  - WAF           │      │  - API Keys      │           │
+│  └──────────────────┘      └──────────────────┘           │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Environments
+### 环境说明
 
-### Development
-- **Purpose**: Feature development and testing
-- **Deployment**: Automatic on merge to `develop` branch
-- **Resources**: Shared development cluster
-- **Access**: All developers
+#### Staging 环境
+- **用途**: 测试和验证新功能
+- **URL**: https://backstage-staging.example.com
+- **资源**: 较小配置，节省成本
+- **副本数**: 2-5 个 Pod
+- **数据库**: RDS PostgreSQL (单 AZ)
+- **自动部署**: Push 到 `main` 分支
 
-### Staging
-- **Purpose**: Integration testing and QA
-- **Deployment**: Automatic on merge to `main` branch
-- **Resources**: Dedicated staging cluster
-- **Access**: QA team and developers
+#### Production 环境
+- **用途**: 生产环境，服务真实用户
+- **URL**: https://backstage.example.com
+- **资源**: 高配置，保证性能
+- **副本数**: 3-10 个 Pod（自动扩展）
+- **数据库**: RDS PostgreSQL (Multi-AZ)
+- **部署方式**: 创建 `v*` 标签或手动触发
 
-### Production
-- **Purpose**: Live customer traffic
-- **Deployment**: Manual approval required
-- **Resources**: Production cluster with HA
-- **Access**: Platform team and on-call engineers
+---
 
-## Deployment Process
+## 前置要求
 
-### Automatic Deployments
+### 必需工具
 
-1. **Code Changes**
-   ```bash
-   git checkout -b feature/new-feature
-   # Make changes
-   git commit -m "feat: add new feature"
-   git push origin feature/new-feature
-   ```
+- **AWS CLI**: 2.x 或更高版本
+- **kubectl**: 1.28 或更高版本
+- **Helm**: 3.x 或更高版本
+- **Docker**: 最新版本
+- **Git**: 最新版本
 
-2. **Pull Request**
-   - Create PR to `main` branch
-   - Automated tests run
-   - Code review required
-   - Merge triggers deployment
+### 安装工具
 
-3. **CI/CD Pipeline**
-   ```yaml
-   # .github/workflows/deploy.yml
-   name: Deploy
-   on:
-     push:
-       branches: [main]
-   
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Build and push image
-           run: |
-             docker build -t $IMAGE_TAG .
-             docker push $IMAGE_TAG
-         
-         - name: Update manifests
-           run: |
-             yq e '.spec.template.spec.containers[0].image = "$IMAGE_TAG"' \
-               -i k8s/deployment.yaml
-         
-         - name: Commit updated manifests
-           run: |
-             git add k8s/
-             git commit -m "chore: update image to $IMAGE_TAG"
-             git push
-   ```
+```bash
+# macOS
+brew install awscli kubectl helm docker git
 
-### Manual Deployments
-
-For production deployments:
-
-1. **Create Release**
-   ```bash
-   git tag -a v1.2.3 -m "Release v1.2.3"
-   git push origin v1.2.3
-   ```
-
-2. **Approve in Argo CD**
-   - Navigate to Argo CD UI
-   - Find your application
-   - Click "Sync" to deploy
-
-3. **Monitor Deployment**
-   - Check deployment status in Argo CD
-   - Monitor metrics in Datadog
-   - Verify health checks pass
-
-## Configuration Management
-
-### Environment Variables
-
-Use Kubernetes ConfigMaps and Secrets:
-
-```yaml
-# k8s/configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: my-service-config
-data:
-  DATABASE_URL: "postgresql://..."
-  LOG_LEVEL: "info"
-  FEATURE_FLAGS: "feature1=true,feature2=false"
+# 验证安装
+aws --version
+kubectl version --client
+helm version
+docker --version
+git --version
 ```
 
-```yaml
-# k8s/secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-service-secrets
-type: Opaque
-data:
-  API_KEY: <base64-encoded-value>
-  DATABASE_PASSWORD: <base64-encoded-value>
+### AWS 权限要求
+
+部署用户需要以下 AWS 权限：
+- EKS 集群管理
+- RDS 数据库管理
+- S3 存储桶管理
+- IAM 角色和策略管理
+- ACM 证书管理
+- ALB 和 WAF 管理
+
+---
+
+## AWS 基础设施准备
+
+### 1. 创建 EKS 集群
+
+#### Staging 集群
+
+```bash
+# 创建 Staging EKS 集群
+eksctl create cluster \
+  --name backstage-cluster-staging \
+  --region us-west-2 \
+  --version 1.28 \
+  --nodegroup-name standard-workers \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 2 \
+  --nodes-max 5 \
+  --managed
+
+# 配置 kubectl
+aws eks update-kubeconfig \
+  --region us-west-2 \
+  --name backstage-cluster-staging
 ```
 
-### Application Configuration
+#### Production 集群
 
-```yaml
-# k8s/deployment.yaml
-spec:
-  template:
-    spec:
-      containers:
-      - name: my-service
-        image: my-service:latest
-        envFrom:
-        - configMapRef:
-            name: my-service-config
-        - secretRef:
-            name: my-service-secrets
-        env:
-        - name: ENVIRONMENT
-          value: "production"
+```bash
+# 创建 Production EKS 集群
+eksctl create cluster \
+  --name backstage-cluster-production \
+  --region us-west-2 \
+  --version 1.28 \
+  --nodegroup-name standard-workers \
+  --node-type m5.large \
+  --nodes 3 \
+  --nodes-min 3 \
+  --nodes-max 10 \
+  --managed
+
+# 配置 kubectl
+aws eks update-kubeconfig \
+  --region us-west-2 \
+  --name backstage-cluster-production
 ```
 
-## Health Checks
+### 2. 创建 RDS PostgreSQL 数据库
 
-### Liveness Probe
-Checks if the application is running:
+#### Staging 数据库
 
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health
-    port: 8080
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+```bash
+# 创建 Staging RDS 实例
+aws rds create-db-instance \
+  --db-instance-identifier backstage-staging \
+  --db-instance-class db.t3.medium \
+  --engine postgres \
+  --engine-version 15.4 \
+  --master-username backstage \
+  --master-user-password "YOUR_SECURE_PASSWORD" \
+  --allocated-storage 50 \
+  --storage-type gp3 \
+  --vpc-security-group-ids sg-xxxxxxxx \
+  --db-subnet-group-name backstage-subnet-group \
+  --backup-retention-period 7 \
+  --preferred-backup-window "03:00-04:00" \
+  --preferred-maintenance-window "mon:04:00-mon:05:00" \
+  --storage-encrypted \
+  --enable-cloudwatch-logs-exports '["postgresql"]' \
+  --tags Key=Environment,Value=staging Key=Application,Value=backstage
 ```
 
-### Readiness Probe
-Checks if the application is ready to serve traffic:
+#### Production 数据库
 
-```yaml
-readinessProbe:
-  httpGet:
-    path: /ready
-    port: 8080
-  initialDelaySeconds: 5
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 3
+```bash
+# 创建 Production RDS 实例（Multi-AZ）
+aws rds create-db-instance \
+  --db-instance-identifier backstage-production \
+  --db-instance-class db.m5.large \
+  --engine postgres \
+  --engine-version 15.4 \
+  --master-username backstage \
+  --master-user-password "YOUR_SECURE_PASSWORD" \
+  --allocated-storage 100 \
+  --storage-type gp3 \
+  --vpc-security-group-ids sg-xxxxxxxx \
+  --db-subnet-group-name backstage-subnet-group \
+  --backup-retention-period 30 \
+  --preferred-backup-window "03:00-04:00" \
+  --preferred-maintenance-window "mon:04:00-mon:05:00" \
+  --multi-az \
+  --storage-encrypted \
+  --enable-cloudwatch-logs-exports '["postgresql"]' \
+  --tags Key=Environment,Value=production Key=Application,Value=backstage
 ```
 
-### Health Check Implementation
+### 3. 创建 S3 存储桶
 
-```typescript
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    version: process.env.APP_VERSION
-  });
-});
-
-// Readiness check endpoint
-app.get('/ready', async (req, res) => {
-  try {
-    // Check database connection
-    await database.ping();
-    
-    // Check external dependencies
-    await externalService.healthCheck();
-    
-    res.status(200).json({
-      status: 'ready',
-      checks: {
-        database: 'ok',
-        externalService: 'ok'
+```bash
+# TechDocs 存储桶 - Staging
+aws s3 mb s3://backstage-techdocs-staging --region us-west-2
+aws s3api put-bucket-encryption \
+  --bucket backstage-techdocs-staging \
+  --server-side-encryption-configuration '{
+    "Rules": [{
+      "ApplyServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
       }
-    });
-  } catch (error) {
-    res.status(503).json({
-      status: 'not ready',
-      error: error.message
-    });
-  }
-});
+    }]
+  }'
+
+# TechDocs 存储桶 - Production
+aws s3 mb s3://backstage-techdocs-production --region us-west-2
+aws s3api put-bucket-encryption \
+  --bucket backstage-techdocs-production \
+  --server-side-encryption-configuration '{
+    "Rules": [{
+      "ApplyServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+      }
+    }]
+  }'
+
+# 备份存储桶 - Staging
+aws s3 mb s3://backstage-backups-staging --region us-west-2
+aws s3api put-bucket-versioning \
+  --bucket backstage-backups-staging \
+  --versioning-configuration Status=Enabled
+
+# 备份存储桶 - Production
+aws s3 mb s3://backstage-backups-production --region us-west-2
+aws s3api put-bucket-versioning \
+  --bucket backstage-backups-production \
+  --versioning-configuration Status=Enabled
 ```
 
-## Monitoring Deployment
+### 4. 创建 IAM 角色（IRSA）
 
-### Deployment Metrics
-
-Monitor these key metrics during deployments:
-
-- **Error Rate**: Should remain low during deployment
-- **Response Time**: Should not increase significantly
-- **Throughput**: Should maintain expected levels
-- **Resource Usage**: CPU and memory consumption
-
-### Rollback Procedures
-
-If issues are detected:
-
-1. **Automatic Rollback**
-   ```bash
-   # Argo CD automatic rollback on health check failure
-   kubectl rollout undo deployment/my-service
-   ```
-
-2. **Manual Rollback**
-   ```bash
-   # Rollback to previous version
-   kubectl rollout undo deployment/my-service
-   
-   # Rollback to specific revision
-   kubectl rollout undo deployment/my-service --to-revision=2
-   ```
-
-3. **Emergency Rollback**
-   ```bash
-   # Scale down to zero
-   kubectl scale deployment my-service --replicas=0
-   
-   # Restore previous image
-   kubectl set image deployment/my-service \
-     my-service=my-service:previous-tag
-   
-   # Scale back up
-   kubectl scale deployment my-service --replicas=3
-   ```
-
-## Troubleshooting
-
-### Common Issues
-
-#### Pod Startup Failures
 ```bash
-# Check pod status
-kubectl get pods -l app=my-service
+# 为 Backstage 创建 IAM 角色
+eksctl create iamserviceaccount \
+  --name backstage-staging \
+  --namespace backstage-staging \
+  --cluster backstage-cluster-staging \
+  --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+  --approve \
+  --override-existing-serviceaccounts
 
-# Check pod logs
-kubectl logs -l app=my-service --tail=100
-
-# Describe pod for events
-kubectl describe pod <pod-name>
+eksctl create iamserviceaccount \
+  --name backstage-production \
+  --namespace backstage-production \
+  --cluster backstage-cluster-production \
+  --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+  --approve \
+  --override-existing-serviceaccounts
 ```
 
-#### Image Pull Errors
+### 5. 配置 ALB Ingress Controller
+
 ```bash
-# Check image exists
-docker pull my-service:latest
+# 安装 AWS Load Balancer Controller
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
 
-# Verify image registry credentials
-kubectl get secret regcred -o yaml
+# Staging
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=backstage-cluster-staging \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+
+# Production
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=backstage-cluster-production \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
 ```
 
-#### Configuration Issues
+### 6. 申请 SSL 证书
+
 ```bash
-# Check ConfigMap
-kubectl get configmap my-service-config -o yaml
+# 使用 AWS Certificate Manager 申请证书
+aws acm request-certificate \
+  --domain-name backstage-staging.example.com \
+  --validation-method DNS \
+  --region us-west-2
 
-# Check Secret
-kubectl get secret my-service-secrets -o yaml
+aws acm request-certificate \
+  --domain-name backstage.example.com \
+  --validation-method DNS \
+  --region us-west-2
+
+# 记录返回的证书 ARN，后续需要配置到 GitHub Secrets
 ```
 
-### Debugging Tools
+---
 
-#### Port Forwarding
+## 配置 GitHub Secrets
+
+### 访问 GitHub 仓库设置
+
+1. 访问: https://github.com/pingxin403/platform-console
+2. 进入 **Settings** → **Secrets and variables** → **Actions**
+3. 点击 **New repository secret**
+
+### 必需的 Secrets
+
+#### AWS 相关
+```
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=us-west-2
+```
+
+#### Kubernetes 相关
+```
+EKS_CLUSTER_NAME=backstage-cluster
+BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_STAGING=arn:aws:iam::123456789012:role/...
+BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION=arn:aws:iam::123456789012:role/...
+```
+
+#### 证书相关
+```
+CERTIFICATE_ARN_STAGING=arn:aws:acm:us-west-2:123456789012:certificate/...
+CERTIFICATE_ARN_PRODUCTION=arn:aws:acm:us-west-2:123456789012:certificate/...
+WAF_ACL_ARN=arn:aws:wafv2:us-west-2:123456789012:webacl/...
+```
+
+#### 数据库相关
+```
+POSTGRES_PASSWORD_STAGING=your-secure-password-staging
+POSTGRES_PASSWORD_PRODUCTION=your-secure-password-production
+```
+
+#### Backstage 相关
+```
+BACKEND_SECRET_STAGING=your-backend-secret-minimum-24-characters-staging
+BACKEND_SECRET_PRODUCTION=your-backend-secret-minimum-24-characters-production
+ORGANIZATION_NAME=Your Organization Name
+```
+
+#### GitHub 集成
+```
+GITHUB_TOKEN=ghp_your_github_personal_access_token
+GITHUB_ORG=your-github-organization
+AUTH_GITHUB_CLIENT_ID_STAGING=your-github-oauth-client-id-staging
+AUTH_GITHUB_CLIENT_SECRET_STAGING=your-github-oauth-client-secret-staging
+AUTH_GITHUB_CLIENT_ID_PRODUCTION=your-github-oauth-client-id-production
+AUTH_GITHUB_CLIENT_SECRET_PRODUCTION=your-github-oauth-client-secret-production
+```
+
+#### 可选集成
+```
+ARGOCD_TOKEN_STAGING=your-argocd-token-staging
+ARGOCD_TOKEN_PRODUCTION=your-argocd-token-production
+DATADOG_API_KEY=your-datadog-api-key
+DATADOG_APP_KEY=your-datadog-app-key
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+CODECOV_TOKEN=your-codecov-token
+```
+
+---
+
+## 首次部署
+
+### 1. 创建 Kubernetes Secrets
+
+在部署之前，需要在 Kubernetes 集群中创建必要的 Secrets。
+
+#### Staging 环境
+
 ```bash
-# Forward local port to pod
-kubectl port-forward pod/<pod-name> 8080:8080
+# 切换到 Staging 集群
+aws eks update-kubeconfig \
+  --region us-west-2 \
+  --name backstage-cluster-staging
 
-# Forward to service
-kubectl port-forward service/my-service 8080:80
+# 创建命名空间
+kubectl create namespace backstage-staging
+
+# 创建数据库密码 Secret
+kubectl create secret generic backstage-postgres-staging \
+  --from-literal=password='your-postgres-password-staging' \
+  -n backstage-staging
+
+# 创建 Backstage Secrets
+kubectl create secret generic backstage-secrets-staging \
+  --from-literal=backend-secret='your-backend-secret-staging' \
+  --from-literal=github-client-id='your-github-client-id-staging' \
+  --from-literal=github-client-secret='your-github-client-secret-staging' \
+  --from-literal=github-token='your-github-token' \
+  --from-literal=argocd-token='your-argocd-token-staging' \
+  --from-literal=datadog-api-key='your-datadog-api-key' \
+  --from-literal=datadog-app-key='your-datadog-app-key' \
+  -n backstage-staging
 ```
 
-#### Exec into Pod
+#### Production 环境
+
 ```bash
-# Get shell access
-kubectl exec -it <pod-name> -- /bin/bash
+# 切换到 Production 集群
+aws eks update-kubeconfig \
+  --region us-west-2 \
+  --name backstage-cluster-production
 
-# Run specific command
-kubectl exec <pod-name> -- curl localhost:8080/health
+# 创建命名空间
+kubectl create namespace backstage-production
+
+# 创建数据库密码 Secret
+kubectl create secret generic backstage-postgres-production \
+  --from-literal=password='your-postgres-password-production' \
+  -n backstage-production
+
+# 创建 Backstage Secrets
+kubectl create secret generic backstage-secrets-production \
+  --from-literal=backend-secret='your-backend-secret-production' \
+  --from-literal=github-client-id='your-github-client-id-production' \
+  --from-literal=github-client-secret='your-github-client-secret-production' \
+  --from-literal=github-token='your-github-token' \
+  --from-literal=argocd-token='your-argocd-token-production' \
+  --from-literal=datadog-api-key='your-datadog-api-key' \
+  --from-literal=datadog-app-key='your-datadog-app-key' \
+  -n backstage-production
 ```
 
-## Best Practices
+### 2. 触发首次部署
 
-### Deployment Strategy
-- Use **rolling updates** for zero-downtime deployments
-- Implement **circuit breakers** for external dependencies
-- Set appropriate **resource limits** and requests
-- Use **horizontal pod autoscaling** for traffic spikes
+#### 部署到 Staging
 
-### Security
-- **Never commit secrets** to version control
-- Use **least privilege** service accounts
-- Implement **network policies** for pod communication
-- Regularly **scan images** for vulnerabilities
+```bash
+# 方法 1: Push 到 main 分支（自动触发）
+git checkout main
+git pull origin main
+git push origin main
 
-### Performance
-- **Optimize container images** for faster startup
-- Use **multi-stage builds** to reduce image size
-- Implement **graceful shutdown** handling
-- Monitor and **tune resource allocation**
+# 方法 2: 手动触发
+gh workflow run cd.yml --ref main -f environment=staging
+```
 
-### Reliability
-- Implement **retry logic** with exponential backoff
-- Use **health checks** for automatic recovery
-- Set up **monitoring and alerting** for all services
-- Practice **disaster recovery** procedures regularly
+#### 部署到 Production
+
+```bash
+# 方法 1: 创建版本标签（推荐）
+git tag -a v1.0.0 -m "Release v1.0.0: Initial production deployment"
+git push origin v1.0.0
+
+# 方法 2: 手动触发
+gh workflow run cd.yml --ref main -f environment=production
+```
+
+### 3. 监控部署进度
+
+```bash
+# 在 GitHub Actions 中查看
+# 访问: https://github.com/pingxin403/platform-console/actions
+
+# 或使用 kubectl 监控
+kubectl get pods -n backstage-staging -w
+kubectl get pods -n backstage-production -w
+
+# 查看部署状态
+kubectl rollout status deployment/backstage-staging -n backstage-staging
+kubectl rollout status deployment/backstage-production -n backstage-production
+```
+
+---
+
+## 验证部署
+
+### 1. 检查 Pod 状态
+
+```bash
+# Staging
+kubectl get pods -n backstage-staging
+kubectl logs -n backstage-staging -l app=backstage-staging --tail=100
+
+# Production
+kubectl get pods -n backstage-production
+kubectl logs -n backstage-production -l app=backstage-production --tail=100
+```
+
+### 2. 检查服务和 Ingress
+
+```bash
+# Staging
+kubectl get svc -n backstage-staging
+kubectl get ingress -n backstage-staging
+
+# Production
+kubectl get svc -n backstage-production
+kubectl get ingress -n backstage-production
+```
+
+### 3. 测试应用访问
+
+```bash
+# 检查健康端点
+curl https://backstage-staging.example.com/healthcheck
+curl https://backstage.example.com/healthcheck
+
+# 检查 Catalog API
+curl https://backstage-staging.example.com/api/catalog/health
+curl https://backstage.example.com/api/catalog/health
+```
+
+### 4. 浏览器访问
+
+- **Staging**: https://backstage-staging.example.com
+- **Production**: https://backstage.example.com
+
+使用 GitHub OAuth 登录并验证功能。
+
+---
+
+## 故障排查
+
+### Pod 无法启动
+
+```bash
+# 查看 Pod 详情
+kubectl describe pod <pod-name> -n backstage-staging
+
+# 查看日志
+kubectl logs <pod-name> -n backstage-staging --previous
+
+# 检查事件
+kubectl get events -n backstage-staging --sort-by='.lastTimestamp'
+```
+
+### 数据库连接失败
+
+```bash
+# 测试数据库连接
+kubectl run -it --rm debug --image=postgres:15 --restart=Never -- \
+  psql -h backstage-staging.rds.amazonaws.com -U backstage -d backstage_staging
+
+# 检查安全组规则
+aws ec2 describe-security-groups --group-ids sg-xxxxxxxx
+```
+
+### Ingress 无法访问
+
+```bash
+# 检查 ALB 状态
+kubectl describe ingress backstage-staging -n backstage-staging
+
+# 查看 ALB Controller 日志
+kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+
+# 检查 DNS 解析
+nslookup backstage-staging.example.com
+```
+
+### 回滚部署
+
+```bash
+# 查看 Helm 发布历史
+helm history backstage-staging -n backstage-staging
+
+# 回滚到上一个版本
+helm rollback backstage-staging -n backstage-staging
+
+# 回滚到特定版本
+helm rollback backstage-staging 3 -n backstage-staging
+```
+
+---
+
+## 下一步
+
+- 阅读 [本地开发指南](local-development.md)
+- 查看 [CI/CD 指南](ci-cd-guide.md)
+- 了解 [Git & GitHub 使用指南](git-github-guide.md)
+
+---
+
+## 参考资源
+
+- [AWS EKS 文档](https://docs.aws.amazon.com/eks/)
+- [Helm 文档](https://helm.sh/docs/)
+- [Backstage 部署文档](https://backstage.io/docs/deployment/)
+- [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/)
+
