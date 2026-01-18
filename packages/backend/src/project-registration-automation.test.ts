@@ -4,6 +4,8 @@
  * Validates: Requirements 2.4
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 import { Entity } from '@backstage/catalog-model';
 

@@ -5,6 +5,8 @@
  * Validates: Requirements 4.5
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 
 // Mock user roles and permissions

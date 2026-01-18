@@ -4,6 +4,8 @@
  * Validates: Requirements 2.1, 2.2
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 import { TemplateEntityV1beta3 } from '@backstage/plugin-scaffolder-common';
 

@@ -4,6 +4,8 @@
  * Validates: Requirements 5.4, 5.5
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 
 // Documentation search and migration interfaces to test
@@ -452,6 +454,7 @@ class MockDocumentationSearch implements DocumentationSearch {
     const headings: string[] = [];
     let match;
 
+    // eslint-disable-next-line no-cond-assign
     while ((match = headingRegex.exec(content)) !== null) {
       headings.push(match[1].trim());
     }
@@ -465,6 +468,7 @@ class MockDocumentationSearch implements DocumentationSearch {
     let match;
     let lineNumber = 1;
 
+    // eslint-disable-next-line no-cond-assign
     while ((match = codeBlockRegex.exec(content)) !== null) {
       codeBlocks.push({
         language: match[1] || 'text',
@@ -482,6 +486,7 @@ class MockDocumentationSearch implements DocumentationSearch {
     const references: string[] = [];
     let match;
 
+    // eslint-disable-next-line no-cond-assign
     while ((match = linkRegex.exec(content)) !== null) {
       if (match[2].startsWith('./') || match[2].startsWith('../')) {
         references.push(match[2]);
@@ -546,12 +551,12 @@ class MockDocumentationSearch implements DocumentationSearch {
     ) {
       const matchIndex = contentLower.indexOf(fullQuery);
       const termIndex = queryTerms.find(term => contentLower.includes(term));
-      const searchIndex =
-        matchIndex >= 0
-          ? matchIndex
-          : termIndex
-          ? contentLower.indexOf(termIndex)
-          : 0;
+      let searchIndex = 0;
+      if (matchIndex >= 0) {
+        searchIndex = matchIndex;
+      } else if (termIndex) {
+        searchIndex = contentLower.indexOf(termIndex);
+      }
 
       const snippetStart = Math.max(0, searchIndex - 50);
       const snippetEnd = Math.min(doc.content.length, snippetStart + 200);
@@ -669,8 +674,11 @@ class MockFeishuMigration implements FeishuMigration {
           },
         ],
         lastModified: new Date(Date.now() - i * 24 * 60 * 60 * 1000), // i days ago
-        documentType:
-          i % 3 === 0 ? 'doc' : i % 3 === 1 ? 'sheet' : 'presentation',
+        documentType: (() => {
+          if (i % 3 === 0) return 'doc';
+          if (i % 3 === 1) return 'sheet';
+          return 'presentation';
+        })(),
         attachments:
           i % 2 === 0
             ? [

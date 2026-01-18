@@ -6,6 +6,8 @@
  * Requirements: 6.1, 7.1, 7.4, 9.1
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import { ConfigReader } from '@backstage/config';
 
 describe('Collaboration Plugins Integration', () => {

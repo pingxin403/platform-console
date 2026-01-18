@@ -4,6 +4,8 @@
  * Validates: Requirements 3.1, 3.2, 3.3
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import fc from 'fast-check';
 import { ArgocdService } from './argocd/argocd-service';
 import { Config } from '@backstage/config';

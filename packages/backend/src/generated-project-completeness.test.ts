@@ -4,6 +4,8 @@
  * Validates: Requirements 2.3, 2.5
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 
 // Project generation configuration
@@ -230,6 +232,10 @@ class ProjectGenerator {
           },
         );
         break;
+
+      default:
+        // No template-specific files for unknown types
+        break;
     }
 
     return files;
@@ -306,13 +312,11 @@ metadata:
     }
     sentry/project-slug: company/${config.projectName}
 spec:
-  type: ${
-    config.templateType.includes('service')
-      ? 'service'
-      : config.templateType.includes('app')
-      ? 'website'
-      : 'mobile-app'
-  }
+  type: ${(() => {
+    if (config.templateType.includes('service')) return 'service';
+    if (config.templateType.includes('app')) return 'website';
+    return 'mobile-app';
+  })()}
   owner: ${config.owner}
   lifecycle: experimental`;
   }
@@ -850,7 +854,7 @@ describe('Generated Project Completeness', () => {
 
             // Assert: All integrations should be properly configured
             const configuredIntegrations = project.integrations.filter(
-              i => i.configured,
+              integration => integration.configured,
             );
             expect(configuredIntegrations.length).toBeGreaterThanOrEqual(3); // At least GitHub Actions, Datadog, Sentry
           }
