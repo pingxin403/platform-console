@@ -4,10 +4,17 @@ site_description: 'Comprehensive developer platform documentation'
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - Service Catalog: service-catalog.md
-  - Templates: templates.md
-  - Deployment: deployment.md
-  - Contributing: contributing.md
+  - Project Overview: project-overview.md
+  - Development:
+      - Local Development: local-development.md
+      - Git & GitHub Guide: git-github-guide.md
+      - Contributing: contributing.md
+  - Deployment:
+      - Deployment Guide: deployment.md
+      - CI/CD Guide: ci-cd-guide.md
+  - Features:
+      - Service Catalog: service-catalog.md
+      - Templates: templates.md
 
 plugins:
   - search
