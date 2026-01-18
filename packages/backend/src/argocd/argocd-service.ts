@@ -137,11 +137,12 @@ export class ArgocdService {
     const healthStatuses = Object.values(environmentStatuses).map(
       s => s.health,
     );
-    const overallHealth = healthStatuses.includes('Degraded')
-      ? 'Degraded'
-      : healthStatuses.includes('Unknown')
-      ? 'Unknown'
-      : 'Healthy';
+    let overallHealth = 'Healthy';
+    if (healthStatuses.includes('Degraded')) {
+      overallHealth = 'Degraded';
+    } else if (healthStatuses.includes('Unknown')) {
+      overallHealth = 'Unknown';
+    }
 
     return {
       serviceName,
@@ -308,18 +309,10 @@ export class ArgocdService {
    * Check if user can perform sync operations on an application
    */
   async canUserSync(appName: string, userEmail: string): Promise<boolean> {
-    try {
-      // In a real implementation, this would check Argo CD RBAC
-      // For now, simulate permission check
-
-      // Allow sync for service owners (this would be determined by catalog ownership)
-      return true; // Simplified for demo
-    } catch (error) {
-      this.logger.error(
-        `Failed to check sync permissions for ${appName}: ${error}`,
-      );
-      return false;
-    }
+    // In a real implementation, this would check Argo CD RBAC
+    // For now, simulate permission check
+    // Allow sync for service owners (this would be determined by catalog ownership)
+    return true; // Simplified for demo
   }
 
   /**

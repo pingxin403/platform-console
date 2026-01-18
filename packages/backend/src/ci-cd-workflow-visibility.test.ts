@@ -5,6 +5,8 @@
  * and changelog generation functionality.
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import { ConfigReader } from '@backstage/config';
 import { Entity } from '@backstage/catalog-model';
 

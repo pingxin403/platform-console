@@ -5,6 +5,8 @@
  * Validates: Requirements 4.1, 4.2, 4.3, 4.4
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 import { Entity } from '@backstage/catalog-model';
 
@@ -331,7 +333,9 @@ describe('Monitoring Integration Completeness Property Tests', () => {
             );
           } catch (error) {
             // Monitoring integration should handle errors gracefully
-            fail(`Monitoring integration should not throw errors: ${error}`);
+            throw new Error(
+              `Monitoring integration should not throw errors: ${error}`,
+            );
           }
 
           // Even with potential external service failures, basic structure should be maintained

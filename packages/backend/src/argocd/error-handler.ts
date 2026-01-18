@@ -352,6 +352,10 @@ export class ArgocdErrorHandler {
           prerequisites: ['Platform team contact information'],
         });
         break;
+
+      default:
+        // No additional actions for other error types
+        break;
     }
 
     return baseActions;

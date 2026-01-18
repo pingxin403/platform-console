@@ -4,6 +4,8 @@
  * Validates: Requirements 6.3, 6.5
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 
 // Cost benchmarking and freshness interfaces to test

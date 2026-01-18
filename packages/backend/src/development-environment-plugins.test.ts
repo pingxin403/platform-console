@@ -7,6 +7,8 @@
  * Requirements: 2.1, 13.3
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import { ConfigReader } from '@backstage/config';
 
 describe('Development Environment Plugins Integration', () => {
