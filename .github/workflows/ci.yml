@@ -17,11 +17,8 @@ permissions:
   actions: read
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   YARN_VERSION: '4.4.1'
-  # Force use of prebuilt binaries for native modules
-  npm_config_build_from_source: 'false'
-  SKIP_SASS_BINARY_DOWNLOAD_FOR_CI: 'true'
 
 jobs:
   # Job 1: Lint and Type Check
@@ -44,15 +41,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install build dependencies for native modules
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip make g++ build-essential
-
       - name: Install dependencies
-        run: yarn install --immutable --inline-builds
-        env:
-          YARN_ENABLE_HARDENED_MODE: false
+        run: yarn install --immutable
 
       - name: Run ESLint
         run: yarn lint:all
@@ -96,15 +86,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install build dependencies for native modules
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip make g++ build-essential
-
       - name: Install dependencies
-        run: yarn install --immutable --inline-builds
-        env:
-          YARN_ENABLE_HARDENED_MODE: false
+        run: yarn install --immutable
 
       - name: Run tests with coverage
         run: yarn test:all
@@ -144,15 +127,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install build dependencies for native modules
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip make g++ build-essential
-
       - name: Install dependencies
-        run: yarn install --immutable --inline-builds
-        env:
-          YARN_ENABLE_HARDENED_MODE: false
+        run: yarn install --immutable
 
       - name: Build all packages
         run: yarn build:all
@@ -201,15 +177,8 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Install build dependencies for native modules
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip make g++ build-essential
-
       - name: Install dependencies
-        run: yarn install --immutable --inline-builds
-        env:
-          YARN_ENABLE_HARDENED_MODE: false
+        run: yarn install --immutable
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -267,12 +236,8 @@ jobs:
       - name: Run npm audit
         run: |
           corepack enable
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip make g++ build-essential
-          yarn install --immutable --inline-builds
+          yarn install --immutable
           yarn npm audit --all --recursive || true
-        env:
-          YARN_ENABLE_HARDENED_MODE: false
 
   # Job 6: Docker Build (only on main branch)
   docker:
