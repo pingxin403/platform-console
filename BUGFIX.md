@@ -181,6 +181,7 @@ CI 中 `yarn prettier:check` 失败，提示 `tsconfig.json` 格式不正确。
 
 **问题描述**:
 `yarn tsc` 报告 175 个 TypeScript 错误，主要包括：
+
 - 未使用的变量和参数 (TS6133, TS6196)
 - Material-UI 组件类型不匹配 (TS2769)
 - 可能为 undefined 的值 (TS18048)
@@ -188,6 +189,7 @@ CI 中 `yarn prettier:check` 失败，提示 `tsconfig.json` 格式不正确。
 
 **根本原因**:
 项目继承了 Backstage CLI 的严格 TypeScript 配置，包括：
+
 - `strict: true`
 - `noUnusedLocals: true`
 - `noUnusedParameters: true`
@@ -218,11 +220,13 @@ CI 中 `yarn prettier:check` 失败，提示 `tsconfig.json` 格式不正确。
 ```
 
 **效果**:
+
 - 错误数量从 175 减少到 105
 - 在 CI 中重新启用 TypeScript 检查，但设置为 `continue-on-error: true`，不阻塞构建
 - 剩余的 105 个错误主要是 Material-UI 类型不匹配，需要后续修复
 
-**修改文件**: 
+**修改文件**:
+
 - `tsconfig.json` - 放宽编译选项
 - `.github/workflows/ci.yml` - 重新启用 TypeScript 检查
 
@@ -239,6 +243,7 @@ CI 中 `yarn prettier:check` 失败，提示 `tsconfig.json` 格式不正确。
 ```
 
 **根本原因**:
+
 1. `isolated-vm` 是 `@backstage/plugin-scaffolder-backend` 的依赖
 2. 这是一个原生 Node.js 模块（C++ 编写），需要在安装时通过 `node-gyp` 编译
 3. GitHub Actions 的 Ubuntu runner 默认缺少编译工具链（python3, make, g++）
@@ -268,10 +273,12 @@ enableScripts: true
 这确保 Yarn 可以执行包的 postinstall 脚本，包括原生模块的编译。
 
 **修改文件**:
+
 - `.github/workflows/ci.yml` - 在 lint, test, build, e2e jobs 中添加构建工具安装
 - `.yarnrc.yml` - 启用脚本执行
 
 **注意事项**:
+
 - 对于 security job，我们使用 `--mode=skip-build` 跳过构建，因为安全扫描不需要编译原生模块
 - `isolated-vm` 从 v5 开始不再提供预编译二进制，必须本地编译
 - 需要 Node.js >= 18 才能编译 `isolated-vm@6.0.2`
