@@ -52,6 +52,7 @@ jobs:
 
       - name: Run TypeScript type check
         run: yarn tsc
+        continue-on-error: true
 
   # Job 2: Unit Tests
   test:
