@@ -228,13 +228,64 @@ CI 中 `yarn prettier:check` 失败，提示 `tsconfig.json` 格式不正确。
 
 ---
 
+### 6. 修复 isolated-vm 原生模块编译失败
+
+**问题描述**:
+在 GitHub Actions CI 中，`yarn install --immutable` 失败，错误信息：
+
+```
+➤ YN0009: isolated-vm@npm:6.0.2 couldn't be built successfully (exit code 1)
+➤ YN0000: · Failed with errors in 2m 32s
+```
+
+**根本原因**:
+1. `isolated-vm` 是 `@backstage/plugin-scaffolder-backend` 的依赖
+2. 这是一个原生 Node.js 模块（C++ 编写），需要在安装时通过 `node-gyp` 编译
+3. GitHub Actions 的 Ubuntu runner 默认缺少编译工具链（python3, make, g++）
+4. Yarn 在公开 PR 中启用了 hardened mode，可能限制了构建行为
+
+**解决方案**:
+
+#### 6.1 在 CI 中安装构建工具链
+
+在所有需要安装依赖的 job 中添加构建工具安装步骤：
+
+```yaml
+- name: Install build tools for native modules
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y python3 make g++ build-essential
+```
+
+#### 6.2 启用 Yarn 脚本执行
+
+在 `.yarnrc.yml` 中添加：
+
+```yaml
+enableScripts: true
+```
+
+这确保 Yarn 可以执行包的 postinstall 脚本，包括原生模块的编译。
+
+**修改文件**:
+- `.github/workflows/ci.yml` - 在 lint, test, build, e2e jobs 中添加构建工具安装
+- `.yarnrc.yml` - 启用脚本执行
+
+**注意事项**:
+- 对于 security job，我们使用 `--mode=skip-build` 跳过构建，因为安全扫描不需要编译原生模块
+- `isolated-vm` 从 v5 开始不再提供预编译二进制，必须本地编译
+- 需要 Node.js >= 18 才能编译 `isolated-vm@6.0.2`
+
+---
+
 ## 相关文件
 
 - `package.json` - 添加 lint fix 命令
 - `packages/backend/Dockerfile` - 修复构建流程
-- `.github/workflows/ci.yml` - 修复权限、升级 CodeQL Action、重新启用 TypeScript 检查
+- `.github/workflows/ci.yml` - 修复权限、升级 CodeQL Action、重新启用 TypeScript 检查、添加构建工具
 - `tsconfig.json` - 放宽 TypeScript 编译选项
 - `.prettierignore` - 排除 Helm 模板文件
+- `.yarnrc.yml` - 启用脚本执行以支持原生模块编译
 
 ---
 
