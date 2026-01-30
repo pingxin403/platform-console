@@ -1,0 +1,175 @@
+# Local Kubernetes testing values for Backstage
+# Simplified configuration for local development and testing
+
+replicaCount: 1
+
+image:
+  repository: backstage
+  pullPolicy: IfNotPresent
+  tag: 'local'
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: NodePort
+  port: 7007
+  nodePort: 30007
+  annotations: {}
+
+ingress:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Backstage configuration
+backstage:
+  logLevel: debug
+  config:
+    app:
+      title: Internal Developer Platform (Local)
+      baseUrl: http://localhost:30007
+
+    organization:
+      name: My Company
+
+    backend:
+      baseUrl: http://localhost:30007
+      cors:
+        origin: http://localhost:30007
+      auth:
+        keys:
+          - secret: ${BACKEND_SECRET}
+
+    auth:
+      providers:
+        guest: {}
+
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+# PostgreSQL configuration for local testing
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: backstage123
+    username: backstage
+    password: backstage123
+    database: backstage
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+      storageClass: ''  # Use default storage class
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    securityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 999
+      fsGroup: 999
+    containerSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 999
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
+
+# Environment variables
+env:
+  - name: NODE_ENV
+    value: development
+  - name: LOG_LEVEL
+    value: debug
+  - name: TZ
+    value: UTC
+  - name: POSTGRES_HOST
+    value: '{{ include "backstage.postgresql.fullname" . }}'
+  - name: POSTGRES_PORT
+    value: '5432'
+  - name: POSTGRES_USER
+    value: backstage
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: '{{ include "backstage.postgresql.secretName" . }}'
+        key: password
+  - name: POSTGRES_DB
+    value: backstage
+  - name: POSTGRES_SSL
+    value: 'false'
+  - name: BACKEND_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: backend-secret
+  - name: GITHUB_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: backstage-secrets
+        key: github-token
+        optional: true
+  - name: GITHUB_ORG
+    value: 'my-org'
+
+# Monitoring disabled for local testing
+monitoring:
+  serviceMonitor:
+    enabled: false
+  grafanaDashboard:
+    enabled: false
+
+# Backup disabled for local testing
+backup:
+  enabled: false
