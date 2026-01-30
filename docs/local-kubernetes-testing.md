@@ -375,7 +375,29 @@ SELECT * FROM entities LIMIT 5;
 
 ## 常见问题排查
 
-### 问题 1: Pod 无法启动
+### 问题 1: Docker 构建失败 - "Could not resolve entry module src/index.ts"
+
+**错误信息**:
+```
+Error: RollupError: Could not resolve entry module "src/index.ts".
+```
+
+**原因**: `.dockerignore` 文件排除了 `packages/*/src`，导致 backend 源代码没有被复制到 Docker 镜像中。
+
+**解决方案**: 已修复。确保 `.dockerignore` 文件内容如下：
+```
+.git
+.yarn/cache
+.yarn/install-state.gz
+node_modules
+packages/*/node_modules
+plugins
+*.local.yaml
+# Exclude app src but keep backend src for building
+packages/app/src
+```
+
+### 问题 2: Pod 无法启动
 
 ```bash
 # 查看 Pod 状态
