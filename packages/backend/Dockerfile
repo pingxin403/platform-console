@@ -55,7 +55,7 @@ COPY --chown=node:node . .
 # Build the application with security optimizations
 # Note: Skip root-level tsc check as it requires all workspace packages
 # The backend build will handle its own TypeScript compilation
-RUN yarn build:backend --config ../../app-config.yaml && \
+RUN yarn build:backend && \
     # Remove development dependencies and clean cache
     yarn cache clean && \
     # Remove source maps in production for security

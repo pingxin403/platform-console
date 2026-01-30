@@ -2,7 +2,8 @@
 .yarn/cache
 .yarn/install-state.gz
 node_modules
-packages/*/src
 packages/*/node_modules
 plugins
 *.local.yaml
+# Exclude app src but keep backend src for building
+packages/app/src
