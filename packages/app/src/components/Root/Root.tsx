@@ -81,17 +81,29 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           icon={GroupIcon}
         />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-        <SidebarItem icon={PlayArrowIcon} to="grpc-playground" text="gRPC Playground" />
+        <SidebarItem
+          icon={PlayArrowIcon}
+          to="grpc-playground"
+          text="gRPC Playground"
+        />
         <SidebarItem icon={BuildIcon} to="toolbox" text="Developer Toolbox" />
         <SidebarItem icon={TrendingUpIcon} to="tech-radar" text="Tech Radar" />
         <SidebarItem icon={CloudIcon} to="s3-viewer" text="S3 Viewer" />
-        <SidebarItem icon={MonetizationOnIcon} to="opencost" text="Cost Visibility" />
+        <SidebarItem
+          icon={MonetizationOnIcon}
+          to="opencost"
+          text="Cost Visibility"
+        />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarGroup label="Operations">
-          <SidebarItem icon={GitHubIcon} to="gitops-profiles" text="GitOps Clusters" />
+          <SidebarItem
+            icon={GitHubIcon}
+            to="gitops-profiles"
+            text="GitOps Clusters"
+          />
           <SidebarItem icon={SettingsIcon} to="devtools" text="DevTools" />
         </SidebarGroup>
         <SidebarDivider />

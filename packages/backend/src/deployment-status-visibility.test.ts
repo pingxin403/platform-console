@@ -4,6 +4,8 @@
  * Validates: Requirements 3.1, 3.2, 3.3
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import fc from 'fast-check';
 import { ArgocdService } from './argocd/argocd-service';
 import { Config } from '@backstage/config';
@@ -33,8 +35,8 @@ describe('Deployment Status Visibility Property Tests', () => {
 
   /**
    * Property 7: Deployment status visibility
-   * For any service with Argo CD integration, the Developer_Portal should display 
-   * current deployment status, real-time sync information during deployments, 
+   * For any service with Argo CD integration, the Developer_Portal should display
+   * current deployment status, real-time sync information during deployments,
    * and error messages with log links for failed deployments
    * Validates: Requirements 3.1, 3.2, 3.3
    */
@@ -44,12 +46,22 @@ describe('Deployment Status Visibility Property Tests', () => {
         // Generate arbitrary service entities with Argo CD annotations
         fc.record({
           apiVersion: fc.constant('backstage.io/v1alpha1'),
-          metadata: fc.record({
-            name: fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            annotations: fc.record({
-              'argocd/app-name': fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            }, { requiredKeys: ['argocd/app-name'] }),
-          }, { requiredKeys: ['name', 'annotations'] }),
+          metadata: fc.record(
+            {
+              name: fc
+                .string({ minLength: 1, maxLength: 50 })
+                .filter(s => /^[a-z0-9-]+$/.test(s)),
+              annotations: fc.record(
+                {
+                  'argocd/app-name': fc
+                    .string({ minLength: 1, maxLength: 50 })
+                    .filter(s => /^[a-z0-9-]+$/.test(s)),
+                },
+                { requiredKeys: ['argocd/app-name'] },
+              ),
+            },
+            { requiredKeys: ['name', 'annotations'] },
+          ),
           kind: fc.constant('Component'),
           spec: fc.record({
             type: fc.constantFrom('service', 'website', 'library'),
@@ -58,43 +70,62 @@ describe('Deployment Status Visibility Property Tests', () => {
         }),
         async (entity: Entity) => {
           // Act: Get deployment status for the service
-          const deploymentStatus = await argocdService.getDeploymentStatus(entity);
+          const deploymentStatus = await argocdService.getDeploymentStatus(
+            entity,
+          );
 
           // Assert: Deployment status should be available for services with Argo CD annotations
           if (entity.metadata.annotations?.['argocd/app-name']) {
             // Requirement 3.1: Current deployment status should be displayed
             expect(deploymentStatus).toBeDefined();
             expect(deploymentStatus).not.toBeNull();
-            
+
             if (deploymentStatus) {
               // Status should have required fields
               expect(deploymentStatus.applicationName).toBeDefined();
-              expect(deploymentStatus.health).toMatch(/^(Healthy|Progressing|Degraded|Suspended|Missing|Unknown)$/);
-              expect(deploymentStatus.sync).toMatch(/^(Synced|OutOfSync|Unknown)$/);
+              expect(deploymentStatus.health).toMatch(
+                /^(Healthy|Progressing|Degraded|Suspended|Missing|Unknown)$/,
+              );
+              expect(deploymentStatus.sync).toMatch(
+                /^(Synced|OutOfSync|Unknown)$/,
+              );
               expect(deploymentStatus.environment).toBeDefined();
               expect(deploymentStatus.namespace).toBeDefined();
               expect(typeof deploymentStatus.canSync).toBe('boolean');
 
               // Requirement 3.2: Real-time sync information should be available
               if (deploymentStatus.lastSyncTime) {
-                expect(new Date(deploymentStatus.lastSyncTime)).toBeInstanceOf(Date);
-                expect(new Date(deploymentStatus.lastSyncTime).getTime()).toBeLessThanOrEqual(Date.now());
+                expect(new Date(deploymentStatus.lastSyncTime)).toBeInstanceOf(
+                  Date,
+                );
+                expect(
+                  new Date(deploymentStatus.lastSyncTime).getTime(),
+                ).toBeLessThanOrEqual(Date.now());
               }
 
               // Requirement 3.3: Error messages with log links for failed deployments
-              if (deploymentStatus.health === 'Degraded' || deploymentStatus.sync === 'OutOfSync') {
+              if (
+                deploymentStatus.health === 'Degraded' ||
+                deploymentStatus.sync === 'OutOfSync'
+              ) {
                 // Should have error information or log URL available
-                const hasErrors = deploymentStatus.errors && deploymentStatus.errors.length > 0;
+                const hasErrors =
+                  deploymentStatus.errors && deploymentStatus.errors.length > 0;
                 const hasLogUrl = Boolean(deploymentStatus.logUrl);
                 const hasErrorInfo = hasErrors || hasLogUrl;
                 expect(hasErrorInfo).toBe(true);
 
                 // If errors exist, they should have proper structure
-                if (deploymentStatus.errors && deploymentStatus.errors.length > 0) {
+                if (
+                  deploymentStatus.errors &&
+                  deploymentStatus.errors.length > 0
+                ) {
                   deploymentStatus.errors.forEach(error => {
                     expect(error.message).toBeDefined();
                     expect(error.type).toBeDefined();
-                    expect(error.severity).toMatch(/^(low|medium|high|critical)$/);
+                    expect(error.severity).toMatch(
+                      /^(low|medium|high|critical)$/,
+                    );
                     expect(typeof error.recoverable).toBe('boolean');
                     expect(Array.isArray(error.suggestedActions)).toBe(true);
                   });
@@ -110,9 +141,9 @@ describe('Deployment Status Visibility Property Tests', () => {
             // Services without Argo CD annotations should return null
             expect(deploymentStatus).toBeNull();
           }
-        }
+        },
       ),
-      { numRuns: 30, timeout: 8000 }
+      { numRuns: 30, timeout: 8000 },
     );
   }, 10000);
 
@@ -124,12 +155,22 @@ describe('Deployment Status Visibility Property Tests', () => {
       fc.asyncProperty(
         fc.record({
           apiVersion: fc.constant('backstage.io/v1alpha1'),
-          metadata: fc.record({
-            name: fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            annotations: fc.record({
-              'argocd/app-name': fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            }, { requiredKeys: ['argocd/app-name'] }),
-          }, { requiredKeys: ['name', 'annotations'] }),
+          metadata: fc.record(
+            {
+              name: fc
+                .string({ minLength: 1, maxLength: 50 })
+                .filter(s => /^[a-z0-9-]+$/.test(s)),
+              annotations: fc.record(
+                {
+                  'argocd/app-name': fc
+                    .string({ minLength: 1, maxLength: 50 })
+                    .filter(s => /^[a-z0-9-]+$/.test(s)),
+                },
+                { requiredKeys: ['argocd/app-name'] },
+              ),
+            },
+            { requiredKeys: ['name', 'annotations'] },
+          ),
           kind: fc.constant('Component'),
           spec: fc.record({
             type: fc.constant('service'),
@@ -138,25 +179,37 @@ describe('Deployment Status Visibility Property Tests', () => {
         }),
         async (entity: Entity) => {
           // Act: Get multi-environment deployment status
-          const multiStatus = await argocdService.getMultiEnvironmentStatus(entity);
+          const multiStatus = await argocdService.getMultiEnvironmentStatus(
+            entity,
+          );
 
           if (multiStatus) {
             // Assert: Multi-environment status should be consistent
             expect(multiStatus.serviceName).toBe(entity.metadata.name);
-            expect(multiStatus.overallHealth).toMatch(/^(Healthy|Degraded|Unknown)$/);
+            expect(multiStatus.overallHealth).toMatch(
+              /^(Healthy|Degraded|Unknown)$/,
+            );
             expect(typeof multiStatus.environments).toBe('object');
 
             // Each environment should have valid status
-            Object.entries(multiStatus.environments).forEach(([env, status]) => {
-              expect(['development', 'staging', 'production']).toContain(env);
-              expect(status.applicationName).toContain(env === 'production' ? 'prod' : env);
-              expect(status.environment).toBe(env);
-              expect(status.health).toMatch(/^(Healthy|Progressing|Degraded|Suspended|Missing|Unknown)$/);
-              expect(status.sync).toMatch(/^(Synced|OutOfSync|Unknown)$/);
-            });
+            Object.entries(multiStatus.environments).forEach(
+              ([env, status]) => {
+                expect(['development', 'staging', 'production']).toContain(env);
+                expect(status.applicationName).toContain(
+                  env === 'production' ? 'prod' : env,
+                );
+                expect(status.environment).toBe(env);
+                expect(status.health).toMatch(
+                  /^(Healthy|Progressing|Degraded|Suspended|Missing|Unknown)$/,
+                );
+                expect(status.sync).toMatch(/^(Synced|OutOfSync|Unknown)$/);
+              },
+            );
 
             // Overall health should reflect individual environment health
-            const environmentHealths = Object.values(multiStatus.environments).map(s => s.health);
+            const environmentHealths = Object.values(
+              multiStatus.environments,
+            ).map(s => s.health);
             if (environmentHealths.includes('Degraded')) {
               expect(multiStatus.overallHealth).toBe('Degraded');
             } else if (environmentHealths.includes('Unknown')) {
@@ -165,9 +218,9 @@ describe('Deployment Status Visibility Property Tests', () => {
               expect(multiStatus.overallHealth).toBe('Healthy');
             }
           }
-        }
+        },
       ),
-      { numRuns: 20, timeout: 6000 }
+      { numRuns: 20, timeout: 6000 },
     );
   }, 8000);
 
@@ -179,12 +232,22 @@ describe('Deployment Status Visibility Property Tests', () => {
       fc.asyncProperty(
         fc.record({
           apiVersion: fc.constant('backstage.io/v1alpha1'),
-          metadata: fc.record({
-            name: fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            annotations: fc.record({
-              'argocd/app-name': fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-z0-9-]+$/.test(s)),
-            }, { requiredKeys: ['argocd/app-name'] }),
-          }, { requiredKeys: ['name', 'annotations'] }),
+          metadata: fc.record(
+            {
+              name: fc
+                .string({ minLength: 1, maxLength: 50 })
+                .filter(s => /^[a-z0-9-]+$/.test(s)),
+              annotations: fc.record(
+                {
+                  'argocd/app-name': fc
+                    .string({ minLength: 1, maxLength: 50 })
+                    .filter(s => /^[a-z0-9-]+$/.test(s)),
+                },
+                { requiredKeys: ['argocd/app-name'] },
+              ),
+            },
+            { requiredKeys: ['name', 'annotations'] },
+          ),
           kind: fc.constant('Component'),
         }),
         async (entity: Entity) => {
@@ -199,13 +262,13 @@ describe('Deployment Status Visibility Property Tests', () => {
             expect(status1.sync).toBe(status2.sync);
             expect(status1.environment).toBe(status2.environment);
             expect(status1.namespace).toBe(status2.namespace);
-            
+
             // Cache should provide same timestamp within cache TTL
             expect(status1.lastSyncTime).toBe(status2.lastSyncTime);
           }
-        }
+        },
       ),
-      { numRuns: 30, timeout: 8000 }
+      { numRuns: 30, timeout: 8000 },
     );
   }, 10000);
 });

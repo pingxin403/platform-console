@@ -17,48 +17,48 @@ spec:
         app: ${{ values.name }}
         version: v1
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "${{ values.port }}"
-        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '${{ values.port }}'
+        prometheus.io/path: '/actuator/prometheus'
     spec:
       containers:
-      - name: ${{ values.name }}
-        image: ghcr.io/${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}:latest
-        ports:
-        - containerPort: ${{ values.port }}
-          name: http
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "production"
-        - name: SERVER_PORT
-          value: "${{ values.port }}"
-        - name: DD_SERVICE
-          value: "${{ values.name }}"
-        - name: DD_ENV
-          value: "production"
-        - name: DD_VERSION
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.labels['version']
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
+        - name: ${{ values.name }}
+          image: ghcr.io/${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}:latest
+          ports:
+            - containerPort: ${{ values.port }}
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: 'production'
+            - name: SERVER_PORT
+              value: '${{ values.port }}'
+            - name: DD_SERVICE
+              value: '${{ values.name }}'
+            - name: DD_ENV
+              value: 'production'
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['version']
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
 ---
 apiVersion: v1
 kind: Service
@@ -71,7 +71,7 @@ spec:
   selector:
     app: ${{ values.name }}
   ports:
-  - port: 80
-    targetPort: http
-    name: http
+    - port: 80
+      targetPort: http
+      name: http
   type: ClusterIP

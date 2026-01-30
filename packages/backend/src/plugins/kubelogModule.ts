@@ -1,4 +1,7 @@
-import { createBackendModule, coreServices } from '@backstage/backend-plugin-api';
+import {
+  createBackendModule,
+  coreServices,
+} from '@backstage/backend-plugin-api';
 import { createRouter } from '@jfvilas/plugin-kubelog-backend';
 
 export const kubelogModule = createBackendModule({
@@ -15,7 +18,15 @@ export const kubelogModule = createBackendModule({
         permissions: coreServices.permissions,
         tokenManager: coreServices.tokenManager,
       },
-      async init({ httpRouter, logger, config, discovery, auth, permissions, tokenManager }) {
+      async init({
+        httpRouter,
+        logger,
+        config,
+        discovery,
+        auth,
+        permissions,
+        tokenManager,
+      }) {
         const router = await createRouter({
           logger,
           config,

@@ -144,8 +144,14 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
-    <Route path="/gitops-profiles" element={<GitopsProfilesClusterListPage />} />
-    <Route path="/gitops-profiles/create" element={<GitopsProfilesCreatePage />} />
+    <Route
+      path="/gitops-profiles"
+      element={<GitopsProfilesClusterListPage />}
+    />
+    <Route
+      path="/gitops-profiles/create"
+      element={<GitopsProfilesCreatePage />}
+    />
     <Route
       path="/gitops-profiles/:owner/:repo"
       element={<GitopsProfilesClusterPage />}

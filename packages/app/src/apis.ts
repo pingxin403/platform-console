@@ -14,10 +14,7 @@ import {
   DatadogApiClient,
   datadogApiRef,
 } from '@roadiehq/backstage-plugin-datadog';
-import {
-  sentryApiRef,
-  ProductionSentryApi,
-} from '@backstage/plugin-sentry';
+import { sentryApiRef, ProductionSentryApi } from '@backstage/plugin-sentry';
 import {
   CicdStatisticsApi,
   cicdStatisticsApiRef,
@@ -36,14 +33,19 @@ import {
 } from '@backstage-community/plugin-gitops-profiles';
 import { ApiEntity } from '@backstage/catalog-model';
 import { FetchApi } from '@backstage/core-plugin-api';
-import { apiDocsConfigRef, defaultDefinitionWidgets } from '@backstage/plugin-api-docs';
+import {
+  apiDocsConfigRef,
+  defaultDefinitionWidgets,
+} from '@backstage/plugin-api-docs';
 import { GrpcPlaygroundComponent } from 'backstage-grpc-playground';
 
 // CI/CD Statistics API implementation for GitHub Actions integration
 class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
   constructor(private readonly fetchApi: FetchApi) {}
 
-  async getConfiguration(_opts: GetConfigurationOptions): Promise<Partial<CicdConfiguration>> {
+  async getConfiguration(
+    _opts: GetConfigurationOptions,
+  ): Promise<Partial<CicdConfiguration>> {
     const chartTypesAllStatuses: Record<FilterStatusType, ChartTypes> = {
       succeeded: ['duration', 'count'],
       failed: ['duration', 'count'],
@@ -72,18 +74,13 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
   }
 
   async fetchBuilds(options: FetchBuildsOptions): Promise<CicdState> {
-    const {
-      entity,
-      timeFrom,
-      timeTo,
-      abortSignal,
-      updateProgress,
-    } = options;
+    const { entity, timeFrom, timeTo, abortSignal, updateProgress } = options;
 
     updateProgress(0, 1);
 
     // Get GitHub project slug from entity annotations
-    const projectSlug = entity.metadata.annotations?.['github.com/project-slug'];
+    const projectSlug =
+      entity.metadata.annotations?.['github.com/project-slug'];
     if (!projectSlug) {
       updateProgress(1, 1);
       return { builds: [] };
@@ -91,43 +88,54 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
 
     try {
       // Fetch GitHub Actions workflow runs via proxy
-      const response = await this.fetchApi.fetch(`/api/proxy/github/repos/${projectSlug}/actions/runs?per_page=100`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
+      const response = await this.fetchApi.fetch(
+        `/api/proxy/github/repos/${projectSlug}/actions/runs?per_page=100`,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/vnd.github.v3+json',
+          },
+          signal: abortSignal,
         },
-        signal: abortSignal,
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`GitHub API error: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       // Transform GitHub Actions data to CI/CD Statistics format
-      const builds = data.workflow_runs?.map((run: any) => ({
-        id: run.id.toString(),
-        name: run.name || run.display_title,
-        source: 'github-actions',
-        status: mapGitHubStatusToCicdStatus(run.status, run.conclusion),
-        requestedAt: new Date(run.created_at),
-        finishedAt: run.updated_at ? new Date(run.updated_at) : undefined,
-        duration: run.updated_at && run.created_at 
-          ? new Date(run.updated_at).getTime() - new Date(run.created_at).getTime()
-          : undefined,
-        stages: [{
-          name: run.name || 'Build',
+      const builds =
+        data.workflow_runs?.map((run: any) => ({
+          id: run.id.toString(),
+          name: run.name || run.display_title,
+          source: 'github-actions',
           status: mapGitHubStatusToCicdStatus(run.status, run.conclusion),
-          duration: run.updated_at && run.created_at 
-            ? new Date(run.updated_at).getTime() - new Date(run.created_at).getTime()
-            : undefined,
-        }],
-        onRestartClick: () => {
-          // Optional: implement restart functionality
-          console.log('Restart build:', run.id);
-        },
-      })) || [];
+          requestedAt: new Date(run.created_at),
+          finishedAt: run.updated_at ? new Date(run.updated_at) : undefined,
+          duration:
+            run.updated_at && run.created_at
+              ? new Date(run.updated_at).getTime() -
+                new Date(run.created_at).getTime()
+              : undefined,
+          stages: [
+            {
+              name: run.name || 'Build',
+              status: mapGitHubStatusToCicdStatus(run.status, run.conclusion),
+              duration:
+                run.updated_at && run.created_at
+                  ? new Date(run.updated_at).getTime() -
+                    new Date(run.created_at).getTime()
+                  : undefined,
+            },
+          ],
+          onRestartClick: () => {
+            // Optional: implement restart functionality
+            // eslint-disable-next-line no-console
+            console.log('Restart build:', run.id);
+          },
+        })) || [];
 
       // Filter builds by time range
       const filteredBuilds = builds.filter((build: any) => {
@@ -138,6 +146,7 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
       updateProgress(1, 1);
       return { builds: filteredBuilds };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching GitHub Actions data:', error);
       updateProgress(1, 1);
       return { builds: [] };
@@ -146,7 +155,10 @@ class GitHubActionsCicdStatisticsClient implements CicdStatisticsApi {
 }
 
 // Helper function to map GitHub Actions status to CI/CD Statistics status
-function mapGitHubStatusToCicdStatus(status: string, conclusion: string | null): string {
+function mapGitHubStatusToCicdStatus(
+  status: string,
+  conclusion: string | null,
+): string {
   if (status === 'completed') {
     switch (conclusion) {
       case 'success':
@@ -161,7 +173,7 @@ function mapGitHubStatusToCicdStatus(status: string, conclusion: string | null):
         return 'unknown';
     }
   }
-  
+
   switch (status) {
     case 'queued':
       return 'enqueued';
@@ -189,7 +201,8 @@ export const apis: AnyApiFactory[] = [
     api: sentryApiRef,
     deps: { discoveryApi: discoveryApiRef, configApi: configApiRef },
     factory: ({ discoveryApi, configApi }) => {
-      const organization = configApi.getOptionalString('sentry.organization') ?? 'default';
+      const organization =
+        configApi.getOptionalString('sentry.organization') ?? 'default';
       return new ProductionSentryApi(discoveryApi, organization);
     },
   }),

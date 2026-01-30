@@ -3,7 +3,7 @@ replicaCount: 2
 image:
   repository: ghcr.io/${{ values.repoUrl | parseRepoUrl | pick('owner') }}/${{ values.name }}
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: 'latest'
 
 service:
   type: ClusterIP
@@ -12,7 +12,7 @@ service:
 
 ingress:
   enabled: false
-  className: ""
+  className: ''
   annotations: {}
   hosts:
     - host: ${{ values.name }}.company.com
@@ -56,4 +56,4 @@ datadog:
 
 sentry:
   enabled: true
-  dsn: ""
+  dsn: ''

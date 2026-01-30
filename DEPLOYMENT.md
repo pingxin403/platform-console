@@ -5,11 +5,13 @@ This guide covers the deployment of the Backstage Internal Developer Platform on
 ## Prerequisites
 
 ### Local Development
+
 - Node.js 18+ and Yarn
 - Docker and Docker Compose
 - Git
 
 ### AWS Production Deployment
+
 - AWS CLI configured with appropriate permissions
 - eksctl (for EKS cluster management)
 - kubectl (for Kubernetes management)
@@ -29,12 +31,14 @@ cp .env.example .env
 Update the following variables:
 
 #### Required for all environments:
+
 - `BACKEND_SECRET`: A secure random string (minimum 24 characters)
 - `GITHUB_TOKEN`: GitHub Personal Access Token with repo access
 - `AUTH_GITHUB_CLIENT_ID`: GitHub OAuth App Client ID
 - `AUTH_GITHUB_CLIENT_SECRET`: GitHub OAuth App Client Secret
 
 #### Required for production:
+
 - `POSTGRES_HOST`: PostgreSQL host (managed by Helm chart)
 - `POSTGRES_USER`: PostgreSQL username
 - `POSTGRES_PASSWORD`: PostgreSQL password
@@ -55,6 +59,7 @@ Update the following variables:
 ### 3. GitHub Personal Access Token
 
 Create a GitHub Personal Access Token with the following scopes:
+
 - `repo` (for repository access)
 - `read:org` (for organization access)
 - `read:user` (for user information)
@@ -65,6 +70,7 @@ Create a GitHub Personal Access Token with the following scopes:
 ### Option 1: Docker Compose (Recommended)
 
 1. Build and start the services:
+
 ```bash
 docker-compose up --build
 ```
@@ -74,16 +80,19 @@ docker-compose up --build
 ### Option 2: Native Development
 
 1. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 2. Start PostgreSQL (using Docker):
+
 ```bash
 docker run --name postgres -e POSTGRES_USER=backstage -e POSTGRES_PASSWORD=backstage123 -e POSTGRES_DB=backstage -p 5432:5432 -d postgres:15
 ```
 
 3. Start the backend:
+
 ```bash
 yarn dev
 ```
@@ -95,6 +104,7 @@ yarn dev
 ### 1. Prepare AWS Environment
 
 Ensure your AWS CLI is configured with appropriate permissions:
+
 ```bash
 aws configure
 aws sts get-caller-identity
@@ -110,6 +120,7 @@ cd k8s/aws
 ```
 
 This script will:
+
 - Create an EKS cluster with the configuration in `eks-cluster.yaml`
 - Install the AWS Load Balancer Controller
 - Create the backstage namespace
@@ -125,6 +136,7 @@ kubectl edit secret backstage-secrets -n backstage
 ```
 
 Update the base64-encoded values for:
+
 - `backend-secret`
 - `github-client-id`
 - `github-client-secret`
@@ -133,6 +145,7 @@ Update the base64-encoded values for:
 ### 4. Configure DNS
 
 1. Get the Load Balancer URL:
+
 ```bash
 kubectl get ingress -n backstage
 ```
@@ -142,6 +155,7 @@ kubectl get ingress -n backstage
 ### 5. Verify Deployment
 
 Check the deployment status:
+
 ```bash
 kubectl get pods -n backstage
 kubectl get services -n backstage
@@ -151,6 +165,7 @@ kubectl logs -f deployment/backstage -n backstage
 ## Configuration Files
 
 ### Key Configuration Files:
+
 - `app-config.yaml`: Base configuration for all environments
 - `app-config.local.yaml`: Local development overrides
 - `app-config.production.yaml`: Production configuration
@@ -158,22 +173,28 @@ kubectl logs -f deployment/backstage -n backstage
 - `k8s/aws/eks-cluster.yaml`: EKS cluster configuration
 
 ### Database Configuration:
+
 - Local: SQLite in-memory (development)
 - Production: PostgreSQL on AWS RDS or in-cluster PostgreSQL
 
 ### Authentication:
+
 - Local: Guest authentication (optional GitHub OAuth)
 - Production: GitHub OAuth with organization access
 
 ## Monitoring and Maintenance
 
 ### Health Checks
+
 The application includes health check endpoints:
+
 - `/healthcheck`: Basic health check
 - Kubernetes liveness and readiness probes are configured
 
 ### Logs
+
 View application logs:
+
 ```bash
 # Local (Docker Compose)
 docker-compose logs -f backstage
@@ -183,6 +204,7 @@ kubectl logs -f deployment/backstage -n backstage
 ```
 
 ### Database Maintenance
+
 - PostgreSQL backups are handled by AWS RDS (if using managed RDS)
 - For in-cluster PostgreSQL, configure backup strategies using Velero or similar tools
 
@@ -191,16 +213,19 @@ kubectl logs -f deployment/backstage -n backstage
 ### Common Issues:
 
 1. **Database Connection Issues**
+
    - Verify PostgreSQL is running and accessible
    - Check connection parameters in environment variables
    - Ensure database exists and user has proper permissions
 
 2. **GitHub OAuth Issues**
+
    - Verify OAuth app configuration in GitHub
    - Check callback URLs match your deployment
    - Ensure GitHub token has required scopes
 
 3. **Kubernetes Deployment Issues**
+
    - Check pod logs: `kubectl logs -f deployment/backstage -n backstage`
    - Verify secrets are properly configured
    - Ensure Load Balancer Controller is installed and working
@@ -211,6 +236,7 @@ kubectl logs -f deployment/backstage -n backstage
    - Check Node.js version compatibility
 
 ### Getting Help
+
 - Check Backstage documentation: https://backstage.io/docs/
 - Review application logs for specific error messages
 - Verify all environment variables are properly set
@@ -218,11 +244,13 @@ kubectl logs -f deployment/backstage -n backstage
 ## Security Considerations
 
 1. **Secrets Management**
+
    - Use AWS Secrets Manager or Kubernetes secrets for sensitive data
    - Rotate secrets regularly
    - Never commit secrets to version control
 
 2. **Network Security**
+
    - Configure security groups to restrict database access
    - Use HTTPS in production with valid certificates
    - Implement proper RBAC in Kubernetes
@@ -235,6 +263,7 @@ kubectl logs -f deployment/backstage -n backstage
 ## Scaling
 
 The deployment is configured for horizontal scaling:
+
 - Adjust `replicaCount` in Helm values for more instances
 - Configure HPA (Horizontal Pod Autoscaler) for automatic scaling
 - Monitor resource usage and adjust resource requests/limits as needed

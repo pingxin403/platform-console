@@ -70,6 +70,7 @@ Spec（规格说明）是 Kiro 中用于构建复杂功能的结构化方法。�
 - **Optional feature**: WHERE <option>, THE <system> SHALL <response>
 
 **示例**:
+
 ```markdown
 ### Requirement 1: Service Discovery and Catalog Management
 
@@ -94,9 +95,10 @@ Spec（规格说明）是 Kiro 中用于构建复杂功能的结构化方法。�
 7. **Testing Strategy** - 测试策略
 
 **正确性属性示例**:
+
 ```markdown
 Property 1: Service catalog completeness
-*For any* set of registered services, the Service_Catalog should display all services with their complete metadata
+_For any_ set of registered services, the Service_Catalog should display all services with their complete metadata
 **Validates: Requirements 1.1**
 ```
 
@@ -110,11 +112,12 @@ Property 1: Service catalog completeness
 - 检查点任务用于验证进度
 
 **示例**:
+
 ```markdown
 - [x] 2. Implement Service Catalog with GitHub integration
   - [x] 2.1 Configure GitHub discovery provider
     - _Requirements: 1.2, 1.5_
-  - [x]* 2.2 Write property test for service discovery
+  - [x]\* 2.2 Write property test for service discovery
     - **Property 2: Service discovery automation**
     - **Validates: Requirements 1.2, 1.5**
 ```
@@ -137,12 +140,14 @@ cat .kiro/specs/internal-developer-platform/tasks.md
 ### 2. 执行任务
 
 在 Kiro IDE 中：
+
 1. 打开 `tasks.md` 文件
 2. 找到要执行的任务
 3. 点击任务旁边的 "Start task" 按钮
 4. Kiro 会根据需求和设计文档自动实施该任务
 
 或者通过命令行告诉 Kiro：
+
 ```
 请执行 Task 17: 实现搜索和发现功能
 ```
@@ -178,6 +183,7 @@ Kiro 会引导你完成 Requirements → Design → Tasks 的流程。
 属性测试验证软件在所有有效输入下都满足某些通用属性，而不是测试特定的例子。
 
 **传统单元测试**:
+
 ```typescript
 test('adding task increases list length', () => {
   const list = ['task1'];
@@ -187,19 +193,20 @@ test('adding task increases list length', () => {
 ```
 
 **属性测试**:
+
 ```typescript
 test('Property: adding valid task always increases list length by 1', () => {
   fc.assert(
     fc.property(
-      fc.array(fc.string()),  // 随机任务列表
-      fc.string({ minLength: 1 }),  // 随机有效任务
+      fc.array(fc.string()), // 随机任务列表
+      fc.string({ minLength: 1 }), // 随机有效任务
       (list, task) => {
         const originalLength = list.length;
         addTask(list, task);
         return list.length === originalLength + 1;
-      }
+      },
     ),
-    { numRuns: 100 }  // 运行 100 次随机测试
+    { numRuns: 100 }, // 运行 100 次随机测试
   );
 });
 ```
@@ -220,6 +227,7 @@ test('Property: adding valid task always increases list length by 1', () => {
 - AI 辅助能力
 
 每个属性都：
+
 1. 在 `design.md` 中定义
 2. 在 `tasks.md` 中有对应的测试任务
 3. 引用具体的需求条款
@@ -229,12 +237,14 @@ test('Property: adding valid task always increases list length by 1', () => {
 ### 继续开发
 
 1. **完成剩余的核心功能**（Tasks 17-20）
+
    - 搜索和发现
    - n8n 工作流集成
    - Keycloak 认证
    - Feishu 迁移
 
 2. **实施 AI 增强功能**（Tasks 21-23，Phase 2）
+
    - AI 助手增强
    - AIOps 智能
    - AI 资源优化

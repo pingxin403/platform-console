@@ -185,17 +185,13 @@ import { EnhancedDependencyCard } from './EnhancedDependencyCard';
 import { ArgocdDeploymentCard } from './ArgocdDeploymentCard';
 
 // OpsLevel Service Maturity plugin imports
-import {
-  EntityOpsLevelMaturityContent,
-} from '@opslevel/backstage-maturity';
+import { EntityOpsLevelMaturityContent } from '@opslevel/backstage-maturity';
 
 // OpenDORA plugin imports for DORA metrics
 // Note: This plugin only provides OpenDoraPluginPage, no entity-specific components
 
 // Cortex plugin imports for engineering effectiveness
-import {
-  EntityCortexContent,
-} from '@cortexapps/backstage-plugin';
+import { EntityCortexContent } from '@cortexapps/backstage-plugin';
 
 // FireHydrant plugin imports for incident management
 import {
@@ -204,9 +200,7 @@ import {
 } from '@backstage-community/plugin-firehydrant';
 
 // TODO plugin imports for code quality tracking
-import {
-  EntityTodoContent,
-} from '@backstage/plugin-todo';
+import { EntityTodoContent } from '@backstage/plugin-todo';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -289,7 +283,7 @@ const overviewContent = (
     <Grid item md={6} xs={12}>
       <EntityLinksCard />
     </Grid>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isDatadogAvailable}>
         <Grid item md={6} xs={12}>
@@ -297,7 +291,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isSentryAvailable}>
         <Grid item md={6} xs={12}>
@@ -305,7 +299,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isPrometheusAvailable}>
         <Grid item md={6} xs={12}>
@@ -313,7 +307,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={entity => !!isDashboardSelectorAvailable(entity)}>
         <Grid item md={6} xs={12}>
@@ -321,7 +315,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isSecurityInsightsAvailable}>
         <Grid item md={6} xs={12}>
@@ -329,7 +323,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isLighthouseAvailable}>
         <Grid item md={6} xs={12}>
@@ -337,7 +331,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isGithubInsightsAvailable}>
         <Grid item md={6} xs={12}>
@@ -345,7 +339,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isGithubInsightsAvailable}>
         <Grid item md={6} xs={12}>
@@ -353,7 +347,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isJenkinsAvailable}>
         <Grid item md={6} xs={12}>
@@ -361,7 +355,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isVaultAvailable}>
         <Grid item md={6} xs={12}>
@@ -369,7 +363,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isNexusRepositoryManagerAvailable}>
         <Grid item md={6} xs={12}>
@@ -377,7 +371,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isTerraformAvailable}>
         <Grid item md={6} xs={12}>
@@ -385,7 +379,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isTerraformAvailable}>
         <Grid item md={6} xs={12}>
@@ -393,7 +387,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isTerraformAvailable}>
         <Grid item md={12} xs={12}>
@@ -401,7 +395,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isArgocdAvailable}>
         <Grid item md={6} xs={12}>
@@ -409,11 +403,11 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <Grid item md={6} xs={12}>
       <EntityKialiGraphCard />
     </Grid>
-    
+
     <EntitySwitch>
       <EntitySwitch.Case if={isFireHydrantAvailable}>
         <Grid item md={6} xs={12}>
@@ -421,7 +415,7 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
-    
+
     <Grid item md={12} xs={12}>
       <EntityHasSubcomponentsCard variant="gridItem" />
     </Grid>
@@ -442,10 +436,7 @@ const serviceEntityPage = (
       </Grid>
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/monitoring" 
-      title="Monitoring"
-    >
+    <EntityLayout.Route path="/monitoring" title="Monitoring">
       <Grid container spacing={3} alignItems="stretch">
         <EntitySwitch>
           <EntitySwitch.Case if={isDatadogAvailable}>
@@ -454,7 +445,7 @@ const serviceEntityPage = (
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
-        
+
         <EntitySwitch>
           <EntitySwitch.Case if={isSentryAvailable}>
             <Grid item xs={12}>
@@ -462,7 +453,7 @@ const serviceEntityPage = (
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
-        
+
         <EntitySwitch>
           <EntitySwitch.Case if={isPrometheusAvailable}>
             <Grid item xs={12}>
@@ -470,15 +461,17 @@ const serviceEntityPage = (
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
-        
+
         <EntitySwitch>
-          <EntitySwitch.Case if={entity => !!isDashboardSelectorAvailable(entity)}>
+          <EntitySwitch.Case
+            if={entity => !!isDashboardSelectorAvailable(entity)}
+          >
             <Grid item xs={12}>
               <EntityGrafanaDashboardsCard />
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
-        
+
         <EntitySwitch>
           <EntitySwitch.Case if={isSecurityInsightsAvailable}>
             <Grid item xs={12}>
@@ -486,7 +479,7 @@ const serviceEntityPage = (
             </Grid>
           </EntitySwitch.Case>
         </EntitySwitch>
-        
+
         <EntitySwitch>
           <EntitySwitch.Case if={isLighthouseAvailable}>
             <Grid item xs={12}>
@@ -497,16 +490,16 @@ const serviceEntityPage = (
       </Grid>
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/security" 
+    <EntityLayout.Route
+      path="/security"
       title="Security"
       if={isSecurityInsightsAvailable}
     >
       <EntitySecurityInsightsContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/performance" 
+    <EntityLayout.Route
+      path="/performance"
       title="Performance"
       if={isLighthouseAvailable}
     >
@@ -517,16 +510,16 @@ const serviceEntityPage = (
       {cicdContent}
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/pull-requests" 
+    <EntityLayout.Route
+      path="/pull-requests"
       title="Pull Requests"
       if={isGithubPullRequestsAvailable}
     >
       <EntityGithubPullRequestsContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/releases" 
+    <EntityLayout.Route
+      path="/releases"
       title="Releases"
       if={isGithubInsightsAvailable}
     >
@@ -551,11 +544,7 @@ const serviceEntityPage = (
       <EntityKubernetesContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route
-      path="/tracing"
-      title="Tracing"
-      if={isJaegerAvailable}
-    >
+    <EntityLayout.Route path="/tracing" title="Tracing" if={isJaegerAvailable}>
       <Grid container spacing={3} alignItems="stretch">
         <Grid item xs={12}>
           <JaegerCard />
@@ -579,26 +568,15 @@ const serviceEntityPage = (
       <EntityTerraformContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route
-      path="/gitops"
-      title="GitOps"
-      if={isArgocdAvailable}
-    >
+    <EntityLayout.Route path="/gitops" title="GitOps" if={isArgocdAvailable}>
       <EntityArgoCDContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route
-      path="/service-mesh"
-      title="Service Mesh"
-    >
+    <EntityLayout.Route path="/service-mesh" title="Service Mesh">
       <EntityKialiContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route
-      path="/logs"
-      title="Logs"
-      if={isKubelogAvailable}
-    >
+    <EntityLayout.Route path="/logs" title="Logs" if={isKubelogAvailable}>
       <EntityKubelogContent />
     </EntityLayout.Route>
 
@@ -631,22 +609,16 @@ const serviceEntityPage = (
       {techdocsContent}
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/todos" 
-      title="TODOs"
-    >
+    <EntityLayout.Route path="/todos" title="TODOs">
       <EntityTodoContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/service-maturity" 
-      title="Service Maturity"
-    >
+    <EntityLayout.Route path="/service-maturity" title="Service Maturity">
       <EntityOpsLevelMaturityContent />
     </EntityLayout.Route>
 
-    <EntityLayout.Route 
-      path="/engineering-effectiveness" 
+    <EntityLayout.Route
+      path="/engineering-effectiveness"
       title="Engineering Effectiveness"
     >
       <EntityCortexContent />

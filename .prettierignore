@@ -2,3 +2,10 @@ dist
 dist-types
 coverage
 .vscode
+
+# Helm templates contain Go template syntax that Prettier cannot parse
+k8s/helm/backstage/templates/
+k8s/helm/backstage/values-*.yaml
+
+# RBAC policy file contains complex YAML that Prettier has issues with
+rbac-policy.yaml

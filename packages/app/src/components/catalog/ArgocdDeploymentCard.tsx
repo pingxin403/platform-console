@@ -4,7 +4,7 @@
  * Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -29,17 +29,14 @@ import {
   InputLabel,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
-import {
-  Refresh as RefreshIcon,
-  Launch as LaunchIcon,
-  Sync as SyncIcon,
-  Error as ErrorIcon,
-  CheckCircle as CheckCircleIcon,
-  Schedule as ScheduleIcon,
-} from '@material-ui/icons';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import LaunchIcon from '@material-ui/icons/Launch';
+import SyncIcon from '@material-ui/icons/Sync';
+import ErrorIcon from '@material-ui/icons/Error';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ScheduleIcon from '@material-ui/icons/Schedule';
 import { makeStyles } from '@material-ui/core/styles';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { useApi, configApiRef } from '@backstage/core-plugin-api';
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -96,7 +93,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface DeploymentError {
-  type: 'sync_failed' | 'health_check_failed' | 'resource_error' | 'permission_error' | 'network_error';
+  type:
+    | 'sync_failed'
+    | 'health_check_failed'
+    | 'resource_error'
+    | 'permission_error'
+    | 'network_error';
   message: string;
   details?: string;
   timestamp: string;
@@ -111,7 +113,13 @@ interface DeploymentError {
 
 interface DeploymentStatus {
   applicationName: string;
-  health: 'Healthy' | 'Progressing' | 'Degraded' | 'Suspended' | 'Missing' | 'Unknown';
+  health:
+    | 'Healthy'
+    | 'Progressing'
+    | 'Degraded'
+    | 'Suspended'
+    | 'Missing'
+    | 'Unknown';
   sync: 'Synced' | 'OutOfSync' | 'Unknown';
   lastSyncTime?: string;
   environment: string;
@@ -143,7 +151,13 @@ interface SyncOptions {
   force: boolean;
 }
 
-const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environments, loading }) => {
+const SyncDialog: React.FC<SyncDialogProps> = ({
+  open,
+  onClose,
+  onSync,
+  environments,
+  loading,
+}) => {
   const [selectedEnvironment, setSelectedEnvironment] = useState('production');
   const [syncOptions, setSyncOptions] = useState<SyncOptions>({
     prune: false,
@@ -165,7 +179,7 @@ const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environm
               <InputLabel>Environment</InputLabel>
               <Select
                 value={selectedEnvironment}
-                onChange={(e) => setSelectedEnvironment(e.target.value as string)}
+                onChange={e => setSelectedEnvironment(e.target.value as string)}
               >
                 {environments.map(env => (
                   <MenuItem key={env} value={env}>
@@ -180,7 +194,12 @@ const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environm
               control={
                 <Checkbox
                   checked={syncOptions.prune}
-                  onChange={(e) => setSyncOptions(prev => ({ ...prev, prune: e.target.checked }))}
+                  onChange={e =>
+                    setSyncOptions(prev => ({
+                      ...prev,
+                      prune: e.target.checked,
+                    }))
+                  }
                 />
               }
               label="Prune resources"
@@ -191,7 +210,12 @@ const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environm
               control={
                 <Checkbox
                   checked={syncOptions.dryRun}
-                  onChange={(e) => setSyncOptions(prev => ({ ...prev, dryRun: e.target.checked }))}
+                  onChange={e =>
+                    setSyncOptions(prev => ({
+                      ...prev,
+                      dryRun: e.target.checked,
+                    }))
+                  }
                 />
               }
               label="Dry run"
@@ -202,7 +226,12 @@ const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environm
               control={
                 <Checkbox
                   checked={syncOptions.force}
-                  onChange={(e) => setSyncOptions(prev => ({ ...prev, force: e.target.checked }))}
+                  onChange={e =>
+                    setSyncOptions(prev => ({
+                      ...prev,
+                      force: e.target.checked,
+                    }))
+                  }
                 />
               }
               label="Force sync"
@@ -228,12 +257,12 @@ const SyncDialog: React.FC<SyncDialogProps> = ({ open, onClose, onSync, environm
   );
 };
 
-export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }) => {
+export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = () => {
   const classes = useStyles();
   const { entity } = useEntity();
-  const config = useApi(configApiRef);
-  
-  const [deploymentStatus, setDeploymentStatus] = useState<MultiEnvironmentStatus | null>(null);
+
+  const [deploymentStatus, setDeploymentStatus] =
+    useState<MultiEnvironmentStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
@@ -320,16 +349,18 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
       };
 
       setDeploymentStatus(mockStatus);
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch deployment status';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch deployment status';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSync = async (environment: string, options: SyncOptions) => {
+  const handleSync = async (_environment: string, _options: SyncOptions) => {
     try {
       setSyncing(true);
 
@@ -339,7 +370,6 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
       // Refresh status after sync
       await fetchDeploymentStatus();
       setSyncDialogOpen(false);
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sync failed';
       setError(errorMessage);
@@ -387,24 +417,25 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
 
   const formatLastSyncTime = (lastSyncTime?: string) => {
     if (!lastSyncTime) return 'Never';
-    
+
     const date = new Date(lastSyncTime);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins} minutes ago`;
-    
+
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours} hours ago`;
-    
+
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays} days ago`;
   };
 
   useEffect(() => {
     fetchDeploymentStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [argocdAppName]);
 
   if (!argocdAppName) {
@@ -425,7 +456,7 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
                 </IconButton>
               </Tooltip>
               <Tooltip title="Manual sync">
-                <IconButton 
+                <IconButton
                   onClick={() => setSyncDialogOpen(true)}
                   disabled={loading || !deploymentStatus}
                 >
@@ -437,7 +468,12 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
         />
         <CardContent>
           {loading && (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight={200}
+            >
               <CircularProgress />
             </Box>
           )}
@@ -452,84 +488,118 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom>
-                  Overall Status: 
+                  Overall Status:
                   <Chip
                     icon={getHealthIcon(deploymentStatus.overallHealth)}
                     label={deploymentStatus.overallHealth}
-                    className={`${classes.statusChip} ${getHealthChipClass(deploymentStatus.overallHealth)}`}
+                    className={`${classes.statusChip} ${getHealthChipClass(
+                      deploymentStatus.overallHealth,
+                    )}`}
                     size="small"
                   />
                 </Typography>
               </Grid>
 
-              {Object.entries(deploymentStatus.environments).map(([env, status]) => (
-                <Grid item xs={12} key={env}>
-                  <Box className={classes.environmentSection}>
-                    <Typography className={classes.environmentTitle}>
-                      {env.charAt(0).toUpperCase() + env.slice(1)}
-                    </Typography>
-                    
-                    <Grid container spacing={1} alignItems="center">
-                      <Grid item>
-                        <Chip
-                          icon={getHealthIcon(status.health)}
-                          label={status.health}
-                          className={`${classes.statusChip} ${getHealthChipClass(status.health)}`}
-                          size="small"
-                        />
-                      </Grid>
-                      <Grid item>
-                        <Chip
-                          label={status.sync}
-                          className={`${classes.statusChip} ${getSyncChipClass(status.sync)}`}
-                          size="small"
-                        />
-                      </Grid>
-                      <Grid item xs>
-                        <Typography className={classes.lastSyncTime}>
-                          Last sync: {formatLastSyncTime(status.lastSyncTime)}
-                        </Typography>
-                      </Grid>
-                      <Grid item>
-                        <Tooltip title="View in Argo CD">
-                          <IconButton
-                            size="small"
-                            onClick={() => window.open(`https://argocd.company.com/applications/${status.applicationName}`, '_blank')}
-                          >
-                            <LaunchIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Grid>
-                    </Grid>
+              {Object.entries(deploymentStatus.environments).map(
+                ([env, status]) => (
+                  <Grid item xs={12} key={env}>
+                    <Box className={classes.environmentSection}>
+                      <Typography className={classes.environmentTitle}>
+                        {env.charAt(0).toUpperCase() + env.slice(1)}
+                      </Typography>
 
-                    {status.errors && status.errors.length > 0 && (
-                      <Box mt={1}>
-                        {status.errors.map((error, index) => (
-                          <Alert key={index} severity={error.severity === 'critical' || error.severity === 'high' ? 'error' : 'warning'} size="small">
-                            <Typography variant="body2" component="div">
-                              <strong>{error.type.replace('_', ' ').toUpperCase()}:</strong> {error.message}
-                            </Typography>
-                            {error.suggestedActions && error.suggestedActions.length > 0 && (
-                              <Box mt={1}>
-                                <Typography variant="caption" display="block">
-                                  Suggested actions:
-                                </Typography>
-                                <ul style={{ margin: 0, paddingLeft: '16px' }}>
-                                  {error.suggestedActions.slice(0, 2).map((action, actionIndex) => (
-                                    <li key={actionIndex}>
-                                      <Typography variant="caption">{action}</Typography>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </Box>
-                            )}
-                          </Alert>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                </Grid>
-              ))}
+                      <Grid container spacing={1} alignItems="center">
+                        <Grid item>
+                          <Chip
+                            icon={getHealthIcon(status.health)}
+                            label={status.health}
+                            className={`${
+                              classes.statusChip
+                            } ${getHealthChipClass(status.health)}`}
+                            size="small"
+                          />
+                        </Grid>
+                        <Grid item>
+                          <Chip
+                            label={status.sync}
+                            className={`${
+                              classes.statusChip
+                            } ${getSyncChipClass(status.sync)}`}
+                            size="small"
+                          />
+                        </Grid>
+                        <Grid item xs>
+                          <Typography className={classes.lastSyncTime}>
+                            Last sync: {formatLastSyncTime(status.lastSyncTime)}
+                          </Typography>
+                        </Grid>
+                        <Grid item>
+                          <Tooltip title="View in Argo CD">
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                window.open(
+                                  `https://argocd.company.com/applications/${status.applicationName}`,
+                                  '_blank',
+                                )
+                              }
+                            >
+                              <LaunchIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
+
+                      {status.errors && status.errors.length > 0 && (
+                        <Box mt={1}>
+                          {status.errors.map((err, index) => (
+                            <Alert
+                              key={index}
+                              severity={
+                                err.severity === 'critical' ||
+                                err.severity === 'high'
+                                  ? 'error'
+                                  : 'warning'
+                              }
+                            >
+                              <Typography variant="body2" component="div">
+                                <strong>
+                                  {err.type.replace('_', ' ').toUpperCase()}:
+                                </strong>{' '}
+                                {err.message}
+                              </Typography>
+                              {err.suggestedActions &&
+                                err.suggestedActions.length > 0 && (
+                                  <Box mt={1}>
+                                    <Typography
+                                      variant="caption"
+                                      display="block"
+                                    >
+                                      Suggested actions:
+                                    </Typography>
+                                    <ul
+                                      style={{ margin: 0, paddingLeft: '16px' }}
+                                    >
+                                      {err.suggestedActions
+                                        .slice(0, 2)
+                                        .map((action, actionIndex) => (
+                                          <li key={actionIndex}>
+                                            <Typography variant="caption">
+                                              {action}
+                                            </Typography>
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  </Box>
+                                )}
+                            </Alert>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  </Grid>
+                ),
+              )}
 
               <Grid item xs={12}>
                 <Box mt={2}>
@@ -545,7 +615,9 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
                   <Button
                     variant="outlined"
                     startIcon={<LaunchIcon />}
-                    onClick={() => window.open('https://argocd.company.com', '_blank')}
+                    onClick={() =>
+                      window.open('https://argocd.company.com', '_blank')
+                    }
                   >
                     Open Argo CD
                   </Button>
@@ -560,7 +632,9 @@ export const ArgocdDeploymentCard: React.FC<{ variant?: string }> = ({ variant }
         open={syncDialogOpen}
         onClose={() => setSyncDialogOpen(false)}
         onSync={handleSync}
-        environments={deploymentStatus ? Object.keys(deploymentStatus.environments) : []}
+        environments={
+          deploymentStatus ? Object.keys(deploymentStatus.environments) : []
+        }
         loading={syncing}
       />
     </>

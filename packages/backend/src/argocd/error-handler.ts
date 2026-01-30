@@ -11,7 +11,12 @@ import { Config } from '@backstage/config';
  * Deployment error types
  */
 export interface DeploymentError {
-  type: 'sync_failed' | 'health_check_failed' | 'resource_error' | 'permission_error' | 'network_error';
+  type:
+    | 'sync_failed'
+    | 'health_check_failed'
+    | 'resource_error'
+    | 'permission_error'
+    | 'network_error';
   message: string;
   details?: string;
   timestamp: string;
@@ -81,9 +86,13 @@ export class ArgocdErrorHandler {
   /**
    * Parse and categorize deployment errors
    */
-  parseDeploymentError(rawError: any, applicationName: string, environment: string): DeploymentError {
+  parseDeploymentError(
+    rawError: any,
+    applicationName: string,
+    environment: string,
+  ): DeploymentError {
     const timestamp = new Date().toISOString();
-    
+
     // Common error patterns and their handling
     const errorPatterns = [
       {
@@ -160,11 +169,16 @@ export class ArgocdErrorHandler {
       },
     ];
 
-    const errorMessage = typeof rawError === 'string' ? rawError : rawError.message || 'Unknown error';
-    
+    const errorMessage =
+      typeof rawError === 'string'
+        ? rawError
+        : rawError.message || 'Unknown error';
+
     // Find matching pattern
-    const matchedPattern = errorPatterns.find(pattern => pattern.pattern.test(errorMessage));
-    
+    const matchedPattern = errorPatterns.find(pattern =>
+      pattern.pattern.test(errorMessage),
+    );
+
     if (matchedPattern) {
       return {
         type: matchedPattern.type,
@@ -213,7 +227,9 @@ export class ArgocdErrorHandler {
       force: boolean;
     };
   }): Promise<ManualSyncOperation> {
-    const syncId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const syncId = `sync-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     const operation: ManualSyncOperation = {
       syncId,
       applicationName: params.applicationName,
@@ -225,7 +241,9 @@ export class ArgocdErrorHandler {
     };
 
     this.syncOperations.set(syncId, operation);
-    this.logger.info(`Created manual sync operation: ${syncId} for ${params.applicationName}`);
+    this.logger.info(
+      `Created manual sync operation: ${syncId} for ${params.applicationName}`,
+    );
 
     // Start sync operation asynchronously
     this.executeSyncOperation(syncId).catch(error => {
@@ -245,10 +263,16 @@ export class ArgocdErrorHandler {
   /**
    * Get all sync operations for an application
    */
-  getApplicationSyncHistory(applicationName: string, limit: number = 10): ManualSyncOperation[] {
+  getApplicationSyncHistory(
+    applicationName: string,
+    limit: number = 10,
+  ): ManualSyncOperation[] {
     const operations = Array.from(this.syncOperations.values())
       .filter(op => op.applicationName === applicationName)
-      .sort((a, b) => new Date(b.triggeredAt).getTime() - new Date(a.triggeredAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.triggeredAt).getTime() - new Date(a.triggeredAt).getTime(),
+      )
       .slice(0, limit);
 
     return operations;
@@ -275,7 +299,10 @@ export class ArgocdErrorHandler {
         automated: false,
         riskLevel: 'medium',
         estimatedTime: '2-5 minutes',
-        prerequisites: ['Sync permissions', 'Understanding of potential conflicts'],
+        prerequisites: [
+          'Sync permissions',
+          'Understanding of potential conflicts',
+        ],
       },
       {
         id: 'view-logs',
@@ -325,6 +352,10 @@ export class ArgocdErrorHandler {
           prerequisites: ['Platform team contact information'],
         });
         break;
+
+      default:
+        // No additional actions for other error types
+        break;
     }
 
     return baseActions;
@@ -352,10 +383,26 @@ export class ArgocdErrorHandler {
 
       // Simulate sync phases
       const phases = [
-        { phase: 'Validating', message: 'Validating application configuration', percentage: 20 },
-        { phase: 'Syncing', message: 'Applying changes to cluster', percentage: 50 },
-        { phase: 'Waiting', message: 'Waiting for resources to be ready', percentage: 80 },
-        { phase: 'Completed', message: 'Sync operation completed', percentage: 100 },
+        {
+          phase: 'Validating',
+          message: 'Validating application configuration',
+          percentage: 20,
+        },
+        {
+          phase: 'Syncing',
+          message: 'Applying changes to cluster',
+          percentage: 50,
+        },
+        {
+          phase: 'Waiting',
+          message: 'Waiting for resources to be ready',
+          percentage: 80,
+        },
+        {
+          phase: 'Completed',
+          message: 'Sync operation completed',
+          percentage: 100,
+        },
       ];
 
       for (const phase of phases) {
@@ -372,7 +419,6 @@ export class ArgocdErrorHandler {
       };
 
       this.logger.info(`Sync operation completed successfully: ${syncId}`);
-
     } catch (error) {
       operation.status = 'failed';
       operation.result = {
@@ -400,7 +446,9 @@ export class ArgocdErrorHandler {
    * Generate log URL for application
    */
   private generateLogUrl(applicationName: string, environment: string): string {
-    const argocdBaseUrl = this.config.getOptionalString('argocd.baseUrl') || 'https://argocd.company.com';
+    const argocdBaseUrl =
+      this.config.getOptionalString('argocd.baseUrl') ||
+      'https://argocd.company.com';
     return `${argocdBaseUrl}/applications/${applicationName}/logs`;
   }
 
@@ -409,7 +457,7 @@ export class ArgocdErrorHandler {
    */
   cleanupOldOperations(maxAge: number = 24 * 60 * 60 * 1000): void {
     const cutoff = Date.now() - maxAge;
-    
+
     for (const [syncId, operation] of this.syncOperations.entries()) {
       const operationTime = new Date(operation.triggeredAt).getTime();
       if (operationTime < cutoff) {
@@ -422,7 +470,10 @@ export class ArgocdErrorHandler {
 /**
  * Factory function to create error handler
  */
-export function createArgocdErrorHandler(config: Config, logger: Logger): ArgocdErrorHandler {
+export function createArgocdErrorHandler(
+  config: Config,
+  logger: Logger,
+): ArgocdErrorHandler {
   return new ArgocdErrorHandler(config, logger);
 }
 

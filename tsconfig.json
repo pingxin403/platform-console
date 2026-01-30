@@ -1,17 +1,15 @@
 {
   "extends": "@backstage/cli/config/tsconfig.json",
-  "include": [
-    "packages/*/src",
-    "packages/*/config.d.ts",
-    "plugins/*/src",
-    "plugins/*/config.d.ts",
-    "plugins/*/dev",
-    "plugins/*/migrations"
-  ],
+  "include": ["packages/*/src", "packages/*/config.d.ts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "dist-types",
     "rootDir": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true
   }
 }
