@@ -60,8 +60,15 @@ else
 fi
 
 # Step 1: Build Docker image
-print_info "Building Docker image..."
-docker build -f packages/backend/Dockerfile -t $IMAGE_NAME .
+print_info "Building Docker image (this may take 5-10 minutes)..."
+if ! docker build -f packages/backend/Dockerfile -t $IMAGE_NAME .; then
+    print_error "Docker build failed. Please check the error messages above."
+    print_info "Common issues:"
+    print_info "  - Network timeout: Try again or use a VPN"
+    print_info "  - Insufficient resources: Increase Docker memory/CPU limits"
+    print_info "  - Build errors: Check that all source files are present"
+    exit 1
+fi
 
 # Step 2: Load image to cluster
 if [ "$K8S_ENV" = "minikube" ]; then
