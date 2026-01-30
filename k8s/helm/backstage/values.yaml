@@ -7,11 +7,11 @@ replicaCount: 2
 image:
   repository: backstage
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: 'latest'
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: ''
+fullnameOverride: ''
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -22,13 +22,13 @@ serviceAccount:
     eks.amazonaws.com/role-arn: ${BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  name: ''
 
 podAnnotations:
   # Prometheus monitoring
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "7007"
-  prometheus.io/path: "/metrics"
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '7007'
+  prometheus.io/path: '/metrics'
   # Security annotations
   container.apparmor.security.beta.kubernetes.io/backstage: runtime/default
   seccomp.security.alpha.kubernetes.io/pod: runtime/default
@@ -39,7 +39,7 @@ podSecurityContext:
   runAsUser: 1001
   runAsGroup: 1001
   fsGroup: 1001
-  fsGroupChangePolicy: "OnRootMismatch"
+  fsGroupChangePolicy: 'OnRootMismatch'
   seccompProfile:
     type: RuntimeDefault
   supplementalGroups: []
@@ -61,13 +61,13 @@ service:
   port: 7007
   # Additional service annotations for monitoring
   annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "7007"
-    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '7007'
+    prometheus.io/path: '/metrics'
 
 ingress:
   enabled: true
-  className: "alb"
+  className: 'alb'
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -137,15 +137,15 @@ autoscaling:
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
 
 # Pod disruption budget for high availability
 podDisruptionBudget:
@@ -194,15 +194,15 @@ networkPolicy:
 
 # Node selector for production workloads
 nodeSelector:
-  node-type: "application"
-  instance-type: "m5.large"
+  node-type: 'application'
+  instance-type: 'm5.large'
 
 # Tolerations for dedicated nodes
 tolerations:
-  - key: "dedicated"
-    operator: "Equal"
-    value: "application"
-    effect: "NoSchedule"
+  - key: 'dedicated'
+    operator: 'Equal'
+    value: 'application'
+    effect: 'NoSchedule'
 
 # Anti-affinity for high availability
 affinity:
@@ -233,10 +233,10 @@ backstage:
     app:
       title: Internal Developer Platform
       baseUrl: https://backstage.${DOMAIN_NAME}
-    
+
     organization:
       name: ${ORGANIZATION_NAME}
-    
+
     backend:
       baseUrl: https://backstage.${DOMAIN_NAME}
       cors:
@@ -244,14 +244,14 @@ backstage:
       auth:
         keys:
           - secret: ${BACKEND_SECRET}
-    
+
     auth:
       providers:
         github:
           production:
             clientId: ${AUTH_GITHUB_CLIENT_ID}
             clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-    
+
     integrations:
       github:
         - host: github.com
@@ -294,7 +294,7 @@ postgresql:
       runAsUser: 999
       runAsGroup: 999
       fsGroup: 999
-      fsGroupChangePolicy: "OnRootMismatch"
+      fsGroupChangePolicy: 'OnRootMismatch'
     containerSecurityContext:
       enabled: true
       runAsNonRoot: true
@@ -336,8 +336,8 @@ postgresql:
     # Backup configuration
     backup:
       enabled: true
-      schedule: "0 2 * * *"
-      retention: "30d"
+      schedule: '0 2 * * *'
+      retention: '30d'
 
 # External PostgreSQL (when postgresql.enabled is false)
 externalPostgresql:
@@ -353,26 +353,26 @@ env:
   - name: NODE_ENV
     value: production
   - name: NODE_OPTIONS
-    value: "--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete"
+    value: '--no-node-snapshot --max-old-space-size=1536 --disable-proto=delete'
   - name: LOG_LEVEL
     value: info
   - name: TZ
     value: UTC
   - name: POSTGRES_HOST
-    value: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.fullname\" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}"
+    value: '{{ if .Values.postgresql.enabled }}{{ include "backstage.postgresql.fullname" . }}{{ else }}{{ .Values.externalPostgresql.host }}{{ end }}'
   - name: POSTGRES_PORT
-    value: "{{ if .Values.postgresql.enabled }}5432{{ else }}{{ .Values.externalPostgresql.port }}{{ end }}"
+    value: '{{ if .Values.postgresql.enabled }}5432{{ else }}{{ .Values.externalPostgresql.port }}{{ end }}'
   - name: POSTGRES_USER
-    value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.username }}{{ else }}{{ .Values.externalPostgresql.username }}{{ end }}"
+    value: '{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.username }}{{ else }}{{ .Values.externalPostgresql.username }}{{ end }}'
   - name: POSTGRES_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: "{{ if .Values.postgresql.enabled }}{{ include \"backstage.postgresql.secretName\" . }}{{ else }}backstage-postgres{{ end }}"
-        key: "{{ if .Values.postgresql.enabled }}password{{ else }}password{{ end }}"
+        name: '{{ if .Values.postgresql.enabled }}{{ include "backstage.postgresql.secretName" . }}{{ else }}backstage-postgres{{ end }}'
+        key: '{{ if .Values.postgresql.enabled }}password{{ else }}password{{ end }}'
   - name: POSTGRES_DB
-    value: "{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.database }}{{ else }}{{ .Values.externalPostgresql.database }}{{ end }}"
+    value: '{{ if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.database }}{{ else }}{{ .Values.externalPostgresql.database }}{{ end }}'
   - name: POSTGRES_SSL
-    value: "{{ if .Values.postgresql.enabled }}require{{ else }}{{ .Values.externalPostgresql.ssl }}{{ end }}"
+    value: '{{ if .Values.postgresql.enabled }}require{{ else }}{{ .Values.externalPostgresql.ssl }}{{ end }}'
   - name: BACKEND_SECRET
     valueFrom:
       secretKeyRef:
@@ -447,18 +447,18 @@ monitoring:
     labels:
       app: backstage
       monitoring: prometheus
-  
+
   # Grafana dashboard
   grafanaDashboard:
     enabled: true
     labels:
-      grafana_dashboard: "1"
+      grafana_dashboard: '1'
 
 # Backup configuration
 backup:
   enabled: true
-  schedule: "0 2 * * *"
-  retention: "30d"
+  schedule: '0 2 * * *'
+  retention: '30d'
   storage:
     type: s3
     bucket: ${BACKUP_S3_BUCKET}

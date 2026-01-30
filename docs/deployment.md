@@ -64,6 +64,7 @@
 ### 环境说明
 
 #### Staging 环境
+
 - **用途**: 测试和验证新功能
 - **URL**: https://backstage-staging.example.com
 - **资源**: 较小配置，节省成本
@@ -72,6 +73,7 @@
 - **自动部署**: Push 到 `main` 分支
 
 #### Production 环境
+
 - **用途**: 生产环境，服务真实用户
 - **URL**: https://backstage.example.com
 - **资源**: 高配置，保证性能
@@ -108,6 +110,7 @@ git --version
 ### AWS 权限要求
 
 部署用户需要以下 AWS 权限：
+
 - EKS 集群管理
 - RDS 数据库管理
 - S3 存储桶管理
@@ -325,6 +328,7 @@ aws acm request-certificate \
 ### 必需的 Secrets
 
 #### AWS 相关
+
 ```
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
@@ -332,6 +336,7 @@ AWS_REGION=us-west-2
 ```
 
 #### Kubernetes 相关
+
 ```
 EKS_CLUSTER_NAME=backstage-cluster
 BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_STAGING=arn:aws:iam::123456789012:role/...
@@ -339,6 +344,7 @@ BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_PRODUCTION=arn:aws:iam::123456789012:role/...
 ```
 
 #### 证书相关
+
 ```
 CERTIFICATE_ARN_STAGING=arn:aws:acm:us-west-2:123456789012:certificate/...
 CERTIFICATE_ARN_PRODUCTION=arn:aws:acm:us-west-2:123456789012:certificate/...
@@ -346,12 +352,14 @@ WAF_ACL_ARN=arn:aws:wafv2:us-west-2:123456789012:webacl/...
 ```
 
 #### 数据库相关
+
 ```
 POSTGRES_PASSWORD_STAGING=your-secure-password-staging
 POSTGRES_PASSWORD_PRODUCTION=your-secure-password-production
 ```
 
 #### Backstage 相关
+
 ```
 BACKEND_SECRET_STAGING=your-backend-secret-minimum-24-characters-staging
 BACKEND_SECRET_PRODUCTION=your-backend-secret-minimum-24-characters-production
@@ -359,6 +367,7 @@ ORGANIZATION_NAME=Your Organization Name
 ```
 
 #### GitHub 集成
+
 ```
 GITHUB_TOKEN=ghp_your_github_personal_access_token
 GITHUB_ORG=your-github-organization
@@ -369,6 +378,7 @@ AUTH_GITHUB_CLIENT_SECRET_PRODUCTION=your-github-oauth-client-secret-production
 ```
 
 #### 可选集成
+
 ```
 ARGOCD_TOKEN_STAGING=your-argocd-token-staging
 ARGOCD_TOKEN_PRODUCTION=your-argocd-token-production
@@ -599,4 +609,3 @@ helm rollback backstage-staging 3 -n backstage-staging
 - [Helm 文档](https://helm.sh/docs/)
 - [Backstage 部署文档](https://backstage.io/docs/deployment/)
 - [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/)
-

@@ -1,6 +1,6 @@
 /*
  * Internal Developer Platform Backend
- * 
+ *
  * Production-ready Backstage backend with security hardening,
  * comprehensive logging, health checks, and RBAC enforcement.
  */
@@ -68,7 +68,9 @@ backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
 // lighthouse plugin for performance monitoring
-backend.add(import('@backstage/plugin-lighthouse-backend').then(m => m.default()));
+backend.add(
+  import('@backstage/plugin-lighthouse-backend').then(m => m.default()),
+);
 
 // terraform plugin for infrastructure management
 backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
@@ -77,7 +79,9 @@ backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 backend.add(import('@roadiehq/backstage-plugin-argo-cd-backend'));
 
 // kubelog plugin for Kubernetes log viewing
-backend.add(import('./plugins/kubelogModule').then(m => ({ default: m.kubelogModule })));
+backend.add(
+  import('./plugins/kubelogModule').then(m => ({ default: m.kubelogModule })),
+);
 
 // TODO plugin for code quality tracking
 backend.add(import('@backstage/plugin-todo-backend').then(m => m.default()));
@@ -92,10 +96,18 @@ backend.add(import('@backstage-community/plugin-tech-radar-backend'));
 backend.add(import('@spreadshirt/backstage-plugin-s3-viewer-backend'));
 
 // AWS scaffolder actions module
-backend.add(import('./modules/scaffolderAwsModule').then(m => ({ default: m.scaffolderAwsModule })));
+backend.add(
+  import('./modules/scaffolderAwsModule').then(m => ({
+    default: m.scaffolderAwsModule,
+  })),
+);
 
 // OpenCost enhanced module with AWS cost correlation and benchmarking
-backend.add(import('./plugins/opencostEnhancedModule').then(m => ({ default: m.opencostEnhancedPlugin })));
+backend.add(
+  import('./plugins/opencostEnhancedModule').then(m => ({
+    default: m.opencostEnhancedPlugin,
+  })),
+);
 
 // RAG AI backend plugin for AI-powered assistance
 backend.add(import('@roadiehq/rag-ai-backend'));
@@ -104,7 +116,11 @@ backend.add(import('@roadiehq/rag-ai-backend'));
 backend.add(import('@opslevel/backstage-maturity-backend'));
 
 // Cortex DX backend plugin for engineering effectiveness
-backend.add(import('@cortexapps/backstage-backend-plugin').then(m => ({ default: m.cortexPlugin })));
+backend.add(
+  import('@cortexapps/backstage-backend-plugin').then(m => ({
+    default: m.cortexPlugin,
+  })),
+);
 
 // Entity Feedback backend plugin for collecting user feedback
 backend.add(import('@backstage-community/plugin-entity-feedback-backend'));
@@ -116,27 +132,31 @@ backend.add(import('@drodil/backstage-plugin-toolbox-backend'));
 const startBackend = async () => {
   try {
     console.log('Starting Backstage Internal Developer Platform...');
-    
+
     // Validate required environment variables
     const requiredEnvVars = [
       'POSTGRES_HOST',
-      'POSTGRES_USER', 
+      'POSTGRES_USER',
       'POSTGRES_PASSWORD',
       'POSTGRES_DB',
       'BACKEND_SECRET',
-      'GITHUB_TOKEN'
+      'GITHUB_TOKEN',
     ];
-    
-    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+    const missingEnvVars = requiredEnvVars.filter(
+      envVar => !process.env[envVar],
+    );
     if (missingEnvVars.length > 0) {
-      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+      throw new Error(
+        `Missing required environment variables: ${missingEnvVars.join(', ')}`,
+      );
     }
-    
+
     // Start the backend
     await backend.start();
-    
+
     console.log('Backstage backend started successfully');
-    
+
     // Graceful shutdown handling
     const gracefulShutdown = async (signal: string) => {
       console.log(`Received ${signal}, starting graceful shutdown...`);
@@ -149,22 +169,21 @@ const startBackend = async () => {
         process.exit(1);
       }
     };
-    
+
     // Handle shutdown signals
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-    
+
     // Handle uncaught exceptions
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', error => {
       console.error('Uncaught exception:', error);
       gracefulShutdown('uncaughtException');
     });
-    
+
     process.on('unhandledRejection', (reason, promise) => {
       console.error('Unhandled rejection at:', promise, 'reason:', reason);
       gracefulShutdown('unhandledRejection');
     });
-    
   } catch (error) {
     console.error('Failed to start Backstage backend:', error);
     process.exit(1);

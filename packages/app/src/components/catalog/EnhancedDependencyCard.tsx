@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Card,
   CardContent,
@@ -54,29 +53,32 @@ interface EnhancedDependencyCardProps {
   variant?: 'gridItem';
 }
 
-export const EnhancedDependencyCard = ({ variant }: EnhancedDependencyCardProps) => {
+export const EnhancedDependencyCard = ({
+  variant,
+}: EnhancedDependencyCardProps) => {
   const classes = useStyles();
   const { entity } = useEntity();
 
   const isGridItem = variant === 'gridItem';
 
-  const getDependencies = (entity: Entity) => {
-    return entity.relations?.filter(r => r.type === 'dependsOn') || [];
+  const getDependencies = (ent: Entity) => {
+    return ent.relations?.filter(r => r.type === 'dependsOn') || [];
   };
 
-  const getDependents = (entity: Entity) => {
-    return entity.relations?.filter(r => r.type === 'dependencyOf') || [];
+  const getDependents = (ent: Entity) => {
+    return ent.relations?.filter(r => r.type === 'dependencyOf') || [];
   };
 
-  const getApiRelations = (entity: Entity) => {
-    const provides = entity.relations?.filter(r => r.type === 'providesApi') || [];
-    const consumes = entity.relations?.filter(r => r.type === 'consumesApi') || [];
+  const getApiRelations = (ent: Entity) => {
+    const provides = ent.relations?.filter(r => r.type === 'providesApi') || [];
+    const consumes = ent.relations?.filter(r => r.type === 'consumesApi') || [];
     return { provides, consumes };
   };
 
   const dependencies = getDependencies(entity);
   const dependents = getDependents(entity);
-  const { provides: providedApis, consumes: consumedApis } = getApiRelations(entity);
+  const { provides: providedApis, consumes: consumedApis } =
+    getApiRelations(entity);
 
   const formatEntityName = (targetRef: string) => {
     const parts = targetRef.split('/');
@@ -88,7 +90,9 @@ export const EnhancedDependencyCard = ({ variant }: EnhancedDependencyCardProps)
   };
 
   const content = (
-    <CardContent className={isGridItem ? classes.gridItemCardContent : undefined}>
+    <CardContent
+      className={isGridItem ? classes.gridItemCardContent : undefined}
+    >
       <Grid container spacing={3}>
         {/* Dependencies Section */}
         <Grid item xs={12} md={6}>
@@ -109,8 +113,13 @@ export const EnhancedDependencyCard = ({ variant }: EnhancedDependencyCardProps)
                       to={formatEntityLink(dep.targetRef)}
                       clickable
                     />
-                    <Typography variant="caption" color="textSecondary" display="block">
-                      {dep.targetRef.split('/')[0]} • {dep.targetRef.split('/')[1]}
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
+                      {dep.targetRef.split('/')[0]} •{' '}
+                      {dep.targetRef.split('/')[1]}
                     </Typography>
                   </Box>
                 ))}
@@ -142,8 +151,13 @@ export const EnhancedDependencyCard = ({ variant }: EnhancedDependencyCardProps)
                       to={formatEntityLink(dep.targetRef)}
                       clickable
                     />
-                    <Typography variant="caption" color="textSecondary" display="block">
-                      {dep.targetRef.split('/')[0]} • {dep.targetRef.split('/')[1]}
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      display="block"
+                    >
+                      {dep.targetRef.split('/')[0]} •{' '}
+                      {dep.targetRef.split('/')[1]}
                     </Typography>
                   </Box>
                 ))}
@@ -254,9 +268,5 @@ export const EnhancedDependencyCard = ({ variant }: EnhancedDependencyCardProps)
     );
   }
 
-  return (
-    <InfoCard title="Dependencies & Relations">
-      {content}
-    </InfoCard>
-  );
+  return <InfoCard title="Dependencies & Relations">{content}</InfoCard>;
 };

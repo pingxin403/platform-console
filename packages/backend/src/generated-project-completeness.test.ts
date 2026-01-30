@@ -4,11 +4,17 @@
  * Validates: Requirements 2.3, 2.5
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 
 // Project generation configuration
 interface ProjectGenerationConfig {
-  templateType: 'java-service' | 'go-service' | 'react-app' | 'react-native-app';
+  templateType:
+    | 'java-service'
+    | 'go-service'
+    | 'react-app'
+    | 'react-native-app';
   projectName: string;
   description: string;
   owner: string;
@@ -27,7 +33,14 @@ interface GeneratedProject {
 
 interface ProjectFile {
   path: string;
-  type: 'dockerfile' | 'ci-cd' | 'helm' | 'k8s' | 'catalog' | 'source' | 'config';
+  type:
+    | 'dockerfile'
+    | 'ci-cd'
+    | 'helm'
+    | 'k8s'
+    | 'catalog'
+    | 'source'
+    | 'config';
   content: string;
   required: boolean;
 }
@@ -50,7 +63,9 @@ class ProjectGenerator {
   /**
    * Generate a complete project from template
    */
-  async generateProject(config: ProjectGenerationConfig): Promise<GeneratedProject> {
+  async generateProject(
+    config: ProjectGenerationConfig,
+  ): Promise<GeneratedProject> {
     const files = await this.generateProjectFiles(config);
     const integrations = await this.setupIntegrations(config);
     const deploymentConfig = this.createDeploymentConfig(files);
@@ -67,7 +82,9 @@ class ProjectGenerator {
   /**
    * Generate all required project files based on template type
    */
-  private async generateProjectFiles(config: ProjectGenerationConfig): Promise<ProjectFile[]> {
+  private async generateProjectFiles(
+    config: ProjectGenerationConfig,
+  ): Promise<ProjectFile[]> {
     const files: ProjectFile[] = [];
 
     // Common files for all templates
@@ -95,7 +112,7 @@ class ProjectGenerator {
         type: 'source',
         content: `# ${config.projectName}\n\n${config.description}`,
         required: true,
-      }
+      },
     );
 
     // Template-specific files
@@ -131,7 +148,7 @@ class ProjectGenerator {
             type: 'helm',
             content: this.generateHelmValues(config),
             required: true,
-          }
+          },
         );
         break;
 
@@ -154,7 +171,7 @@ class ProjectGenerator {
             type: 'k8s',
             content: this.generateK8sDeployment(config),
             required: true,
-          }
+          },
         );
         break;
 
@@ -183,7 +200,7 @@ class ProjectGenerator {
             type: 'config',
             content: this.generateNginxConfig(config),
             required: true,
-          }
+          },
         );
         break;
 
@@ -212,8 +229,12 @@ class ProjectGenerator {
             type: 'config',
             content: this.generateAndroidBuild(config),
             required: true,
-          }
+          },
         );
+        break;
+
+      default:
+        // No template-specific files for unknown types
         break;
     }
 
@@ -223,7 +244,9 @@ class ProjectGenerator {
   /**
    * Setup integrations for the generated project
    */
-  private async setupIntegrations(config: ProjectGenerationConfig): Promise<Integration[]> {
+  private async setupIntegrations(
+    config: ProjectGenerationConfig,
+  ): Promise<Integration[]> {
     const integrations: Integration[] = [
       {
         name: 'github-actions',
@@ -233,7 +256,9 @@ class ProjectGenerator {
       {
         name: 'argo-cd',
         configured: this.hasK8sDeployment(config.templateType),
-        configFiles: this.hasK8sDeployment(config.templateType) ? ['k8s/deployment.yaml'] : [],
+        configFiles: this.hasK8sDeployment(config.templateType)
+          ? ['k8s/deployment.yaml']
+          : [],
       },
       {
         name: 'datadog',
@@ -277,12 +302,21 @@ metadata:
   name: ${config.projectName}
   description: ${config.description}
   annotations:
-    github.com/project-slug: ${config.repoUrl.replace('https://github.com/', '')}
+    github.com/project-slug: ${config.repoUrl.replace(
+      'https://github.com/',
+      '',
+    )}
     argocd/app-name: ${config.projectName}
-    datadog/dashboard-url: https://app.datadoghq.com/dashboard/list?q=service%3A${config.projectName}
+    datadog/dashboard-url: https://app.datadoghq.com/dashboard/list?q=service%3A${
+      config.projectName
+    }
     sentry/project-slug: company/${config.projectName}
 spec:
-  type: ${config.templateType.includes('service') ? 'service' : config.templateType.includes('app') ? 'website' : 'mobile-app'}
+  type: ${(() => {
+    if (config.templateType.includes('service')) return 'service';
+    if (config.templateType.includes('app')) return 'website';
+    return 'mobile-app';
+  })()}
   owner: ${config.owner}
   lifecycle: experimental`;
   }
@@ -294,7 +328,7 @@ spec:
       'react-app': 'node:18-alpine',
       'react-native-app': 'node:18-alpine',
     };
-    
+
     return `FROM ${baseImages[config.templateType]}
 WORKDIR /app
 COPY . .
@@ -483,11 +517,28 @@ end`;
 
 // Property-based test generators
 const projectConfigArbitrary = fc.record({
-  templateType: fc.constantFrom('java-service', 'go-service', 'react-app', 'react-native-app'),
+  templateType: fc.constantFrom(
+    'java-service',
+    'go-service',
+    'react-app',
+    'react-native-app',
+  ),
   projectName: fc.stringMatching(/^[a-z][a-z0-9-]*[a-z0-9]$/),
   description: fc.string({ minLength: 10, maxLength: 100 }),
-  owner: fc.constantFrom('team-backend', 'team-frontend', 'team-mobile', 'team-platform'),
-  repoUrl: fc.string().map(s => `https://github.com/company/${s.replace(/[^a-zA-Z0-9-]/g, '-').substring(0, 20)}`),
+  owner: fc.constantFrom(
+    'team-backend',
+    'team-frontend',
+    'team-mobile',
+    'team-platform',
+  ),
+  repoUrl: fc
+    .string()
+    .map(
+      s =>
+        `https://github.com/company/${s
+          .replace(/[^a-zA-Z0-9-]/g, '-')
+          .substring(0, 20)}`,
+    ),
   additionalParams: fc.record({
     port: fc.integer({ min: 3000, max: 9000 }),
     version: fc.constantFrom('1.0.0', '0.1.0', '0.0.1'),
@@ -503,138 +554,186 @@ describe('Generated Project Completeness', () => {
 
   /**
    * Property 5: Generated project completeness
-   * For any template used for project creation, the generated project should include all required files 
-   * (Dockerfile, CI/CD configuration, Helm charts, catalog-info.yaml) and integrations 
+   * For any template used for project creation, the generated project should include all required files
+   * (Dockerfile, CI/CD configuration, Helm charts, catalog-info.yaml) and integrations
    * (GitHub Actions, Argo CD, Datadog, Sentry)
    * Validates: Requirements 2.3, 2.5
    */
   it('should generate complete project structure with all required files and integrations', async () => {
     await fc.assert(
-      fc.asyncProperty(projectConfigArbitrary, async (config) => {
+      fc.asyncProperty(projectConfigArbitrary, async config => {
         // Act: Generate project from template
         const generatedProject = await projectGenerator.generateProject(config);
-        
+
         // Assert: Project should have basic properties
         expect(generatedProject.name).toEqual(config.projectName);
         expect(generatedProject.templateUsed).toEqual(config.templateType);
         expect(generatedProject.files.length).toBeGreaterThan(0);
         expect(generatedProject.integrations.length).toBeGreaterThan(0);
-        
+
         // Assert: All required common files should be present
-        const requiredCommonFiles = ['catalog-info.yaml', 'Dockerfile', '.github/workflows/ci.yml', 'README.md'];
+        const requiredCommonFiles = [
+          'catalog-info.yaml',
+          'Dockerfile',
+          '.github/workflows/ci.yml',
+          'README.md',
+        ];
         for (const requiredFile of requiredCommonFiles) {
-          const file = generatedProject.files.find(f => f.path === requiredFile);
+          const file = generatedProject.files.find(
+            f => f.path === requiredFile,
+          );
           expect(file).toBeDefined();
           expect(file?.required).toBe(true);
           expect(file?.content).toBeTruthy();
         }
-        
+
         // Assert: Template-specific required files should be present
         if (config.templateType === 'java-service') {
-          const javaFiles = ['pom.xml', 'src/main/java/Application.java', 'k8s/deployment.yaml', 'helm/Chart.yaml'];
+          const javaFiles = [
+            'pom.xml',
+            'src/main/java/Application.java',
+            'k8s/deployment.yaml',
+            'helm/Chart.yaml',
+          ];
           for (const javaFile of javaFiles) {
             const file = generatedProject.files.find(f => f.path === javaFile);
             expect(file).toBeDefined();
             expect(file?.required).toBe(true);
           }
         } else if (config.templateType === 'go-service') {
-          const goFiles = ['go.mod', 'cmd/server/main.go', 'k8s/deployment.yaml'];
+          const goFiles = [
+            'go.mod',
+            'cmd/server/main.go',
+            'k8s/deployment.yaml',
+          ];
           for (const goFile of goFiles) {
             const file = generatedProject.files.find(f => f.path === goFile);
             expect(file).toBeDefined();
             expect(file?.required).toBe(true);
           }
         } else if (config.templateType === 'react-app') {
-          const reactFiles = ['package.json', 'src/App.tsx', 'k8s/deployment.yaml', 'nginx.conf'];
+          const reactFiles = [
+            'package.json',
+            'src/App.tsx',
+            'k8s/deployment.yaml',
+            'nginx.conf',
+          ];
           for (const reactFile of reactFiles) {
             const file = generatedProject.files.find(f => f.path === reactFile);
             expect(file).toBeDefined();
             expect(file?.required).toBe(true);
           }
         } else if (config.templateType === 'react-native-app') {
-          const reactNativeFiles = ['package.json', 'App.tsx', 'ios/Podfile', 'android/build.gradle'];
+          const reactNativeFiles = [
+            'package.json',
+            'App.tsx',
+            'ios/Podfile',
+            'android/build.gradle',
+          ];
           for (const rnFile of reactNativeFiles) {
             const file = generatedProject.files.find(f => f.path === rnFile);
             expect(file).toBeDefined();
             expect(file?.required).toBe(true);
           }
         }
-        
+
         // Assert: All required integrations should be configured
         const requiredIntegrations = ['github-actions', 'datadog', 'sentry'];
         for (const integrationName of requiredIntegrations) {
-          const integration = generatedProject.integrations.find(i => i.name === integrationName);
+          const integration = generatedProject.integrations.find(
+            i => i.name === integrationName,
+          );
           expect(integration).toBeDefined();
           expect(integration?.configured).toBe(true);
           expect(integration?.configFiles.length).toBeGreaterThan(0);
         }
-        
+
         // Assert: Argo CD integration should be configured for services and web apps
-        const argoCDIntegration = generatedProject.integrations.find(i => i.name === 'argo-cd');
+        const argoCDIntegration = generatedProject.integrations.find(
+          i => i.name === 'argo-cd',
+        );
         expect(argoCDIntegration).toBeDefined();
-        if (['java-service', 'go-service', 'react-app'].includes(config.templateType)) {
+        if (
+          ['java-service', 'go-service', 'react-app'].includes(
+            config.templateType,
+          )
+        ) {
           expect(argoCDIntegration?.configured).toBe(true);
-          expect(argoCDIntegration?.configFiles).toContain('k8s/deployment.yaml');
+          expect(argoCDIntegration?.configFiles).toContain(
+            'k8s/deployment.yaml',
+          );
         }
-        
+
         // Assert: Deployment configuration should be complete
         expect(generatedProject.deploymentConfig.hasDockerfile).toBe(true);
         expect(generatedProject.deploymentConfig.hasCICD).toBe(true);
-        
-        if (['java-service', 'go-service', 'react-app'].includes(config.templateType)) {
+
+        if (
+          ['java-service', 'go-service', 'react-app'].includes(
+            config.templateType,
+          )
+        ) {
           expect(generatedProject.deploymentConfig.hasK8sManifests).toBe(true);
         }
-        
+
         if (config.templateType === 'java-service') {
           expect(generatedProject.deploymentConfig.hasHelmChart).toBe(true);
         }
       }),
-      { numRuns: 100 } // Run 100 iterations as specified in design document
+      { numRuns: 100 }, // Run 100 iterations as specified in design document
     );
   });
 
   it('should include proper integration configuration in catalog-info.yaml', async () => {
     await fc.assert(
-      fc.asyncProperty(projectConfigArbitrary, async (config) => {
+      fc.asyncProperty(projectConfigArbitrary, async config => {
         // Act: Generate project
         const generatedProject = await projectGenerator.generateProject(config);
-        
+
         // Assert: catalog-info.yaml should exist and contain integration annotations
-        const catalogFile = generatedProject.files.find(f => f.path === 'catalog-info.yaml');
+        const catalogFile = generatedProject.files.find(
+          f => f.path === 'catalog-info.yaml',
+        );
         expect(catalogFile).toBeDefined();
         expect(catalogFile?.content).toBeTruthy();
-        
+
         // Assert: Catalog file should contain required annotations for integrations
         const catalogContent = catalogFile!.content;
         expect(catalogContent).toContain('github.com/project-slug');
         expect(catalogContent).toContain('datadog/dashboard-url');
         expect(catalogContent).toContain('sentry/project-slug');
-        
-        if (['java-service', 'go-service', 'react-app'].includes(config.templateType)) {
+
+        if (
+          ['java-service', 'go-service', 'react-app'].includes(
+            config.templateType,
+          )
+        ) {
           expect(catalogContent).toContain('argocd/app-name');
         }
-        
+
         // Assert: Catalog file should contain project metadata
         expect(catalogContent).toContain(config.projectName);
         expect(catalogContent).toContain(config.description);
         expect(catalogContent).toContain(config.owner);
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should generate valid CI/CD configuration for all template types', async () => {
     await fc.assert(
-      fc.asyncProperty(projectConfigArbitrary, async (config) => {
+      fc.asyncProperty(projectConfigArbitrary, async config => {
         // Act: Generate project
         const generatedProject = await projectGenerator.generateProject(config);
-        
+
         // Assert: CI/CD file should exist
-        const cicdFile = generatedProject.files.find(f => f.path === '.github/workflows/ci.yml');
+        const cicdFile = generatedProject.files.find(
+          f => f.path === '.github/workflows/ci.yml',
+        );
         expect(cicdFile).toBeDefined();
         expect(cicdFile?.type).toBe('ci-cd');
         expect(cicdFile?.required).toBe(true);
-        
+
         // Assert: CI/CD configuration should contain required elements
         const cicdContent = cicdFile!.content;
         expect(cicdContent).toContain('name: CI/CD Pipeline');
@@ -644,62 +743,79 @@ describe('Generated Project Completeness', () => {
         expect(cicdContent).toContain('jobs:');
         expect(cicdContent).toContain('test:');
         expect(cicdContent).toContain('build:');
-        
+
         // Assert: GitHub Actions integration should be configured
-        const githubIntegration = generatedProject.integrations.find(i => i.name === 'github-actions');
+        const githubIntegration = generatedProject.integrations.find(
+          i => i.name === 'github-actions',
+        );
         expect(githubIntegration?.configured).toBe(true);
-        expect(githubIntegration?.configFiles).toContain('.github/workflows/ci.yml');
+        expect(githubIntegration?.configFiles).toContain(
+          '.github/workflows/ci.yml',
+        );
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should generate appropriate deployment configurations based on template type', async () => {
     await fc.assert(
-      fc.asyncProperty(projectConfigArbitrary, async (config) => {
+      fc.asyncProperty(projectConfigArbitrary, async config => {
         // Act: Generate project
         const generatedProject = await projectGenerator.generateProject(config);
-        
+
         // Assert: Dockerfile should always be present
         expect(generatedProject.deploymentConfig.hasDockerfile).toBe(true);
-        const dockerFile = generatedProject.files.find(f => f.type === 'dockerfile');
+        const dockerFile = generatedProject.files.find(
+          f => f.type === 'dockerfile',
+        );
         expect(dockerFile).toBeDefined();
         expect(dockerFile?.content).toContain('FROM');
         expect(dockerFile?.content).toContain('WORKDIR');
-        
+
         // Assert: Template-specific deployment configurations
         if (config.templateType === 'java-service') {
           // Java services should have Kubernetes and Helm configurations
           expect(generatedProject.deploymentConfig.hasK8sManifests).toBe(true);
           expect(generatedProject.deploymentConfig.hasHelmChart).toBe(true);
-          
-          const k8sFile = generatedProject.files.find(f => f.path === 'k8s/deployment.yaml');
+
+          const k8sFile = generatedProject.files.find(
+            f => f.path === 'k8s/deployment.yaml',
+          );
           expect(k8sFile).toBeDefined();
           expect(k8sFile?.content).toContain('apiVersion: apps/v1');
           expect(k8sFile?.content).toContain('kind: Deployment');
-          
-          const helmChart = generatedProject.files.find(f => f.path === 'helm/Chart.yaml');
+
+          const helmChart = generatedProject.files.find(
+            f => f.path === 'helm/Chart.yaml',
+          );
           expect(helmChart).toBeDefined();
           expect(helmChart?.content).toContain('apiVersion: v2');
-          
-        } else if (config.templateType === 'go-service' || config.templateType === 'react-app') {
+        } else if (
+          config.templateType === 'go-service' ||
+          config.templateType === 'react-app'
+        ) {
           // Go services and React apps should have Kubernetes but not necessarily Helm
           expect(generatedProject.deploymentConfig.hasK8sManifests).toBe(true);
-          
-          const k8sFile = generatedProject.files.find(f => f.path === 'k8s/deployment.yaml');
+
+          const k8sFile = generatedProject.files.find(
+            f => f.path === 'k8s/deployment.yaml',
+          );
           expect(k8sFile).toBeDefined();
           expect(k8sFile?.content).toContain('apiVersion: apps/v1');
-          
         } else if (config.templateType === 'react-native-app') {
           // React Native apps should have mobile-specific configurations
-          const iosFile = generatedProject.files.find(f => f.path === 'ios/Podfile');
+          const iosFile = generatedProject.files.find(
+            f => f.path === 'ios/Podfile',
+          );
           expect(iosFile).toBeDefined();
-          
-          const androidFile = generatedProject.files.find(f => f.path === 'android/build.gradle');
+
+          const androidFile = generatedProject.files.find(
+            f => f.path === 'android/build.gradle',
+          );
           expect(androidFile).toBeDefined();
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -707,42 +823,44 @@ describe('Generated Project Completeness', () => {
     await fc.assert(
       fc.asyncProperty(
         fc.array(projectConfigArbitrary, { minLength: 2, maxLength: 5 }),
-        async (configs) => {
+        async configs => {
           // Act: Generate multiple projects
           const generatedProjects = await Promise.all(
-            configs.map(config => projectGenerator.generateProject(config))
+            configs.map(config => projectGenerator.generateProject(config)),
           );
-          
+
           // Assert: All projects should be generated successfully
           expect(generatedProjects.length).toEqual(configs.length);
-          
+
           // Assert: Each project should have complete structure
           for (let i = 0; i < generatedProjects.length; i++) {
             const project = generatedProjects[i];
             const config = configs[i];
-            
+
             expect(project.name).toEqual(config.projectName);
             expect(project.files.length).toBeGreaterThan(0);
             expect(project.integrations.length).toBeGreaterThan(0);
-            
+
             // Assert: Required files should be present
             const requiredFiles = project.files.filter(f => f.required);
             expect(requiredFiles.length).toBeGreaterThan(0);
-            
+
             // Assert: All required files should have content
             for (const file of requiredFiles) {
               expect(file.content).toBeTruthy();
               expect(file.path).toBeTruthy();
               expect(file.type).toBeTruthy();
             }
-            
+
             // Assert: All integrations should be properly configured
-            const configuredIntegrations = project.integrations.filter(i => i.configured);
+            const configuredIntegrations = project.integrations.filter(
+              integration => integration.configured,
+            );
             expect(configuredIntegrations.length).toBeGreaterThanOrEqual(3); // At least GitHub Actions, Datadog, Sentry
           }
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

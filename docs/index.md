@@ -16,24 +16,28 @@ Welcome to the Internal Developer Platform (IDP) documentation. This platform pr
 ## Features
 
 ### Core Platform
+
 - **Service Catalog**: Centralized registry of all services and components
 - **Golden Path Templates**: Pre-configured project templates for rapid development
 - **Documentation System**: Automated documentation generation and publishing
 - **Search & Discovery**: Powerful search across services, docs, and APIs
 
 ### Observability & Monitoring
+
 - **Datadog Integration**: Real-time monitoring and alerting
 - **Sentry Error Tracking**: Comprehensive error monitoring and resolution
 - **Prometheus Metrics**: Custom metrics and performance monitoring
 - **Grafana Dashboards**: Visual monitoring and analytics
 
 ### CI/CD & DevOps
+
 - **GitHub Actions**: Automated CI/CD pipelines
 - **Argo CD**: GitOps deployment management
 - **Kubernetes Integration**: Container orchestration and management
 - **Infrastructure as Code**: Terraform-based infrastructure management
 
 ### Developer Experience
+
 - **API Documentation**: OpenAPI, AsyncAPI, and GraphQL documentation
 - **gRPC Playground**: Interactive API testing and exploration
 - **Developer Tools**: Utilities, converters, and debugging tools
@@ -57,6 +61,7 @@ graph TB
 ## Support
 
 For questions and support:
+
 - **Documentation**: Browse this documentation site
 - **Issues**: Create issues in the platform repository
 - **Slack**: Join the #developer-platform channel
@@ -65,6 +70,7 @@ For questions and support:
 ## Contributing
 
 We welcome contributions to improve the platform:
+
 1. Review the [Contributing Guide](contributing.md)
 2. Check existing [Issues](https://github.com/your-org/platform/issues)
 3. Submit pull requests with improvements

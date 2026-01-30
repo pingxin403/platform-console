@@ -6,25 +6,25 @@ replicaCount: 2
 image:
   repository: ghcr.io/pingxin403/platform-console
   pullPolicy: Always
-  tag: "latest"
+  tag: 'latest'
 
 serviceAccount:
   create: true
   annotations:
     eks.amazonaws.com/role-arn: ${BACKSTAGE_SERVICE_ACCOUNT_ROLE_ARN_STAGING}
-  name: "backstage-staging"
+  name: 'backstage-staging'
 
 podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "7007"
-  prometheus.io/path: "/metrics"
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '7007'
+  prometheus.io/path: '/metrics'
 
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1001
   runAsGroup: 1001
   fsGroup: 1001
-  fsGroupChangePolicy: "OnRootMismatch"
+  fsGroupChangePolicy: 'OnRootMismatch'
 
 securityContext:
   runAsNonRoot: true
@@ -42,7 +42,7 @@ service:
 
 ingress:
   enabled: true
-  className: "alb"
+  className: 'alb'
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -92,7 +92,7 @@ networkPolicy:
 
 # Node selector for staging workloads
 nodeSelector:
-  node-type: "application"
+  node-type: 'application'
 
 # Tolerations
 tolerations: []
@@ -118,10 +118,10 @@ backstage:
     app:
       title: Internal Developer Platform (Staging)
       baseUrl: https://backstage-staging.example.com
-    
+
     organization:
       name: ${ORGANIZATION_NAME}
-    
+
     backend:
       baseUrl: https://backstage-staging.example.com
       cors:
@@ -129,14 +129,14 @@ backstage:
       auth:
         keys:
           - secret: ${BACKEND_SECRET_STAGING}
-    
+
     auth:
       providers:
         github:
           staging:
             clientId: ${AUTH_GITHUB_CLIENT_ID_STAGING}
             clientSecret: ${AUTH_GITHUB_CLIENT_SECRET_STAGING}
-    
+
     integrations:
       github:
         - host: github.com
@@ -169,7 +169,7 @@ env:
   - name: NODE_ENV
     value: staging
   - name: NODE_OPTIONS
-    value: "--no-node-snapshot --max-old-space-size=768"
+    value: '--no-node-snapshot --max-old-space-size=768'
   - name: LOG_LEVEL
     value: debug
   - name: TZ
@@ -177,7 +177,7 @@ env:
   - name: POSTGRES_HOST
     value: backstage-staging.rds.amazonaws.com
   - name: POSTGRES_PORT
-    value: "5432"
+    value: '5432'
   - name: POSTGRES_USER
     value: backstage
   - name: POSTGRES_PASSWORD
@@ -250,18 +250,18 @@ monitoring:
       app: backstage
       environment: staging
       monitoring: prometheus
-  
+
   grafanaDashboard:
     enabled: true
     labels:
-      grafana_dashboard: "1"
+      grafana_dashboard: '1'
       environment: staging
 
 # Backup configuration for staging
 backup:
   enabled: true
-  schedule: "0 3 * * *"
-  retention: "7d"
+  schedule: '0 3 * * *'
+  retention: '7d'
   storage:
     type: s3
     bucket: backstage-backups-staging

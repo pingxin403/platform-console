@@ -4,19 +4,19 @@ kind: ClusterConfig
 metadata:
   name: backstage-cluster
   region: us-west-2
-  version: "1.28"
+  version: '1.28'
 
 # Enhanced VPC configuration with security
 vpc:
   enableDnsHostnames: true
   enableDnsSupport: true
-  cidr: "10.0.0.0/16"
+  cidr: '10.0.0.0/16'
   nat:
     gateway: HighlyAvailable
   clusterEndpoints:
     privateAccess: true
     publicAccess: true
-    publicAccessCIDRs: ["0.0.0.0/0"]
+    publicAccessCIDRs: ['0.0.0.0/0']
 
 # IAM configuration with service accounts
 iam:
@@ -45,31 +45,31 @@ managedNodeGroups:
     volumeSize: 50
     volumeType: gp3
     volumeEncrypted: true
-    
+
     # Security configuration
     securityGroups:
       withShared: true
       withLocal: true
-    
+
     # Instance metadata service configuration
     instanceMetadataOptions:
       httpTokens: required
       httpPutResponseHopLimit: 2
-    
+
     # SSH access (disabled for security)
     ssh:
       allow: false
-    
+
     # Labels and taints
     labels:
       role: backstage-worker
       environment: production
-    
+
     tags:
       Environment: production
       Application: backstage
       ManagedBy: eksctl
-    
+
     # IAM configuration
     iam:
       attachPolicyARNs:
@@ -104,7 +104,7 @@ addons:
 # CloudWatch logging with retention
 cloudWatch:
   clusterLogging:
-    enableTypes: ["*"]
+    enableTypes: ['*']
     logRetentionInDays: 30
 
 # Security enhancements

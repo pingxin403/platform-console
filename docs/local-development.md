@@ -246,6 +246,7 @@ yarn build-image
 ### 1. 访问应用
 
 打开浏览器访问:
+
 - **开发模式**: http://localhost:3000
 - **Docker Compose**: http://localhost:7007
 
@@ -318,6 +319,7 @@ curl http://localhost:7007/metrics
 **问题**: `Error: listen EADDRINUSE: address already in use :::7007`
 
 **解决方案**:
+
 ```bash
 # 查找占用端口的进程
 lsof -i :7007
@@ -334,6 +336,7 @@ kill -9 <PID>
 **问题**: `Error: connect ECONNREFUSED 127.0.0.1:5432`
 
 **解决方案**:
+
 ```bash
 # 检查 PostgreSQL 是否运行
 docker-compose ps
@@ -350,6 +353,7 @@ docker-compose logs postgres
 **问题**: `Error: Resource not accessible by integration`
 
 **解决方案**:
+
 - 确保 GitHub Token 有正确的权限（repo, read:org, read:user）
 - 重新生成 token 并更新 `.env` 文件
 - 重启应用
@@ -359,6 +363,7 @@ docker-compose logs postgres
 **问题**: `Error: Cannot find module`
 
 **解决方案**:
+
 ```bash
 # 清理缓存
 yarn cache clean
@@ -375,6 +380,7 @@ yarn install
 **问题**: `ERROR [internal] load metadata for docker.io/library/node:18`
 
 **解决方案**:
+
 ```bash
 # 清理 Docker 缓存
 docker system prune -a
@@ -388,6 +394,7 @@ docker-compose build --no-cache
 **问题**: 前端显示 "Failed to fetch"
 
 **解决方案**:
+
 - 检查 `app-config.yaml` 中的 `backend.baseUrl` 是否正确
 - 确保后端正在运行: `curl http://localhost:7007/healthcheck`
 - 检查 CORS 配置

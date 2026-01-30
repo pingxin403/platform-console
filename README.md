@@ -26,6 +26,7 @@ This is a [Backstage](https://backstage.io) application configured as an Interna
 ### Local Development
 
 1. **Clone and setup**:
+
    ```bash
    git clone <repository-url>
    cd platform-console
@@ -33,12 +34,14 @@ This is a [Backstage](https://backstage.io) application configured as an Interna
    ```
 
 2. **Configure environment**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Start with Docker Compose**:
+
    ```bash
    docker-compose up --build
    ```
@@ -131,29 +134,35 @@ yarn lint
 ## Integrations
 
 ### GitHub
+
 - Repository discovery and catalog management
 - OAuth authentication
 - Scaffolder integration for project creation
 
 ### Argo CD
+
 - Real-time deployment status
 - GitOps workflow integration
 - Multi-environment support
 
 ### Datadog
+
 - Dashboard embedding
 - Metrics and alerting integration
 - Log aggregation
 
 ### Sentry
+
 - Error tracking and monitoring
 - Issue management integration
 
 ### OpenCost
+
 - Kubernetes cost visibility
 - Resource optimization recommendations
 
 ### n8n
+
 - Workflow automation
 - Self-service operations
 - Approval processes

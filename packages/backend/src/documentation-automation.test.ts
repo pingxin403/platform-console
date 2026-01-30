@@ -4,12 +4,16 @@
  * Validates: Requirements 5.1, 5.2, 5.3
  */
 
+/* eslint-disable jest/no-conditional-expect */
+
 import * as fc from 'fast-check';
 import { Entity } from '@backstage/catalog-model';
 
 // Documentation automation interface to test
 interface DocumentationAutomation {
-  generateDocumentation(repository: ServiceRepository): Promise<DocumentationResult>;
+  generateDocumentation(
+    repository: ServiceRepository,
+  ): Promise<DocumentationResult>;
   rebuildDocumentation(repository: ServiceRepository): Promise<RebuildResult>;
   getDocumentationStatus(serviceName: string): Promise<DocumentationStatus>;
   supportedMarkdownFeatures(): MarkdownFeatures;
@@ -80,9 +84,11 @@ class MockTechDocsAutomation implements DocumentationAutomation {
   private statusCache: Map<string, DocumentationStatus> = new Map();
   private buildQueue: Set<string> = new Set();
 
-  async generateDocumentation(repository: ServiceRepository): Promise<DocumentationResult> {
+  async generateDocumentation(
+    repository: ServiceRepository,
+  ): Promise<DocumentationResult> {
     const startTime = new Date();
-    
+
     // Check if repository has /docs directory
     if (!repository.hasDocsDirectory) {
       return {
@@ -97,7 +103,9 @@ class MockTechDocsAutomation implements DocumentationAutomation {
     }
 
     // Check if docs directory has valid content
-    const markdownFiles = repository.docsContent.filter(file => file.type === 'markdown');
+    const markdownFiles = repository.docsContent.filter(
+      file => file.type === 'markdown',
+    );
     if (markdownFiles.length === 0) {
       return {
         serviceName: repository.name,
@@ -113,11 +121,11 @@ class MockTechDocsAutomation implements DocumentationAutomation {
     // Simulate documentation generation process
     const buildDuration = this.simulateBuildTime(repository.docsContent.length);
     const endTime = new Date(startTime.getTime() + buildDuration);
-    
+
     // Check for potential issues
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // Validate markdown content
     for (const file of markdownFiles) {
       if (file.content.length === 0) {
@@ -125,8 +133,10 @@ class MockTechDocsAutomation implements DocumentationAutomation {
       }
       if (file.content.includes('![](') && !file.content.includes('http')) {
         // Check for relative image references
-        const hasImageFiles = repository.docsContent.some(f => 
-          f.type === 'image' && file.content.includes(f.path.split('/').pop() || '')
+        const hasImageFiles = repository.docsContent.some(
+          f =>
+            f.type === 'image' &&
+            file.content.includes(f.path.split('/').pop() || ''),
         );
         if (!hasImageFiles) {
           warnings.push(`Broken image reference in ${file.path}`);
@@ -147,7 +157,7 @@ class MockTechDocsAutomation implements DocumentationAutomation {
 
     // Cache the result
     this.documentationCache.set(repository.name, result);
-    
+
     // Update status
     this.statusCache.set(repository.name, {
       serviceName: repository.name,
@@ -162,28 +172,32 @@ class MockTechDocsAutomation implements DocumentationAutomation {
     return result;
   }
 
-  async rebuildDocumentation(repository: ServiceRepository): Promise<RebuildResult> {
+  async rebuildDocumentation(
+    repository: ServiceRepository,
+  ): Promise<RebuildResult> {
     const rebuildStartTime = new Date();
-    
+
     // Get previous build information
     const previousStatus = this.statusCache.get(repository.name);
     const previousBuildTime = previousStatus?.lastBuildTime;
-    
+
     // Calculate time since last update
-    const timeSinceUpdate = previousStatus?.lastUpdateTime 
-      ? (rebuildStartTime.getTime() - repository.lastUpdated.getTime()) / (1000 * 60) // minutes
+    const timeSinceUpdate = previousStatus?.lastUpdateTime
+      ? (rebuildStartTime.getTime() - repository.lastUpdated.getTime()) /
+        (1000 * 60) // minutes
       : 0;
 
     // Add to build queue to simulate processing
     this.buildQueue.add(repository.name);
-    
+
     try {
       // Regenerate documentation
       const generationResult = await this.generateDocumentation(repository);
-      
+
       const rebuildDuration = generationResult.buildDuration;
-      const success = generationResult.generated && generationResult.errors.length === 0;
-      
+      const success =
+        generationResult.generated && generationResult.errors.length === 0;
+
       const result: RebuildResult = {
         serviceName: repository.name,
         rebuilt: true,
@@ -202,7 +216,9 @@ class MockTechDocsAutomation implements DocumentationAutomation {
     }
   }
 
-  async getDocumentationStatus(serviceName: string): Promise<DocumentationStatus> {
+  async getDocumentationStatus(
+    serviceName: string,
+  ): Promise<DocumentationStatus> {
     const cached = this.statusCache.get(serviceName);
     if (cached) {
       return cached;
@@ -234,11 +250,14 @@ class MockTechDocsAutomation implements DocumentationAutomation {
     // Simulate realistic build times based on content size
     const baseTime = 2000; // 2 seconds base
     const perFileTime = 500; // 500ms per file
-    return baseTime + (fileCount * perFileTime);
+    return baseTime + fileCount * perFileTime;
   }
 
   // Helper method to check if rebuild is within time limit
-  isRebuildWithinTimeLimit(rebuildResult: RebuildResult, timeLimitMinutes: number = 10): boolean {
+  isRebuildWithinTimeLimit(
+    rebuildResult: RebuildResult,
+    timeLimitMinutes: number = 10,
+  ): boolean {
     return rebuildResult.timeSinceUpdate <= timeLimitMinutes;
   }
 }
@@ -248,7 +267,8 @@ const serviceNameArbitrary = fc.stringMatching(/^[a-z][a-z0-9-]*[a-z0-9]$/);
 
 const ownerArbitrary = fc.stringMatching(/^team-[a-z]+$/);
 
-const markdownContentArbitrary = fc.string({ minLength: 10, maxLength: 1000 })
+const markdownContentArbitrary = fc
+  .string({ minLength: 10, maxLength: 1000 })
   .map(content => {
     // Generate realistic markdown content
     const lines = [
@@ -278,58 +298,78 @@ const markdownContentArbitrary = fc.string({ minLength: 10, maxLength: 1000 })
   });
 
 const documentationFileArbitrary = fc.record({
-  path: fc.string().map(s => `docs/${s.replace(/[^a-zA-Z0-9-]/g, '-').substring(0, 20)}.md`),
+  path: fc
+    .string()
+    .map(s => `docs/${s.replace(/[^a-zA-Z0-9-]/g, '-').substring(0, 20)}.md`),
   content: markdownContentArbitrary,
-  lastModified: fc.integer({ min: 1577836800000, max: 1735689600000 }).map(timestamp => new Date(timestamp)),
+  lastModified: fc
+    .integer({ min: 1577836800000, max: 1735689600000 })
+    .map(timestamp => new Date(timestamp)),
   type: fc.constant('markdown' as const),
 });
 
 const imageFileArbitrary = fc.record({
-  path: fc.string().map(s => `docs/images/${s.replace(/[^a-zA-Z0-9-]/g, '-').substring(0, 15)}.png`),
+  path: fc
+    .string()
+    .map(
+      s =>
+        `docs/images/${s.replace(/[^a-zA-Z0-9-]/g, '-').substring(0, 15)}.png`,
+    ),
   content: fc.constant('binary-image-data'),
-  lastModified: fc.integer({ min: 1577836800000, max: 1735689600000 }).map(timestamp => new Date(timestamp)),
+  lastModified: fc
+    .integer({ min: 1577836800000, max: 1735689600000 })
+    .map(timestamp => new Date(timestamp)),
   type: fc.constant('image' as const),
 });
 
 const yamlFileArbitrary = fc.record({
   path: fc.constant('docs/mkdocs.yml'),
   content: fc.constant('site_name: Service Docs\nnav:\n  - Home: index.md'),
-  lastModified: fc.integer({ min: 1577836800000, max: 1735689600000 }).map(timestamp => new Date(timestamp)),
+  lastModified: fc
+    .integer({ min: 1577836800000, max: 1735689600000 })
+    .map(timestamp => new Date(timestamp)),
   type: fc.constant('yaml' as const),
 });
 
 const docsContentArbitrary = fc.array(
   fc.oneof(documentationFileArbitrary, imageFileArbitrary, yamlFileArbitrary),
-  { minLength: 1, maxLength: 10 }
+  { minLength: 1, maxLength: 10 },
 );
 
-const serviceRepositoryArbitrary = fc.record({
-  name: serviceNameArbitrary,
-  owner: ownerArbitrary,
-  hasDocsDirectory: fc.boolean(),
-  docsContent: fc.boolean().chain(hasDocsDir => 
-    hasDocsDir ? docsContentArbitrary : fc.constant([])
-  ),
-  lastUpdated: fc.integer({ min: 1577836800000, max: 1735689600000 }).map(timestamp => new Date(timestamp)),
-  branch: fc.constantFrom('main', 'master', 'develop'),
-}).map(repo => ({
-  ...repo,
-  hasDocsDirectory: repo.docsContent.length > 0, // Ensure consistency
-}));
+const serviceRepositoryArbitrary = fc
+  .record({
+    name: serviceNameArbitrary,
+    owner: ownerArbitrary,
+    hasDocsDirectory: fc.boolean(),
+    docsContent: fc
+      .boolean()
+      .chain(hasDocsDir =>
+        hasDocsDir ? docsContentArbitrary : fc.constant([]),
+      ),
+    lastUpdated: fc
+      .integer({ min: 1577836800000, max: 1735689600000 })
+      .map(timestamp => new Date(timestamp)),
+    branch: fc.constantFrom('main', 'master', 'develop'),
+  })
+  .map(repo => ({
+    ...repo,
+    hasDocsDirectory: repo.docsContent.length > 0, // Ensure consistency
+  }));
 
-const serviceRepositoryListArbitrary = fc.array(serviceRepositoryArbitrary, { minLength: 1, maxLength: 15 })
+const serviceRepositoryListArbitrary = fc
+  .array(serviceRepositoryArbitrary, { minLength: 1, maxLength: 15 })
   .map(repos => {
     // Ensure unique service names
     const uniqueRepos: ServiceRepository[] = [];
     const seenNames = new Set<string>();
-    
+
     for (const repo of repos) {
       if (!seenNames.has(repo.name)) {
         seenNames.add(repo.name);
         uniqueRepos.push(repo);
       }
     }
-    
+
     return uniqueRepos.length > 0 ? uniqueRepos : [repos[0]];
   });
 
@@ -342,23 +382,28 @@ describe('Documentation Automation', () => {
 
   /**
    * Property 11: Documentation automation
-   * For any service repository containing a /docs directory, the Developer_Portal should 
-   * automatically generate and host documentation using TechDocs, rebuild within 10 minutes 
+   * For any service repository containing a /docs directory, the Developer_Portal should
+   * automatically generate and host documentation using TechDocs, rebuild within 10 minutes
    * when updated, and support full Markdown features
    * Validates: Requirements 5.1, 5.2, 5.3
    */
   it('should automatically generate and host documentation for repositories with /docs directory', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceRepositoryListArbitrary, async (repositories) => {
+      fc.asyncProperty(serviceRepositoryListArbitrary, async repositories => {
         // Create a fresh automation instance for each property test run
         const freshAutomation = new MockTechDocsAutomation();
-        
+
         for (const repository of repositories) {
           // Act: Generate documentation for the repository
-          const result = await freshAutomation.generateDocumentation(repository);
-          
+          const result = await freshAutomation.generateDocumentation(
+            repository,
+          );
+
           // Assert: Documentation generation behavior based on /docs directory presence
-          if (repository.hasDocsDirectory && repository.docsContent.some(f => f.type === 'markdown')) {
+          if (
+            repository.hasDocsDirectory &&
+            repository.docsContent.some(f => f.type === 'markdown')
+          ) {
             // Requirements 5.1: Should automatically generate and host documentation
             expect(result.generated).toBe(true);
             expect(result.hosted).toBe(true);
@@ -366,9 +411,11 @@ describe('Documentation Automation', () => {
             expect(result.outputUrl).toContain(repository.name);
             expect(result.generationTime).toBeDefined();
             expect(result.buildDuration).toBeGreaterThan(0);
-            
+
             // Verify documentation status is updated
-            const status = await freshAutomation.getDocumentationStatus(repository.name);
+            const status = await freshAutomation.getDocumentationStatus(
+              repository.name,
+            );
             expect(status.isGenerated).toBe(true);
             expect(status.isHosted).toBe(true);
             expect(status.lastBuildTime).toBeDefined();
@@ -379,107 +426,121 @@ describe('Documentation Automation', () => {
             expect(result.generated).toBe(false);
             expect(result.hosted).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
-            
+
             // Verify appropriate error messages
             if (!repository.hasDocsDirectory) {
-              expect(result.errors.some(e => e.includes('/docs directory'))).toBe(true);
+              expect(
+                result.errors.some(e => e.includes('/docs directory')),
+              ).toBe(true);
             } else {
-              expect(result.errors.some(e => e.includes('markdown files'))).toBe(true);
+              expect(
+                result.errors.some(e => e.includes('markdown files')),
+              ).toBe(true);
             }
           }
-          
+
           // Assert: Service name should match repository name
           expect(result.serviceName).toEqual(repository.name);
-          
+
           // Assert: Generation time should be reasonable
           expect(result.buildDuration).toBeLessThan(30000); // Less than 30 seconds
-          
+
           // Assert: Errors and warnings should be arrays
           expect(Array.isArray(result.errors)).toBe(true);
           expect(Array.isArray(result.warnings)).toBe(true);
         }
       }),
-      { numRuns: 100 } // Run 100 iterations as specified in design document
+      { numRuns: 100 }, // Run 100 iterations as specified in design document
     );
   });
 
   it('should rebuild documentation within 10 minutes when updated', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceRepositoryListArbitrary, async (repositories) => {
+      fc.asyncProperty(serviceRepositoryListArbitrary, async repositories => {
         // Create a fresh automation instance for each property test run
         const freshAutomation = new MockTechDocsAutomation();
-        
+
         // Filter to only repositories with docs for this test
-        const reposWithDocs = repositories.filter(r => 
-          r.hasDocsDirectory && r.docsContent.some(f => f.type === 'markdown')
+        const reposWithDocs = repositories.filter(
+          r =>
+            r.hasDocsDirectory &&
+            r.docsContent.some(f => f.type === 'markdown'),
         );
-        
+
         if (reposWithDocs.length === 0) return; // Skip if no valid repositories
-        
+
         for (const repository of reposWithDocs) {
           // Act: Initial documentation generation
-          const initialResult = await freshAutomation.generateDocumentation(repository);
+          const initialResult = await freshAutomation.generateDocumentation(
+            repository,
+          );
           expect(initialResult.generated).toBe(true);
-          
+
           // Simulate documentation update (within last 10 minutes)
           const updatedRepository = {
             ...repository,
-            lastUpdated: new Date(Date.now() - (5 * 60 * 1000)), // 5 minutes ago
+            lastUpdated: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
           };
-          
+
           // Act: Rebuild documentation
-          const rebuildResult = await freshAutomation.rebuildDocumentation(updatedRepository);
-          
+          const rebuildResult = await freshAutomation.rebuildDocumentation(
+            updatedRepository,
+          );
+
           // Assert: Requirements 5.2 - Should rebuild within 10 minutes
           expect(rebuildResult.rebuilt).toBe(true);
           expect(rebuildResult.timeSinceUpdate).toBeLessThanOrEqual(10);
-          expect(freshAutomation.isRebuildWithinTimeLimit(rebuildResult, 10)).toBe(true);
-          
+          expect(
+            freshAutomation.isRebuildWithinTimeLimit(rebuildResult, 10),
+          ).toBe(true);
+
           // Assert: Rebuild should be successful for valid content
           expect(rebuildResult.success).toBe(true);
           expect(rebuildResult.rebuildTime).toBeDefined();
           expect(rebuildResult.rebuildDuration).toBeGreaterThan(0);
-          
+
           // Assert: Service name should match
           expect(rebuildResult.serviceName).toEqual(repository.name);
-          
+
           // Assert: Previous build time should be tracked
           if (rebuildResult.previousBuildTime) {
             expect(rebuildResult.rebuildTime.getTime()).toBeGreaterThanOrEqual(
-              rebuildResult.previousBuildTime.getTime()
+              rebuildResult.previousBuildTime.getTime(),
             );
           }
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should support full Markdown features including diagrams, code snippets, and cross-references', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceRepositoryListArbitrary, async (repositories) => {
+      fc.asyncProperty(serviceRepositoryListArbitrary, async repositories => {
         // Create a fresh automation instance for each property test run
         const freshAutomation = new MockTechDocsAutomation();
-        
+
         // Assert: Requirements 5.3 - Should support full Markdown features
         const features = freshAutomation.supportedMarkdownFeatures();
-        
+
         // Assert: Core Markdown features are supported
         expect(features.supportsDiagrams).toBe(true);
         expect(features.supportsCodeSnippets).toBe(true);
         expect(features.supportsCrossReferences).toBe(true);
         expect(features.supportsTables).toBe(true);
         expect(features.supportsImages).toBe(true);
-        
+
         // Assert: Advanced diagram support
         expect(features.supportsMermaid).toBe(true);
         expect(features.supportsPlantUML).toBe(true);
-        
+
         // Test with repositories that have rich markdown content
-        const reposWithDocs = repositories.filter(r => 
-          r.hasDocsDirectory && r.docsContent.some(f => f.type === 'markdown')
+        const reposWithDocs = repositories.filter(
+          r =>
+            r.hasDocsDirectory &&
+            r.docsContent.some(f => f.type === 'markdown'),
         );
-        
+
         for (const repository of reposWithDocs) {
           // Create repository with rich markdown content
           const richContentRepo = {
@@ -523,77 +584,92 @@ describe('Documentation Automation', () => {
               },
             ],
           };
-          
+
           // Act: Generate documentation with rich content
-          const result = await freshAutomation.generateDocumentation(richContentRepo);
-          
+          const result = await freshAutomation.generateDocumentation(
+            richContentRepo,
+          );
+
           // Assert: Should successfully generate documentation with rich content
           expect(result.generated).toBe(true);
           expect(result.hosted).toBe(true);
-          
+
           // Assert: Should handle images correctly (no broken image warnings)
-          const brokenImageWarnings = result.warnings.filter(w => w.includes('Broken image'));
+          const brokenImageWarnings = result.warnings.filter(w =>
+            w.includes('Broken image'),
+          );
           expect(brokenImageWarnings.length).toBe(0);
-          
+
           // Assert: Should process all markdown features without errors
-          const markdownErrors = result.errors.filter(e => 
-            e.includes('markdown') || e.includes('diagram') || e.includes('code')
+          const markdownErrors = result.errors.filter(
+            e =>
+              e.includes('markdown') ||
+              e.includes('diagram') ||
+              e.includes('code'),
           );
           expect(markdownErrors.length).toBe(0);
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should handle repositories without documentation gracefully', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceRepositoryListArbitrary, async (repositories) => {
+      fc.asyncProperty(serviceRepositoryListArbitrary, async repositories => {
         // Create a fresh automation instance for each property test run
         const freshAutomation = new MockTechDocsAutomation();
-        
+
         // Create repositories without docs directories
         const reposWithoutDocs = repositories.map(repo => ({
           ...repo,
           hasDocsDirectory: false,
           docsContent: [],
         }));
-        
+
         for (const repository of reposWithoutDocs) {
           // Act: Attempt to generate documentation
-          const result = await freshAutomation.generateDocumentation(repository);
-          
+          const result = await freshAutomation.generateDocumentation(
+            repository,
+          );
+
           // Assert: Should handle gracefully without crashing
           expect(result.serviceName).toEqual(repository.name);
           expect(result.generated).toBe(false);
           expect(result.hosted).toBe(false);
           expect(result.buildDuration).toBeGreaterThanOrEqual(0);
-          
+
           // Assert: Should provide clear error message
           expect(result.errors.length).toBeGreaterThan(0);
-          expect(result.errors.some(e => e.includes('/docs directory'))).toBe(true);
-          
+          expect(result.errors.some(e => e.includes('/docs directory'))).toBe(
+            true,
+          );
+
           // Assert: Status should reflect no documentation
-          const status = await freshAutomation.getDocumentationStatus(repository.name);
+          const status = await freshAutomation.getDocumentationStatus(
+            repository.name,
+          );
           expect(status.isGenerated).toBe(false);
           expect(status.isHosted).toBe(false);
           expect(status.buildStatus).toEqual('not_started');
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('should track documentation status and build history correctly', async () => {
     await fc.assert(
-      fc.asyncProperty(serviceRepositoryListArbitrary, async (repositories) => {
+      fc.asyncProperty(serviceRepositoryListArbitrary, async repositories => {
         // Create a fresh automation instance for each property test run
         const freshAutomation = new MockTechDocsAutomation();
-        
+
         for (const repository of repositories) {
           // Act: Check initial status (before any generation)
-          const initialStatus = await freshAutomation.getDocumentationStatus(repository.name);
-          
+          const initialStatus = await freshAutomation.getDocumentationStatus(
+            repository.name,
+          );
+
           // Assert: Initial status should indicate no documentation
           expect(initialStatus.serviceName).toEqual(repository.name);
           expect(initialStatus.isGenerated).toBe(false);
@@ -601,30 +677,39 @@ describe('Documentation Automation', () => {
           expect(initialStatus.buildStatus).toEqual('not_started');
           expect(initialStatus.lastBuildTime).toBeUndefined();
           expect(initialStatus.url).toBeUndefined();
-          
+
           // Act: Generate documentation
-          const generationResult = await freshAutomation.generateDocumentation(repository);
-          
+          const generationResult = await freshAutomation.generateDocumentation(
+            repository,
+          );
+
           // Act: Check status after generation
-          const postGenerationStatus = await freshAutomation.getDocumentationStatus(repository.name);
-          
+          const postGenerationStatus =
+            await freshAutomation.getDocumentationStatus(repository.name);
+
           // Assert: Status should reflect generation results
           expect(postGenerationStatus.serviceName).toEqual(repository.name);
-          expect(postGenerationStatus.isGenerated).toEqual(generationResult.generated);
-          expect(postGenerationStatus.isHosted).toEqual(generationResult.hosted);
-          
+          expect(postGenerationStatus.isGenerated).toEqual(
+            generationResult.generated,
+          );
+          expect(postGenerationStatus.isHosted).toEqual(
+            generationResult.hosted,
+          );
+
           if (generationResult.generated) {
             expect(postGenerationStatus.lastBuildTime).toBeDefined();
-            expect(postGenerationStatus.url).toEqual(generationResult.outputUrl);
+            expect(postGenerationStatus.url).toEqual(
+              generationResult.outputUrl,
+            );
             expect(postGenerationStatus.buildStatus).toEqual(
-              generationResult.errors.length > 0 ? 'failed' : 'success'
+              generationResult.errors.length > 0 ? 'failed' : 'success',
             );
           } else {
             expect(postGenerationStatus.buildStatus).toEqual('not_started');
           }
         }
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

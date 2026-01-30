@@ -7,13 +7,13 @@
 export { ArgocdService, createArgocdService } from './argocd-service';
 export { createArgocdRouter } from './argocd-router';
 export { ArgocdErrorHandler, createArgocdErrorHandler } from './error-handler';
-export type { 
-  DeploymentStatus, 
-  MultiEnvironmentStatus, 
-  SyncResult 
+export type {
+  DeploymentStatus,
+  MultiEnvironmentStatus,
+  SyncResult,
 } from './argocd-service';
 export type {
   DeploymentError,
   ManualSyncOperation,
-  RecoveryAction
+  RecoveryAction,
 } from './error-handler';
