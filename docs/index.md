@@ -8,6 +8,7 @@ Welcome to the Internal Developer Platform (IDP) documentation. This platform pr
 - [Project Overview](project-overview.md) - 了解项目结构和 Spec 方法论
 - [Git & GitHub Guide](git-github-guide.md) - Git 和 GitHub 使用指南
 - [Local Development](local-development.md) - 本地开发环境设置
+- [Local Kubernetes Testing](local-kubernetes-testing.md) - 本地 Kubernetes 集群测试指南
 - [Deployment Guide](deployment.md) - AWS EKS 部署指南
 - [CI/CD Guide](ci-cd-guide.md) - GitHub Actions CI/CD 配置
 - [Service Catalog](service-catalog.md)
