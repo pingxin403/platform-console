@@ -43,10 +43,9 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // permission plugin with RBAC enforcement
 backend.add(import('@backstage/plugin-permission-backend'));
-// Production RBAC policy - replace allow-all with proper policy in production
-// TODO: Replace with custom RBAC policy module
+// Custom RBAC policy with fine-grained access control
 backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+  import('./plugins/rbac').then(m => ({ default: m.rbacPolicyModule })),
 );
 
 // search plugin with PostgreSQL backend
@@ -106,6 +105,13 @@ backend.add(
 backend.add(
   import('./plugins/opencostEnhancedModule').then(m => ({
     default: m.opencostEnhancedPlugin,
+  })),
+);
+
+// FinOps Cost Estimation Engine
+backend.add(
+  import('./plugins/finops').then(m => ({
+    default: m.finopsCostEstimationPlugin,
   })),
 );
 
