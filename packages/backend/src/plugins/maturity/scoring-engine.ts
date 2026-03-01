@@ -6,6 +6,8 @@
  * 3. Monitoring
  * 4. Security
  * 5. Cost Efficiency
+ * 
+ * Includes comprehensive error handling for partial data availability
  */
 
 import {
@@ -15,21 +17,31 @@ import {
   CategoryScore,
   Check,
   CheckStatus,
-  CategoryType,
 } from './types';
 import { MaturityScoreCache } from './cache';
+import {
+  handlePartialData,
+  ServiceError,
+  ErrorSeverity,
+} from '../common/error-handler';
+import { captureError, addBreadcrumb } from '../common/sentry-integration';
+import { Logger } from 'winston';
 
 export class ScoringEngine {
   private cache: MaturityScoreCache;
   private config: ScoringConfig;
+  private logger: Logger;
 
-  constructor(config: ScoringConfig, cacheTTL: number = 3600) {
+  constructor(config: ScoringConfig, logger: Logger, cacheTTL: number = 3600) {
     this.config = config;
+    this.logger = logger;
     this.cache = new MaturityScoreCache(cacheTTL);
   }
 
   /**
    * Calculate complete scorecard for a service
+   * Implements partial data availability strategy - calculates available categories
+   * and marks unavailable ones with warnings
    */
   async calculateScorecard(
     serviceId: string,
@@ -42,40 +54,103 @@ export class ScoringEngine {
       return cached;
     }
 
-    // Calculate scores for each category
-    const documentation = this.calculateDocumentationScore(metadata);
-    const testing = this.calculateTestingScore(metadata);
-    const monitoring = this.calculateMonitoringScore(metadata);
-    const security = this.calculateSecurityScore(metadata);
-    const costEfficiency = this.calculateCostEfficiencyScore(metadata);
-
-    // Calculate overall score (weighted average)
-    const overallScore = this.calculateOverallScore({
-      documentation,
-      testing,
-      monitoring,
-      security,
-      costEfficiency,
+    addBreadcrumb('Scorecard calculation started', 'maturity', 'info', {
+      serviceId,
     });
+
+    // Calculate scores for each category with error handling
+    const categoryResults = await Promise.allSettled([
+      Promise.resolve({ field: 'documentation', value: this.calculateDocumentationScore(metadata) }),
+      Promise.resolve({ field: 'testing', value: this.calculateTestingScore(metadata) }),
+      Promise.resolve({ field: 'monitoring', value: this.calculateMonitoringScore(metadata) }),
+      Promise.resolve({ field: 'security', value: this.calculateSecurityScore(metadata) }),
+      Promise.resolve({ field: 'costEfficiency', value: this.calculateCostEfficiencyScore(metadata) }),
+    ]);
+
+    // Handle partial data availability
+    const results = categoryResults.map((result, index) => {
+      const categoryName = ['documentation', 'testing', 'monitoring', 'security', 'costEfficiency'][index];
+      if (result.status === 'fulfilled') {
+        return { field: categoryName, value: result.value.value };
+      } else {
+        this.logger.error(`Failed to calculate ${categoryName} score`, {
+          serviceId,
+          error: result.reason,
+        });
+        return { field: categoryName, value: null, error: result.reason };
+      }
+    });
+
+    const partialResult = handlePartialData<{
+      documentation: CategoryScore;
+      testing: CategoryScore;
+      monitoring: CategoryScore;
+      security: CategoryScore;
+      costEfficiency: CategoryScore;
+    }>(results, this.logger);
+
+    // Create categories object with available data
+    const categories: any = {};
+    const unavailableCategories: string[] = [];
+
+    for (const field of ['documentation', 'testing', 'monitoring', 'security', 'costEfficiency']) {
+      if (partialResult.data[field as keyof typeof partialResult.data]) {
+        categories[field] = partialResult.data[field as keyof typeof partialResult.data];
+      } else {
+        // Mark as unavailable
+        categories[field] = {
+          score: null,
+          weight: 0,
+          checks: [],
+          status: 'unavailable' as CheckStatus,
+        };
+        unavailableCategories.push(field);
+      }
+    }
+
+    // Calculate overall score from available categories only
+    const overallScore = this.calculateOverallScore(categories);
 
     const now = new Date();
     const scorecard: ServiceScorecard = {
       serviceId,
       overallScore,
-      categories: {
-        documentation,
-        testing,
-        monitoring,
-        security,
-        costEfficiency,
-      },
+      categories,
       lastUpdated: now,
       expiresAt: new Date(now.getTime() + this.config.cacheTTL * 1000),
       version: 1,
+      warnings: partialResult.warnings,
     };
+
+    // Log if any categories are unavailable
+    if (unavailableCategories.length > 0) {
+      this.logger.warn('Scorecard calculated with partial data', {
+        serviceId,
+        unavailableCategories,
+        availableCategories: partialResult.availableFields,
+      });
+
+      captureError(
+        new ServiceError(
+          'Scorecard calculated with partial data',
+          'PARTIAL_SCORECARD_DATA',
+          false,
+          ErrorSeverity.MEDIUM,
+          { serviceId, unavailableCategories },
+        ),
+        { serviceId, unavailableCategories },
+        this.logger,
+      );
+    }
 
     // Cache the result
     await this.cache.set(cacheKey, scorecard, this.config.cacheTTL);
+
+    addBreadcrumb('Scorecard calculation completed', 'maturity', 'info', {
+      serviceId,
+      overallScore,
+      availableCategories: partialResult.availableFields.length,
+    });
 
     return scorecard;
   }

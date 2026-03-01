@@ -140,6 +140,32 @@ backend:
       enabled: true
       slowQueryThreshold: 1000
       includeStackTrace: false
+  # Redis cache configuration for performance optimization
+  cache:
+    redis:
+      # Redis server configuration
+      host: ${REDIS_HOST:-localhost}
+      port: ${REDIS_PORT:-6379}
+      password: ${REDIS_PASSWORD}
+      db: ${REDIS_DB:-0}
+      # Cache key prefix
+      keyPrefix: 'backstage:'
+      # Default TTL in seconds (15 minutes)
+      defaultTTL: 900
+      # Enable compression for large values
+      enableCompression: false
+    # Cache TTL configuration for different data types
+    ttl:
+      # API response cache (5 minutes)
+      apiResponse: 300
+      # Cost data cache (10 minutes)
+      costData: 600
+      # Scorecard cache (15 minutes)
+      scorecard: 900
+      # DORA metrics cache (30 minutes)
+      doraMetrics: 1800
+      # Search results cache (5 minutes)
+      searchResults: 300
 
 # Search configuration for enhanced discovery
 search:
@@ -4914,3 +4940,81 @@ googleCalendar:
       eventLimit: 3
       # Enable event creation
       enableCreation: false
+
+# Security Hardening Configuration
+security:
+  # API Rate Limiting
+  rateLimiting:
+    enabled: true
+    windowMs: 900000  # 15 minutes
+    maxRequests: 100  # 100 requests per 15 minutes
+    skipSuccessfulRequests: false
+    skipFailedRequests: false
+    standardHeaders: true
+    legacyHeaders: false
+    # Per-endpoint rate limits
+    endpoints:
+      /api/catalog/entities:
+        windowMs: 60000  # 1 minute
+        maxRequests: 60  # 60 requests per minute
+      /api/scaffolder/v2/tasks:
+        windowMs: 3600000  # 1 hour
+        maxRequests: 10  # 10 service creations per hour
+      /api/auth:
+        windowMs: 900000  # 15 minutes
+        maxRequests: 5  # 5 auth attempts per 15 minutes
+      /api/finops/cost-estimate:
+        windowMs: 60000  # 1 minute
+        maxRequests: 30  # 30 cost estimates per minute
+      /api/maturity/scorecard:
+        windowMs: 60000  # 1 minute
+        maxRequests: 30  # 30 scorecard requests per minute
+  
+  # Sensitive Data Encryption
+  encryption:
+    enabled: true
+    algorithm: aes-256-gcm
+    keyRotationDays: 90
+    sensitiveFields:
+      - apiKey
+      - apiSecret
+      - token
+      - password
+      - privateKey
+      - certificate
+      - budget.approvalToken
+      - nps.userEmail
+  
+  # Audit Logging
+  auditLogging:
+    enabled: true
+    logLevel: info
+    retentionDays: 90
+    destinations:
+      - database
+      - sentry
+    sensitiveOperations:
+      - auth.login
+      - auth.logout
+      - auth.token.refresh
+      - catalog.entity.create
+      - catalog.entity.delete
+      - scaffolder.task.create
+      - finops.budget.update
+      - finops.cost-gate.override
+      - maturity.gate.override
+      - rbac.permission.grant
+      - rbac.permission.revoke
+      - rbac.role.assign
+      - rbac.role.remove
+      - api-key.create
+      - api-key.rotate
+      - api-key.revoke
+  
+  # API Key Rotation
+  apiKeyRotation:
+    enabled: true
+    rotationIntervalDays: 90
+    warningDays: 14
+    autoRotate: false  # Manual rotation by default for safety
+    notifyOwners: true
