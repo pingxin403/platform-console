@@ -150,12 +150,24 @@ search:
     # Search result highlighting
     highlightPreTag: '<mark>'
     highlightPostTag: '</mark>'
+    # PostgreSQL text search configuration (language)
+    searchConfig: 'english'
+    # Relevance ranking weights
+    rankWeights:
+      title: 1.0 # Highest weight for title matches
+      description: 0.8 # High weight for description matches
+      tags: 0.6 # Medium weight for tag matches
+      content: 0.4 # Lower weight for content matches
   # Search indexing configuration
   indexing:
     # Batch size for indexing operations
     batchSize: 1000
-    # Index refresh interval
-    refreshInterval: 600 # 10 minutes
+    # Index refresh interval (seconds)
+    refreshInterval: 600 # 10 minutes for scheduled refresh
+    # Enable real-time index updates
+    realTimeUpdates: true
+    # Debounce delay for real-time updates (milliseconds)
+    debounceDelay: 1000 # 1 second
   # Search result configuration
   results:
     # Maximum results per page
@@ -164,6 +176,18 @@ search:
     defaultResults: 10
     # Enable search suggestions
     suggestions: true
+    # Highlight fragment size (characters)
+    highlightFragmentSize: 150
+  # Search filter configuration
+  filters:
+    # Enable type filter (Component, API, etc.)
+    enableTypeFilter: true
+    # Enable tags filter
+    enableTagsFilter: true
+    # Enable owner filter
+    enableOwnerFilter: true
+    # Enable lifecycle filter (experimental, production, etc.)
+    enableLifecycleFilter: true
   # Search collators configuration
   collators:
     # Catalog search collator
@@ -1441,6 +1465,132 @@ opencost:
     chartTypes: ['line', 'bar', 'pie', 'area']
     # Color scheme for cost visualization
     colorScheme: 'default'
+
+# FinOps Cost Estimation Engine configuration
+finops:
+  # Pricing configuration for cost estimation
+  pricing:
+    # Kubernetes resource pricing (USD)
+    kubernetes:
+      # CPU cost per core per hour
+      cpuPerCorePerHour: 0.031
+      # Memory cost per GB per hour
+      memoryPerGBPerHour: 0.004
+      # Storage cost per GB per month
+      storagePerGBPerMonth: 0.10
+    # AWS resource pricing (USD)
+    aws:
+      # RDS pricing
+      rds:
+        # Cost per instance per hour (db.t3.medium equivalent)
+        perInstancePerHour: 0.50
+      # S3 pricing
+      s3:
+        # Cost per GB per month (Standard storage)
+        perGBPerMonth: 0.023
+  # Cache configuration
+  cache:
+    # Cache TTL in seconds (15 minutes)
+    ttl: 900
+
+# Service Maturity Scoring configuration
+maturity:
+  # Category weights (must sum to 1.0)
+  categoryWeights:
+    documentation: 0.2
+    testing: 0.25
+    monitoring: 0.2
+    security: 0.25
+    costEfficiency: 0.1
+  
+  # Minimum score for production readiness
+  productionReadinessThreshold: 70
+  
+  # Cache TTL in seconds (1 hour)
+  cacheTTL: 3600
+  
+  # Check configurations
+  checks:
+    documentation:
+      readme:
+        weight: 0.3
+        required: true
+      techDocs:
+        weight: 0.3
+        required: true
+      apiDocs:
+        weight: 0.2
+        required: false
+      runbook:
+        weight: 0.1
+        required: false
+      freshness:
+        weight: 0.1
+        required: false
+        thresholdDays: 90
+    
+    testing:
+      unitTests:
+        weight: 0.3
+        required: true
+      integrationTests:
+        weight: 0.2
+        required: false
+      coverage:
+        weight: 0.3
+        required: true
+        minimumPercent: 80
+      passing:
+        weight: 0.2
+        required: true
+    
+    monitoring:
+      metrics:
+        weight: 0.25
+        required: true
+      alerts:
+        weight: 0.25
+        required: true
+      logging:
+        weight: 0.2
+        required: true
+      dashboard:
+        weight: 0.15
+        required: false
+      slos:
+        weight: 0.15
+        required: false
+    
+    security:
+      scanning:
+        weight: 0.3
+        required: true
+      vulnerabilities:
+        weight: 0.3
+        required: true
+        maxTotal: 10
+        maxHighSeverity: 0
+      dependencies:
+        weight: 0.2
+        required: false
+      secrets:
+        weight: 0.2
+        required: true
+    
+    costEfficiency:
+      budget:
+        weight: 0.4
+        required: true
+      utilization:
+        weight: 0.3
+        required: false
+        minimumPercent: 70
+      trend:
+        weight: 0.2
+        required: false
+      rightSizing:
+        weight: 0.1
+        required: false
 
 # RAG AI configuration for AI-powered assistance
 ragAi:

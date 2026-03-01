@@ -46,7 +46,7 @@ const SearchPage = () => {
 
   return (
     <Page themeId="home">
-      <Header title="Search" />
+      <Header title="Search" subtitle="Find services, documentation, APIs, and more" />
       <Content>
         <Grid container direction="row">
           <Grid item xs={12}>
@@ -72,6 +72,7 @@ const SearchPage = () => {
               ]}
             />
             <Paper className={classes.filters}>
+              {/* Entity filter for TechDocs */}
               {types.includes('techdocs') && (
                 <SearchFilter.Select
                   className={classes.filter}
@@ -93,17 +94,63 @@ const SearchPage = () => {
                   }}
                 />
               )}
+              
+              {/* Kind/Type filter */}
               <SearchFilter.Select
                 className={classes.filter}
                 label="Kind"
                 name="kind"
-                values={['Component', 'Template']}
+                values={['Component', 'API', 'Resource', 'System', 'Domain', 'Template']}
               />
+              
+              {/* Lifecycle filter */}
               <SearchFilter.Checkbox
                 className={classes.filter}
                 label="Lifecycle"
                 name="lifecycle"
-                values={['experimental', 'production']}
+                values={['experimental', 'production', 'deprecated']}
+              />
+              
+              {/* Tags filter */}
+              <SearchFilter.Autocomplete
+                className={classes.filter}
+                label="Tags"
+                name="tags"
+                values={async () => {
+                  // Get all unique tags from catalog
+                  const { items } = await catalogApi.getEntities({
+                    fields: ['metadata.tags'],
+                  });
+                  
+                  const allTags = new Set<string>();
+                  items.forEach(entity => {
+                    entity.metadata.tags?.forEach(tag => allTags.add(tag));
+                  });
+                  
+                  return Array.from(allTags).sort();
+                }}
+              />
+              
+              {/* Owner filter */}
+              <SearchFilter.Autocomplete
+                className={classes.filter}
+                label="Owner"
+                name="owner"
+                values={async () => {
+                  // Get all unique owners from catalog
+                  const { items } = await catalogApi.getEntities({
+                    fields: ['spec.owner'],
+                  });
+                  
+                  const owners = new Set<string>();
+                  items.forEach(entity => {
+                    if (entity.spec?.owner) {
+                      owners.add(entity.spec.owner as string);
+                    }
+                  });
+                  
+                  return Array.from(owners).sort();
+                }}
               />
             </Paper>
           </Grid>
