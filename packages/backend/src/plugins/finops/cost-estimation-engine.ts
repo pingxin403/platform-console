@@ -4,6 +4,7 @@
  * Provides cost estimation capabilities for Kubernetes and AWS resources
  * Integrates with OpenCost API for historical data
  * Implements caching with 15-minute TTL
+ * Includes comprehensive error handling with retry, graceful degradation, and fail-open strategy
  */
 
 import {
@@ -16,52 +17,112 @@ import {
 } from './types';
 import { parseCPU, parseMemory, parseStorage, hoursPerMonth, generateCacheKey } from './utils';
 import { CostEstimationCache } from './cache';
+import {
+  retryWithBackoff,
+  withGracefulDegradation,
+  withTimeout,
+  ServiceError,
+  ErrorSeverity,
+  failOpenStrategy,
+  DEFAULT_RETRY_CONFIG,
+} from '../common/error-handler';
+import { captureError, addBreadcrumb } from '../common/sentry-integration';
+import { Logger } from 'winston';
 
 export class CostEstimationEngine {
   private cache: CostEstimationCache;
   private config: CostEstimationConfig;
+  private logger: Logger;
 
-  constructor(config: CostEstimationConfig) {
+  constructor(config: CostEstimationConfig, logger: Logger) {
     this.config = config;
     this.cache = new CostEstimationCache(config.cache?.ttl || 900); // 15 minutes default
+    this.logger = logger;
   }
 
   /**
    * Estimate monthly cost based on deployment specification
+   * Implements fail-open strategy: if estimation fails, allow deployment with warning
    */
   async estimateDeploymentCost(
     spec: DeploymentSpec,
   ): Promise<CostEstimate> {
     const cacheKey = generateCacheKey('estimate', 'deployment', spec);
     
-    // Check cache first
-    const cached = await this.cache.get<CostEstimate>(cacheKey);
-    if (cached) {
-      return cached;
+    addBreadcrumb('Cost estimation started', 'finops', 'info', { spec });
+
+    try {
+      // Check cache first
+      const cached = await this.cache.get<CostEstimate>(cacheKey);
+      if (cached) {
+        this.logger.debug('Cost estimate retrieved from cache', { cacheKey });
+        return cached;
+      }
+
+      // Calculate Kubernetes costs (local calculation, should not fail)
+      const kubernetesCost = this.calculateKubernetesCost(spec);
+
+      // Calculate AWS costs with error handling
+      let awsCost: AWSCost;
+      try {
+        awsCost = this.config.aws?.enabled
+          ? this.estimateAWSCost(spec)
+          : { rds: 0, s3: 0, other: 0, total: 0 };
+      } catch (error) {
+        this.logger.warn('AWS cost estimation failed, using zero cost', {
+          error: (error as Error).message,
+        });
+        awsCost = { rds: 0, s3: 0, other: 0, total: 0 };
+      }
+
+      const estimate: CostEstimate = {
+        estimatedMonthlyCost: kubernetesCost.total + awsCost.total,
+        breakdown: {
+          kubernetes: kubernetesCost,
+          aws: awsCost,
+        },
+        confidence: 0.85, // 85% confidence for estimation
+        currency: 'USD',
+      };
+
+      // Cache the result
+      await this.cache.set(cacheKey, estimate);
+
+      addBreadcrumb('Cost estimation completed', 'finops', 'info', { estimate });
+      return estimate;
+    } catch (error) {
+      // Fail-open strategy: log error but return a default estimate
+      this.logger.error('Cost estimation failed, applying fail-open strategy', {
+        error: (error as Error).message,
+        spec,
+      });
+
+      captureError(
+        new ServiceError(
+          'Cost estimation failed',
+          'COST_ESTIMATION_FAILED',
+          false,
+          ErrorSeverity.MEDIUM,
+          { spec, originalError: (error as Error).message },
+        ),
+        { spec },
+        this.logger,
+      );
+
+      // Return a conservative estimate to allow deployment
+      const fallbackEstimate: CostEstimate = {
+        estimatedMonthlyCost: 0,
+        breakdown: {
+          kubernetes: { cpu: 0, memory: 0, storage: 0, total: 0 },
+          aws: { rds: 0, s3: 0, other: 0, total: 0 },
+        },
+        confidence: 0,
+        currency: 'USD',
+        warning: 'Cost estimation unavailable. Proceeding with deployment.',
+      };
+
+      return fallbackEstimate;
     }
-
-    // Calculate Kubernetes costs
-    const kubernetesCost = this.calculateKubernetesCost(spec);
-
-    // Calculate AWS costs (simplified estimation)
-    const awsCost = this.config.aws?.enabled
-      ? this.estimateAWSCost(spec)
-      : { rds: 0, s3: 0, other: 0, total: 0 };
-
-    const estimate: CostEstimate = {
-      estimatedMonthlyCost: kubernetesCost.total + awsCost.total,
-      breakdown: {
-        kubernetes: kubernetesCost,
-        aws: awsCost,
-      },
-      confidence: 0.85, // 85% confidence for estimation
-      currency: 'USD',
-    };
-
-    // Cache the result
-    await this.cache.set(cacheKey, estimate);
-
-    return estimate;
   }
 
   /**
@@ -134,6 +195,7 @@ export class CostEstimationEngine {
 
   /**
    * Get historical cost data from OpenCost API
+   * Implements retry logic and graceful degradation with caching
    */
   async getHistoricalCost(
     serviceName: string,
@@ -141,27 +203,67 @@ export class CostEstimationEngine {
   ): Promise<HistoricalCostData> {
     const cacheKey = generateCacheKey('historical', serviceName, { timeRange });
     
-    // Check cache first
-    const cached = await this.cache.get<HistoricalCostData>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    addBreadcrumb('Historical cost fetch started', 'finops', 'info', {
+      serviceName,
+      timeRange,
+    });
 
     try {
-      // Fetch from OpenCost API
-      const data = await this.fetchOpenCostData(serviceName, timeRange);
-      
-      // Cache the result
-      await this.cache.set(cacheKey, data);
-      
-      return data;
+      // Use graceful degradation with cache fallback
+      const result = await withGracefulDegradation(
+        () => this.fetchOpenCostData(serviceName, timeRange),
+        {
+          cacheKey,
+          cache: this.cache,
+          logger: this.logger,
+          fallbackValue: this.getMockHistoricalData(serviceName, timeRange),
+          retryConfig: {
+            ...DEFAULT_RETRY_CONFIG,
+            maxRetries: 2, // Reduce retries for historical data
+          },
+        },
+      );
+
+      if (result.fromCache) {
+        this.logger.info('Using cached historical cost data', {
+          serviceName,
+          timeRange,
+        });
+      }
+
+      if (result.error) {
+        this.logger.warn('Historical cost fetch failed, using fallback', {
+          serviceName,
+          error: result.error.message,
+        });
+      }
+
+      return result.data;
     } catch (error) {
-      throw new Error(`Failed to fetch historical cost data: ${error}`);
+      // Last resort: return mock data
+      this.logger.error('Historical cost fetch completely failed, using mock data', {
+        serviceName,
+        error: (error as Error).message,
+      });
+
+      captureError(
+        new ServiceError(
+          'Historical cost fetch failed',
+          'HISTORICAL_COST_FAILED',
+          true,
+          ErrorSeverity.MEDIUM,
+          { serviceName, timeRange, originalError: (error as Error).message },
+        ),
+        { serviceName, timeRange },
+        this.logger,
+      );
+
+      return this.getMockHistoricalData(serviceName, timeRange);
     }
   }
 
   /**
-   * Fetch cost data from OpenCost API
+   * Fetch cost data from OpenCost API with timeout and error handling
    */
   private async fetchOpenCostData(
     serviceName: string,
@@ -171,10 +273,21 @@ export class CostEstimationEngine {
     const url = `${baseUrl}/allocation?window=${timeRange}&aggregate=namespace&filter=namespace:${serviceName}`;
 
     try {
-      const response = await fetch(url);
+      // Fetch with 30-second timeout
+      const response = await withTimeout(
+        () => fetch(url),
+        30000,
+        'OpenCost API request timed out',
+      );
       
       if (!response.ok) {
-        throw new Error(`OpenCost API returned ${response.status}: ${response.statusText}`);
+        throw new ServiceError(
+          `OpenCost API returned ${response.status}: ${response.statusText}`,
+          `OPENCOST_API_${response.status}`,
+          response.status >= 500, // Retry on 5xx errors
+          response.status >= 500 ? ErrorSeverity.HIGH : ErrorSeverity.MEDIUM,
+          { serviceName, timeRange, status: response.status },
+        );
       }
 
       const rawData = await response.json();
@@ -182,9 +295,18 @@ export class CostEstimationEngine {
       // Parse OpenCost response
       return this.parseOpenCostResponse(serviceName, rawData, timeRange);
     } catch (error) {
-      // If OpenCost is not available, return mock data for development
-      console.warn(`OpenCost API unavailable, using mock data: ${error}`);
-      return this.getMockHistoricalData(serviceName, timeRange);
+      if (error instanceof ServiceError) {
+        throw error;
+      }
+
+      // Wrap other errors
+      throw new ServiceError(
+        'Failed to fetch OpenCost data',
+        'OPENCOST_FETCH_FAILED',
+        true,
+        ErrorSeverity.MEDIUM,
+        { serviceName, timeRange, originalError: (error as Error).message },
+      );
     }
   }
 

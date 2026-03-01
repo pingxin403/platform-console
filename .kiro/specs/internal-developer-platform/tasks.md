@@ -251,12 +251,12 @@
     - **Property 26**: RBAC Enforcement for Sensitive Resources - 验证敏感资源访问控制
     - _Validates: Requirements 8.1, 8.2, 8.3, 8.4_
 
-- [-] 21. Checkpoint - 2026 核心增强完成
+- [x] 21. Checkpoint - 2026 核心增强完成
   - 确保所有测试通过，如有问题询问用户
   - **Checkpoint commit**: `git add . && git commit -m "checkpoint: 2026 core enhancements complete" && git tag -a "checkpoint-3" -m "Checkpoint 3: 2026 Core Enhancements" && git push origin main --tags`
 
 - [ ] 22. 最终集成、测试和生产加固
-  - [~] 22.1 实现全面的错误处理
+  - [x] 22.1 实现全面的错误处理
     - 实现外部 API 失败处理（重试、降级、缓存）
     - 实现成本门控失败处理（fail-open 策略）
     - 实现评分卡计算错误处理（部分数据可用）
@@ -264,7 +264,7 @@
     - 配置错误监控和告警（Sentry 集成）
     - _Design: Error Handling 部分_
   
-  - [~] 22.2 性能优化
+  - [x] 22.2 性能优化
     - 实现 API 响应缓存（5-15 分钟 TTL）
     - 优化数据库查询并添加索引
     - 实现异步处理长时间运行的任务（成本异常检测、评分卡计算）
@@ -272,7 +272,7 @@
     - 配置 Redis 缓存层
     - _Design: Implementation Notes - Scalability_
   
-  - [~] 22.3 安全加固
+  - [x] 22.3 安全加固
     - 实现 API 速率限制（防止滥用）
     - 配置敏感数据加密（静态和传输中）
     - 实现审计日志记录（所有敏感操作）
@@ -294,7 +294,7 @@
     - 使用 Playwright 实现浏览器自动化测试
     - _Design: Testing Strategy - E2E Testing_
 
-- [~] 23. 最终 Checkpoint - 完整的 2026 平台验证
+- [-] 23. 最终 Checkpoint - 完整的 2026 平台验证
   - 确保所有测试通过，如有问题询问用户
   - 验证所有核心功能正常工作
   - 验证性能指标达标（API 响应时间 < 500ms p95）

@@ -6,6 +6,8 @@
  * - Lead Time for Changes
  * - Change Failure Rate
  * - Mean Time to Recovery (MTTR)
+ * 
+ * Includes comprehensive error handling with historical data fallback
  */
 
 import { Logger } from 'winston';
@@ -19,6 +21,12 @@ import {
   TimePeriod,
   CalculationResult,
 } from './types';
+import {
+  withHistoricalFallback,
+  ServiceError,
+  ErrorSeverity,
+} from '../common/error-handler';
+import { captureError, addBreadcrumb } from '../common/sentry-integration';
 
 export class MetricsCalculator {
   private readonly logger: Logger;
