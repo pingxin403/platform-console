@@ -145,7 +145,7 @@
     - 创建成本趋势可视化组件
     - _Requirements: 5.2, 5.5_
   
-  - [ ]* 17.5 编写属性测试
+  - [x]* 17.5 编写属性测试
     - **Property 11**: Cost Data Completeness - 验证所有服务显示完整成本数据
     - **Property 12**: Pre-Deployment Cost Gate - 验证超出预算时阻止部署
     - **Property 13**: Cost Anomaly Detection and Alerting - 验证异常检测和告警
@@ -181,7 +181,7 @@
     - 配置趋势数据存储和查询
     - _Requirements: 7.4, 7.5_
   
-  - [ ]* 18.5 编写属性测试
+  - [x]* 18.5 编写属性测试
     - **Property 18**: Maturity Scorecard Completeness - 验证所有服务显示完整评分卡
     - **Property 19**: Improvement Suggestions Generation - 验证失败检查生成建议
     - **Property 20**: Production Readiness Gate Enforcement - 验证生产就绪门控
@@ -220,7 +220,7 @@
     - 生成推荐操作
     - _Requirements: 6.4_
   
-  - [ ]* 19.5 编写属性测试
+  - [x]* 19.5 编写属性测试
     - **Property 14**: DORA Metrics Completeness - 验证所有团队和服务显示完整 DORA 指标
     - **Property 15**: Platform Adoption Tracking - 验证平台采用率跟踪
     - **Property 16**: NPS Collection and Trend Analysis - 验证 NPS 收集和趋势分析
@@ -244,7 +244,7 @@
     - 实现权限验证中间件
     - _Requirements: 8.1, 8.2, 8.4_
   
-  - [ ]* 20.3 编写属性测试
+  - [x]* 20.3 编写属性测试
     - **Property 23**: Authentication Enforcement - 验证未认证用户重定向
     - **Property 24**: Permission Synchronization - 验证权限同步在 5 分钟内完成
     - **Property 25**: Unified Search Completeness - 验证搜索返回所有实体类型
@@ -280,21 +280,21 @@
     - 配置 API 密钥轮换策略
     - _Design: Implementation Notes - Security_
   
-  - [ ]* 22.4 编写端到端集成测试
+  - [x]* 22.4 编写端到端集成测试
     - 测试完整的服务创建流程（包括 FinOps 门控和成熟度检查）
     - 测试 DORA 指标收集和 DevEx 分析工作流
     - 测试成本异常检测和告警流程
     - 测试生产就绪门控验证
     - _Design: Testing Strategy - Integration Testing_
   
-  - [ ]* 22.5 编写端到端用户旅程测试
+  - [x]* 22.5 编写端到端用户旅程测试
     - 测试服务创建旅程（登录 → 选择模板 → 创建 → 验证）
     - 测试成本查看旅程（登录 → 搜索服务 → 查看成本）
     - 测试部署状态旅程（登录 → 查看服务 → 检查状态 → 触发同步）
     - 使用 Playwright 实现浏览器自动化测试
     - _Design: Testing Strategy - E2E Testing_
 
-- [-] 23. 最终 Checkpoint - 完整的 2026 平台验证
+- [x] 23. 最终 Checkpoint - 完整的 2026 平台验证
   - 确保所有测试通过，如有问题询问用户
   - 验证所有核心功能正常工作
   - 验证性能指标达标（API 响应时间 < 500ms p95）
