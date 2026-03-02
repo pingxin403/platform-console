@@ -1,0 +1,25 @@
+# Playwright test artifacts
+test-results/
+playwright-report/
+e2e-test-report/
+screenshots/
+
+# Playwright cache
+.cache/
+
+# Test videos
+videos/
+
+# Test traces
+traces/
+
+# Node modules (if any)
+node_modules/
+
+# Environment files
+.env.local
+.env.test
+
+# OS files
+.DS_Store
+Thumbs.db
